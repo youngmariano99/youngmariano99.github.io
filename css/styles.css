@@ -1,4 +1,5 @@
 /* styles.css */
+
 body {
     margin: 0;
     font-family: 'Inter', sans-serif;
@@ -7,34 +8,58 @@ body {
     line-height: 1.6;
   }
   
-  .container {
-    text-align: center;
-    padding: 2rem;
-  }
-  
-  .perfil {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 3px solid #38bdf8;
-  }
-  
   h1, h2 {
     color: #38bdf8;
+    margin-bottom: 0.5rem;
   }
   
   a {
     color: #38bdf8;
     text-decoration: none;
-    margin: 0 0.5rem;
   }
   
   a:hover {
     text-decoration: underline;
   }
   
+  .hero {
+    background: linear-gradient(to right, #0f172a, #1e293b);
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  
+  .hero-content {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-content {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+  
+  .perfil {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 4px solid #38bdf8;
+    margin: auto;
+  }
+  
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
   section {
-    padding: 2rem;
+    padding: 2rem 1rem;
     max-width: 800px;
     margin: auto;
   }
@@ -46,10 +71,10 @@ body {
   
   .proyecto {
     background-color: #1e293b;
-    padding: 1rem;
+    padding: 1.2rem;
     margin: 1rem 0;
     border-radius: 10px;
-    box-shadow: 0 0 10px #0004;
+    box-shadow: 0 0 15px #0004;
   }
   
   form {
@@ -76,6 +101,11 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #0ea5e9;
   }
   
   footer {
@@ -83,5 +113,9 @@ body {
     padding: 1rem;
     background-color: #1e293b;
     margin-top: 2rem;
+  }
+  
+  .redes a {
+    margin: 0 0.5rem;
   }
   
