@@ -1,0 +1,286 @@
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";      
+       
+       
+       
+       :root {
+  --azul-principal: #00bfff;
+  --fondo-oscuro: #0c162d;
+  --fondo-header: #16233d;
+  --texto-claro: #f1f1f1;
+  --link: #33ccff;
+  --verde-python: #7fd685;
+  --lila-mariadb: #c792ea;
+}
+:root {
+  --python-azul: #3776AB;
+  --python-amarillo: #FFD43B;
+  --python-fondo: #f5f5f5;
+  --python-texto: #444;
+}
+
+        
+        
+        
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--python-fondo);
+            color: var(--python-texto);
+            
+            
+            
+        }
+       
+
+        /* HEADER */
+        header{
+            background: linear-gradient(to bottom, #0c162d, #16233d);
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            margin: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .imagen-titulo{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px; /* Espacio horizontal entre el nombre y la imagen */
+            flex-wrap: wrap; /* Se adapta a pantallas más chicas */
+            text-align: center; /* Centra el texto en pantallas pequeñas */
+            
+        }
+        .texto-principal{
+            font-size: 1.0em;
+            color: #FFD43B;
+            
+        }
+
+        .social-media {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap; /* Por si en mobile no entra todo */
+            margin-top: 20px;
+        }
+
+        .social-media .btn {
+            background-color: var(--python-amarillo);
+            color: black;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            
+        }
+
+        img{
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* MAIN */
+        main {
+           background-color: #f5f5f5;
+        }
+    
+        
+    /* Colores oficiales */
+        .github {
+            background-color: #24292e;
+        }
+
+        .linkedin {
+            background-color: #0077b5;
+        }
+        .social-media .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        .email-link {
+            text-decoration: none;
+            color: #2980b9;
+            font-weight: bold;
+            transition: color 0.3s ease;
+
+        }
+
+        .derechos-reservados {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #bbb;
+        }
+       
+        .guia-navegacion {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            
+
+        }
+
+        .guia-navegacion .btn {
+            
+             background-color: var(--python-amarillo);
+            color: black;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .guia-navegacion .btn:hover {
+            background-color: #e6c930; /* Un amarillo más oscuro */
+        }
+
+
+        .galeria{
+            padding: 20px;
+            
+            text-align: center;
+        }
+        .grid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            
+        }
+        .proyecto{
+            
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .button-proyectos {
+            background-color: var(--python-amarillo);
+            color: black;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none; /* Quita el subrayado */
+            font-weight: bold; /* Hace el texto más fuerte */
+            transition: background-color 0.3s ease-in-out; /* Agrega una animación */
+
+        }
+
+        .button-proyectos:hover{
+              background-color: #e6c930; /* Un amarillo más oscuro */
+
+        }
+
+        .habilidades {
+            padding: 20px;
+            text-align: center ;
+        }
+
+        .conjunto-habilidades {
+            display: flex;
+            flex-direction: column; /* Acomoda los elementos en columna */
+            align-items: center; /* Centra los elementos horizontalmente */
+            gap: 40px; /* Espacio entre el título y los logos */
+        }
+
+        .logos-habilidades {
+            display: flex;
+            flex-direction: row; /* Acomoda el texto y los logos en columna */
+            align-items: center; /* Centra los elementos */
+            gap: 20px; /* Espaciado entre elementos */
+        }
+
+        .logos-habilidades img {
+            max-width: 60px; /* Ajusta el tamaño de los logos */
+            height: auto; /* Mantiene proporción */
+            display: block; /* Evita espacios no deseados */
+             object-fit: contain;
+        }
+
+        .logos-habilidades img:hover {
+             transform: scale(1.1); /* Hace que el logo crezca al pasar el mouse */
+        }
+
+        .logos-habilidades h2 {
+            font-size: 24px; /* Tamaño más grande del texto */
+            font-weight: bold; /* Hace el texto más visible */
+            
+        }
+
+        .contenedor-habilidades {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            
+        }
+
+        .habilidad {
+            background-color: #d16262;
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .contenido-centralizado {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column; /* Acomoda los elementos en columna */
+            gap: 150px; /* Ajusta el espacio entre los elementos */
+            
+        }
+        
+       
+
+        footer {
+            background-color: var(--python-azul);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            box-shadow: 0 -5px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            bottom: 0;
+            margin-left: 0;
+            padding-left: 10px;
+            
+        }
+
+        
+        
+        .cursos {
+            display: flex;
+            flex-direction: column; /* Acomoda los elementos en columna */
+            gap: 10px; /* Espacio entre el título y los logos */
+            text-decoration: none;
+
+        }
+
+        .formulario-contacto{
+            background-color: #16233d;
+            padding: 20px;
+            border-radius: 8px;
+            color: rgb(61, 56, 56);
+            max-width: 500px;
+            margin: auto;
+        }
+        
+       
