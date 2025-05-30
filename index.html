@@ -45,7 +45,7 @@
     <!-- BARRA DE NAVEGACIÓN-->
          <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" href="#">Mariano Young</a>
+                <a class="navbar-brand" href="#">Portfolio</a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido">
                         <span class="navbar-toggler-icon"></span>
                     </button>
@@ -54,9 +54,6 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="#sobre-mi">Sobre mí</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#programacion">Programación</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#proyectos" ><i class="bi bi-code-slash"></i>Proyectos</a>
@@ -83,7 +80,7 @@
                 </div>
             </section>
         
-        <section id="programacion" class="programacion">
+        <section id="programacion" >
             <div class ="card p-3 mb-3 shadow-sm">
             <h2>En cuanto a programación...</h2>
             <p>Me gusta ir experimentando y aprender nuevos lenguajes, tengo preferencias por el backend y los datos por el momento.</p>
@@ -147,7 +144,7 @@
 
         </section>
 
-        <section id="estudios" class ="sobre-mi">
+        <section id="estudios">
             <div class ="card p-3 mb-3 shadow-sm">
             <h2>Estudios</h2>
             <p>Tecnicatura en electromecánica | Escuela Técnica N°1 de Coronel Pringles</p>
@@ -174,29 +171,23 @@
             </div>
         </section>
 
+        
+        <form id="contacto" action="https://formspree.io/f/xgvojgke" method="POST" class="contact-form">
+            <label for="email">Tu email:</label>
+            <input type="email" name="email" id="email" placeholder="Ingrese su email" required>
 
-        <form action="https://formspree.io/f/xgvojgke"method="POST" class="formulario-contacto">
+            <label for="message">Tu mensaje:</label>
+            <textarea name="message" id="message" placeholder="Escriba su mensaje aqui" required></textarea>
 
-            <label>Your email:<input type="email" name="email"> </label>
-            <label>Your message:<textarea name="message"></textarea></label>
- 
-            <!-- your other form fields go here -->
-
-            <button type="submit">Send</button>
-
+            <button type="submit">Enviar</button>
         </form>
+        
 
     </main>
     </div>
     <!-- Sección de contacto -->
     <footer>
-        <section id="contacto" class="email-link">
-            <h2>Contacto</h2>
-            <p><strong>Email:</strong> <a href="mailto:youngmariano99@gmail.com">youngmariano99@gmail.com</a></p>
-
-        </section>
-            
-
+    
         <section class="derechos-reservados">
         <p>&copy; 2023 Mariano Young. Todos los derechos reservados.</p>
         <p>Este es un proyecto personal para aprender y experimentar con HTML y CSS.</p>
