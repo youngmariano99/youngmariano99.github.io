@@ -296,67 +296,67 @@
                 }
         
        /* 📱 Responsive Design: Estilos para pantallas pequeñas (menos de 768px) */
-@media (max-width: 768px) {
+        @media (max-width: 768px) {
 
-  /* Ajustar padding general */
-  body {
-    padding: 10px;
-  }
+          /* Ajustar padding general */
+          body {
+            padding: 10px;
+          }
 
-  /* Ajuste para header e imagen de perfil */
-  .imagen-titulo {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .imagen-titulo img {
-    width: 120px;
-  }
+          /* Ajuste para header e imagen de perfil */
+          .imagen-titulo {
+            flex-direction: column;
+            gap: 10px;
+          }
+          .imagen-titulo img {
+            width: 120px;
+          }
 
-  /* Botones sociales apilados o centrados mejor */
-  .social-media {
-    flex-direction: column;
-    align-items: center;
-  }
+          /* Botones sociales apilados o centrados mejor */
+          .social-media {
+            flex-direction: column;
+            align-items: center;
+          }
 
-  /* Texto más chico y cómodo */
-  .texto-principal {
-    font-size: 0.9em;
-    text-align: center;
-  }
+          /* Texto más chico y cómodo */
+          .texto-principal {
+            font-size: 0.9em;
+            text-align: center;
+          }
 
-  /* Secciones con padding más reducido */
-  .contenido-centralizado {
-    padding: 0 10px;
-    gap: 60px;
-  }
+          /* Secciones con padding más reducido */
+          .contenido-centralizado {
+            padding: 0 10px;
+            gap: 60px;
+          }
 
-  /* Habilidades más compactas */
-  .logos-habilidades {
-    flex-direction: column;
-  }
-  .logos-habilidades img {
-    max-width: 40px;
-  }
+          /* Habilidades más compactas */
+          .logos-habilidades {
+            flex-direction: column;
+          }
+          .logos-habilidades img {
+            max-width: 40px;
+          }
 
-  /* Proyectos apilados y con más margen inferior */
-  .grid-container {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .proyecto {
-    font-size: 14px;
-    padding: 10px;
-  }
+          /* Proyectos apilados y con más margen inferior */
+          .grid-container {
+            flex-direction: column;
+            gap: 10px;
+          }
+          .proyecto {
+            font-size: 14px;
+            padding: 10px;
+          }
 
-  /* Formulario adaptable */
-  .contact-form {
-    max-width: 90%;
-    padding: 15px;
-  }
+          /* Formulario adaptable */
+          .contact-form {
+            max-width: 90%;
+            padding: 15px;
+          }
 
-  /* Footer más compacto */
-  footer {
-    font-size: 0.8em;
-    padding: 10px;
-  }
-}
+          /* Footer más compacto */
+          footer {
+            font-size: 0.8em;
+            padding: 10px;
+          }
+        }
