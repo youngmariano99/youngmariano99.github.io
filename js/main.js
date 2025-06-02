@@ -1,5 +1,5 @@
 
-
+let proyectosVisibles = true;
 
 const proyectos = [
     {
@@ -26,6 +26,9 @@ const proyectos = [
 ];
 
 
+// CICLO FOR  PARA AGREGAR LOS PROYECTOS //  
+
+/*
 const contenedor = document.getElementById ("proyectos");
 
 
@@ -47,4 +50,63 @@ const contenedor = document.getElementById ("proyectos");
 
         contenedor.appendChild(proyecto);
     }
+*/
 
+// FUNCIONES PARA AGREGAR PROYECTOS //
+
+//Esta función para armar las secciones//
+function generarHTMLproyecto(proyecto){
+
+    return `
+        <img src="${proyecto.imagen}" class="card-img-top" alt="Imagen del proyecto">
+        <div class="card-body">
+        <h5 class="card-title">${proyecto.nombre}</h5>
+        <p class="card-text">${proyecto.descripcion}</p>
+        <a href="${proyecto.link}" class="btn btn-primary" target="_blank">Ver más</a>
+        </div>
+    `
+}
+
+//Función para mostrar la sección//
+function mostrarProyectos(listaProyectos){
+
+    const contenedor = document.getElementById("proyectos")
+    contenedor.innerHTML = ""
+     listaProyectos.forEach(proyecto => {
+    contenedor.innerHTML += generarHTMLproyecto(proyecto);
+  });
+    
+}
+
+function ocultarProyectos(){
+    const contenedor = document.getElementById("proyectos")
+    contenedor.innerHTML = ""
+}
+
+
+//FUNCION PARA MOSTRAR PROYECTOS MEDIANTE EL DOM
+
+const botonMostrar = document.getElementById("mostrarProyectos")
+
+function mostrarProyectosEvento(){
+    mostrarProyectos(proyectos) 
+}
+
+function ocultarProyectosEvento(){
+    ocultarProyectos()
+}
+
+
+
+botonMostrar.addEventListener("click", function(){
+    if (proyectosVisibles){
+        mostrarProyectosEvento();
+        proyectosVisibles = false;
+    }
+    else {
+        ocultarProyectosEvento();
+        proyectosVisibles = true;
+    }
+
+
+});
