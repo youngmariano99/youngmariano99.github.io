@@ -97,7 +97,7 @@
             
         }
 
-        img{
+        .imagen-perfil{
             border-radius: 50%;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
@@ -115,6 +115,10 @@
             flex-direction: column; /* Acomoda los elementos en columna */
             gap: 120px; /* Ajusta el espacio entre los elementos */
             
+        }
+
+        #sobre-mi {
+          padding-top: 40px;
         }
 
         /* MUESTRA DE HABILIDADES (LENGUAJES, FRAMEWORKS Y HERRAMIENTAS) */ 
@@ -143,6 +147,14 @@
             animation: aparecer 0.15s ease-in-out;
             text-align: center;
         }
+
+
+        .mostrarProyectos{
+          padding: 10%;
+        }
+
+
+
         .grid-container {
             display: flex;
             flex-direction: column;
@@ -178,7 +190,16 @@
 
         }
 
-        
+    
+       .imagen-proyecto {
+          width: 100%;
+          height: 500px; /* Aumenta la altura */
+          object-fit: contain; /* Asegura que la imagen completa sea visible */
+      }
+
+      .contenedor-proyectos {
+        padding-bottom: 40px;
+      }
 
         
 
@@ -235,6 +256,7 @@
             color: #ffffff;
             max-width: 500px;
             margin: auto;
+            margin-bottom: 40px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             font-family: 'Arial', sans-serif;
         }
