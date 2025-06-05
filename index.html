@@ -25,28 +25,25 @@
 
     <header>
 
-<section class="flex flex-col min-h-screen bg-blue-900 text-white py-10 items-center">
-    <!-- Sección de texto principal -->
-    <div class="text-center text-white">
-        <h1 class="text-5xl font-bold">Mariano Young</h1>
-        <p class="text-2xl">Desarrollador Backend | Estudiante en programación</p>
-    </div>
+    <section class="flex flex-col min-h-screen bg-gray-900 text-white py-10 items-center mt-16">
+        <!-- Sección de texto principal -->
+        <div class="text-center text-white mb-10">
+            <h1 class="text-5xl font-bold">Mariano Young</h1>
+            <p class="text-2xl">Desarrollador Backend | Estudiante en programación</p>
+        </div>
 
-     <!-- Sección de imagen -->
-    <div class="flex justify-center items-center">
-        <img src="img/fotoPerfil.png" alt="Foto de perfil" class="w-84 h-96 rounded-full">
-    </div>
+         <!-- Sección de imagen -->
+        <div class="flex justify-center items-center mb-10">
+            <img src="img/fotoPerfil.png" alt="Foto de perfil" class="w-84 h-96 rounded-full">
+        </div>
 
-    <!-- Sección de botones -->
-    <div class="social-media flex justify-center gap-6 mt-6">
+        <!-- Sección de botones -->
+        <div class="social-media flex justify-center gap-6 mt-6">
+            <a href="https://github.com/youngmariano99" class="btn github" target="_blank">Github</a>
+            <a href="https://www.linkedin.com/in/mariano-young-016a0b23b/" class="btn linkedin" target="_blank">LinkedIn</a>
+        </div>
 
-
-        <a href="https://github.com/youngmariano99" class="btn github" target="_blank">Github</a>
-        <a href="https://www.linkedin.com/in/mariano-young-016a0b23b/" class="btn linkedin" target="_blank">LinkedIn</a>
-    </div>
-
-
-</div>
+    </section>
 
     </header>
 
@@ -54,31 +51,18 @@
     <main>
 
     <!-- BARRA DE NAVEGACIÓN-->
-         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" href="#">Portfolio</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-    
-        <div class="collapse navbar-collapse" id="navbarContenido">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#sobre-mi">Sobre mí</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#proyectos" ><i class="bi bi-code-slash"></i>Proyectos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#estudios">Estudios</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#contacto"><i class="bi bi-person-lines-fill"></i>Contacto</a>
-                </li>
-            </ul>
-            </div>
-            </div>
-        </nav>
+         <nav id="navbar" class="fixed top-0 left-0 w-full bg-gray-900 text-white py-4 shadow-md transition-all duration-500 z-50">
+    <div class="container mx-auto flex justify-between items-center px-8">
+        <a class="text-2xl font-bold" href="#">Portfolio</a>
+        <button id="menuToggle" class="lg:hidden text-white text-3xl">&#9776;</button>
+        <ul id="menu" class="hidden lg:flex space-x-6">
+            <li><a class="hover:text-yellow-500 transition-all" href="#sobre-mi">Sobre mí</a></li>
+            <li><a class="hover:text-yellow-500 transition-all" href="#proyectos">Proyectos</a></li>
+            <li><a class="hover:text-yellow-500 transition-all" href="#estudios">Estudios</a></li>
+            <li><a class="hover:text-yellow-500 transition-all" href="#contacto">Contacto</a></li>
+        </ul>
+    </div>
+</nav>
     <!-- BARRA DE NAVEGACIÓN-->
 
     
@@ -87,7 +71,7 @@
 
 
         <!-- Sección de contenido -->      
-         <section id="sobre-mi" class="bg-blue-900 text-white py-20 flex justify-center min-h-screen">
+         <section id="sobre-mi" class="bg-blue-800 text-white py-20 flex justify-center min-h-screen">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto px-8 h-auto">
         
         <!-- Columna Izquierda (Texto en "cajas") -->
@@ -117,11 +101,11 @@
 </section>
         
 
-        <section id="proyectos" class="bg-gray-900 text-white py-16 flex flex-col items-center">
+        <section id="proyectos" class="bg-yellow-600 text-white py-16 flex flex-col items-center">
     <h2 class="text-5xl font-bold mb-8">Proyectos</h2>
     
     <!-- Botón Mostrar/Ocultar -->
-    <button id="mostrarProyectos" class="bg-yellow-600 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition-all">
+    <button id="mostrarProyectos" class="bg-blue-600 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition-all">
         Mostrar Proyectos
     </button>
 
@@ -131,55 +115,75 @@
     </div>
     </section>
 
-        <section id="estudios">
-            <div class ="card p-3 mb-3 shadow-sm">
-            <h2>Estudios</h2>
-            <p>Tecnicatura en electromecánica | Escuela Técnica N°1 de Coronel Pringles</p>
-            <p>Tecnicatura en programación | Universidad Tecnológica Nacional.</p>
-            <p>Administración de empresas | Universidad Siglo 21.</p>
-            </div>
-        </section>
+        <section id="estudios" class="bg-blue-600 text-white py-16 flex flex-col items-center">
+    <h2 class="text-5xl font-bold mb-8">Estudios</h2>
+    <div class="flex flex-col gap-8 max-w-4xl w-full">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg flex items-center gap-4">
+            <img src="img/Enet.svg" class="w-12 h-12">
+            <p class="text-lg">Tecnicatura en electromecánica | Escuela Técnica N°1 de Coronel Pringles</p>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg flex items-center gap-4">
+            <img src="img/utn.svg" class="w-12 h-12">
+            <p class="text-lg">Tecnicatura en programación | Universidad Tecnológica Nacional.</p>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg flex items-center gap-4">
+            <img src="img/s21.svg" class="w-12 h-12">
+            <p class="text-lg">Administración de empresas | Universidad Siglo 21.</p>
+        </div>
+    </div>
+</section>
 
-        <section id="Cursos-Certificaciones" >
-            <div class ="card p-3 mb-3 shadow-sm">
-            <h2>Cursos y Certificaciones</h2>
-            <div class="cursos">
-                <li> <a href="https://codigofacilito.com/cursos/python-profesional" target= "_blank">Curso Python Profesional</a></li>  
-                <li><a href="https://codigofacilito.com/cursos/base-datos-profesional" target= "_blank">Curso Profesional de Base de Datos</a></li>
-            </div>
-            </div>
+<section id="Cursos-Certificaciones" class="bg-gray-900 text-white py-16 flex flex-col items-center">
+    <h2 class="text-5xl font-bold mb-8">Cursos y Certificaciones</h2>
+    <div class="max-w-4xl w-full">
+        <ul class="flex flex-col gap-6">
+            <li class="bg-gray-800 p-6 rounded-lg shadow-lg hover:scale-105 transition-all">
+                <a href="https://codigofacilito.com/cursos/python-profesional" target="_blank" class="text-lg font-semibold flex items-center gap-4">
+                    <img src="img/icons8-python.svg" class="w-12 h-12"> Curso Python Profesional
+                </a>
+            </li>
+            <li class="bg-gray-800 p-6 rounded-lg shadow-lg hover:scale-105 transition-all">
+                <a href="https://codigofacilito.com/cursos/base-datos-profesional" target="_blank" class="text-lg font-semibold flex items-center gap-4">
+                    <img src="img/icons8-mysql.svg" class="w-12 h-12"> Curso Profesional de Base de Datos
+                </a>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section id="Habilidades-personales" class="bg-gray-900 text-white py-16 flex flex-col items-center">
+    <h2 class="text-5xl font-bold mb-8">Habilidades Personales</h2>
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-4xl w-full text-center text-lg">
+        Me considero una persona organizada y responsable que puede trabajar en equipo, adaptarse a diferentes contextos y con muchas ganas de seguir aprendiendo y tener nuevas experiencias en el ámbito profesional.
+    </div>
+</section>
+
         
-        </section>
+        <section id="contacto" class="bg-gray-900 text-white py-16 flex flex-col items-center">
+            <h2 class="text-5xl font-bold mb-8">Contacto</h2>
+            <form action="https://formspree.io/f/xgvojgke" method="POST" class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
+            <label for="email" class="text-xl font-semibold mb-2">Tu email:</label>
+            <input type="email" name="email" id="email" placeholder="Ingrese su email" required 
+               class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-yellow-500 focus:ring-2 focus:ring-yellow-500">
 
-        <section id ="Habilidades-personales" >
-            <div class ="card p-3 mb-3 shadow-sm">
-            <h2>Habilidades Personales</h2>
-            <p>Me considero una persona organizada y responsable que puede trabajar en equipo, adaptarse a diferentes contextos y con muchas ganas de seguir aprendiendo y tener nuevas experiencias en el ámbito profesional.</p>
-            </div>
-        </section>
+            <label for="message" class="text-xl font-semibold mt-4 mb-2">Tu mensaje:</label>
+            <textarea name="message" id="message" placeholder="Escriba su mensaje aquí" required 
+                  class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-yellow-500 focus:ring-2 focus:ring-yellow-500"></textarea>
 
-        
-        <form id="contacto" action="https://formspree.io/f/xgvojgke" method="POST" class="contact-form">
-            <label for="email">Tu email:</label>
-            <input type="email" name="email" id="email" placeholder="Ingrese su email" required>
-
-            <label for="message">Tu mensaje:</label>
-            <textarea name="message" id="message" placeholder="Escriba su mensaje aqui" required></textarea>
-
-            <button type="submit">Enviar</button>
-        </form>
+            <button type="submit" class="mt-6 bg-yellow-600 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition-all w-full">
+            Enviar
+            </button>
+    </form>
+    </section>
         
 
     </main>
     <!-- </div>-->
     <!-- Sección de contacto -->
-    <footer>
-    
-        <section class="derechos-reservados">
-        <p>&copy; 2023 Mariano Young. Todos los derechos reservados.</p>
+    <footer class="bg-gray-900 text-gray-400 py-8 border-t border-gray-700 text-center">
+        <p class="text-lg">&copy; 2023 Mariano Young. Todos los derechos reservados.</p>
         <p>Este es un proyecto personal para aprender y experimentar con HTML y CSS.</p>
-        <p>Desarrollado por Mariano Young</p>
-        </section>
+        <p class="mt-2 font-semibold">Desarrollado por Mariano Young</p>
     </footer>
     
 <!-- Bootstrap Bundle with Popper -->
@@ -187,6 +191,8 @@
 
 <script src="js/main.js">  </script>
 <script src="js/sobre-mi.js">  </script>
+<script src="js/estudios.js">  </script>
+<script src="js/navbar.js">  </script>
 
 </body>
 
