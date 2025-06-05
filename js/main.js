@@ -1,37 +1,3 @@
-
-let proyectosVisibles = true;
-const botonOcultar = document.getElementById("mostrarProyectos") 
-    
-    
-
-const proyectos = [
-    {
-        nombre : "Sistema de Gestión de Stock y Compras - Comercio Mayorista", 
-        descripcion : "Este proyecto es una aplicación de consola en C++ desarrollada en Code::Blocks como parte del parcial de la materia Programación I en la Tecnicatura Universitaria en Programación de la UTN - Facultad Regional Trenque Lauquen, Extensión Aulica Coronel Pringles." ,
-        imagen : "img/proyectoCgestionMayorista.png",
-        lenguajes:  "C++",
-        index : "0",
-        link : "https://github.com/youngmariano99/sistema_gestion_mayorista.git"
-    },
-    {
-        nombre : "Gestión de Empleados y Productos",
-        descripcion : "Este sistema de escritorio permite la gestión de empleados y productos en un entorno de clínica, comercio u organización con roles diferenciados para administradores y trabajadores. Desarrollado en C# con Windows Forms y SQL Server como base de datos, sigue una arquitectura modular basada en bibliotecas de clases separadas para modelos, controladores, y acceso a datos.",
-        imagen : "img/proyectoGestionEmpleados.png",
-        lenguajes: "C#, WindowsForm, SqlServer",
-        index : "1",
-        link : "https://github.com/youngmariano99/gestion_empleados.git"
-    },
-    {
-        nombre : "Sistema de Gestión de Almacén (CLI)",
-        descripcion : "Este sistema CLI fue desarrollado como un proyecto personal con el propósito de aprender y practicar Python, bases de datos MySQL y el uso de Peewee como ORM. Es un trabajo en progreso, con algunas funcionalidades completas y otras en desarrollo.",
-        imagen : "img/proyectoPythonGestionAlmacenCLI.png",
-        lenguajes: "Python, MySQL, Peewee",
-        index : "2",
-        link : "https://github.com/youngmariano99/sistema_gestion_"
-    }
-];
-
-
 // CICLO FOR  PARA AGREGAR LOS PROYECTOS //  
 
 /*
@@ -58,87 +24,91 @@ const contenedor = document.getElementById ("proyectos");
     }
 */
 
-// FUNCIONES PARA AGREGAR PROYECTOS //
 
-//Esta función para armar las secciones//
-function generarHTMLproyecto(proyecto, index){ 
-    return `
-    <div class= "contenedor-proyectos">
-        <div class="card text-center">
-          <div class="card-header">
-            <ul class="nav nav-pills card-header-pills" id="pills-tab-${index}" role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" id="pills-home-tab-${index}" data-bs-toggle="pill" href="#pills-home-${index}" role="tab">Descripción</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="pills-profile-tab-${index}" data-bs-toggle="pill" href="#pills-profile-${index}" role="tab">Imagen del proyecto</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link"  href="${proyecto.link}" target= "_blank" >Repositorio Github</a>
-              </li>
-            </ul>
-          </div>
-          <div class="card-body">
-            <div class="tab-content" id="pills-tabContent-${index}">
-              <div class="tab-pane fade show active" id="pills-home-${index}" role="tabpanel">
-                <h5 class="card-title">${proyecto.nombre}</h5>
-                <p class="card-text">${proyecto.descripcion}</p>
-              </div>
-              <div class="tab-pane fade" id="pills-profile-${index}" role="tabpanel">
-                <img src ="${proyecto.imagen}" class="imagen-proyecto">
-                <p class="card-text">${proyecto.lenguajes}</p>
-              </div>
+const proyectos = [
+    {
+        nombre : "Sistema de Gestión de Stock y Compras - Comercio Mayorista",
+        descripcion : "Este proyecto es una aplicación de consola en C++...",
+        imagen : "img/proyectoCgestionMayorista.png",
+        lenguajes: "C++",
+        link : "https://github.com/youngmariano99/sistema_gestion_mayorista.git"
+    },
+    {
+        nombre : "Gestión de Empleados y Productos",
+        descripcion : "Este sistema de escritorio permite la gestión de empleados...",
+        imagen : "img/proyectoGestionEmpleados.png",
+        lenguajes: "C#, WindowsForm, SqlServer",
+        link : "https://github.com/youngmariano99/gestion_empleados.git"
+    },
+    {
+        nombre : "Sistema de Gestión de Almacén (CLI)",
+        descripcion : "Este sistema CLI fue desarrollado con el propósito de aprender Python...",
+        imagen : "img/proyectoPythonGestionAlmacenCLI.png",
+        lenguajes: "Python, MySQL, Peewee",
+        link : "https://github.com/youngmariano99/sistema_gestion_"
+    }
+];
+
+const contenedorProyectos = document.getElementById("contenedor-proyectos");
+const botonMostrar = document.getElementById("mostrarProyectos");
+let proyectosVisibles = false;
+
+// Función para mostrar proyectos
+function mostrarProyectos() {
+    contenedorProyectos.innerHTML = proyectos.map(proyecto => `
+        <div class="bg-gray-800 p-8 rounded-lg shadow-lg">
+            <h3 class="text-2xl font-semibold mb-2">${proyecto.nombre}</h3>
+            <p class="text-lg mb-4">${proyecto.descripcion}</p>
+
+            <!-- Pestañas -->
+            <div class="flex gap-4 mb-4">
+                <button class="tab-btn bg-blue-600 text-white px-4 py-2 rounded-lg" onclick="mostrarDescripcion('${proyecto.descripcion}')">Descripción</button>
+                <button class="tab-btn bg-blue-600 text-white px-4 py-2 rounded-lg" onclick="mostrarImagen('${proyecto.imagen}', event)">Imagen</button>
+                <a href="${proyecto.link}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-lg">Repositorio</a>
             </div>
-          </div>
+
+            <div class="tab-content text-center text-lg font-semibold"></div>
         </div>
-    </div>
-    `;
-}
+    `).join("");
 
-//Función para mostrar la sección//
-function mostrarProyectos(listaProyectos){
-
-    const contenedor = document.getElementById("proyectos")
-    contenedor.innerHTML = ""
-     listaProyectos.forEach(proyecto => {
-    contenedor.innerHTML += generarHTMLproyecto(proyecto, proyecto.index);
-  });
-    
-}
-
-function ocultarProyectos(){
-    const contenedor = document.getElementById("proyectos")
-    
-    contenedor.innerHTML = ""
+    contenedorProyectos.classList.remove("hidden");
 }
 
 
-//FUNCION PARA MOSTRAR PROYECTOS MEDIANTE EL DOM
-
-const botonMostrar = document.getElementById("mostrarProyectos")
-
-function mostrarProyectosEvento(){
-    mostrarProyectos(proyectos) 
-}
-
-function ocultarProyectosEvento(){
-    ocultarProyectos()
+// Función para ocultar proyectos
+function ocultarProyectos() {
+    contenedorProyectos.classList.remove("grid", "grid-cols-1", "md:grid-cols-2", "lg:grid-cols-3", "gap-8");
+    contenedorProyectos.classList.add("hidden");
 }
 
 
-
+// Cambio de estado del botón
 botonMostrar.addEventListener("click", function(){
-    if (proyectosVisibles){
-        mostrarProyectosEvento();
+    if (proyectosVisibles) {
+        ocultarProyectos();
+        botonMostrar.innerText = "Mostrar Proyectos";
         proyectosVisibles = false;
-        botonOcultar.innerText = "Ocultar proyectos"
-    }
-    else {
-        ocultarProyectosEvento();
+    } else {
+        mostrarProyectos();
+        botonMostrar.innerText = "Ocultar Proyectos";
         proyectosVisibles = true;
-        botonOcultar.innerText = "Mostrar proyectos"
-        
     }
-
-
 });
+
+// Función para mostrar descripción
+function mostrarDescripcion(descripcion) {
+    document.querySelector(".tab-content").innerHTML = `<p>${descripcion}</p>`;
+}
+
+// Función para mostrar imagen
+function mostrarImagen(imagen, event) {
+    const tarjeta = event.target.closest(".bg-gray-800"); // Encuentra la tarjeta del proyecto
+    const tabContent = tarjeta.querySelector(".tab-content"); // Busca el contenedor correcto dentro de esa tarjeta
+    tabContent.innerHTML = `<img src="${imagen}" class="w-full rounded-lg shadow-md">`;
+}
+
+
+
+
+
+

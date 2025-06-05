@@ -64,18 +64,20 @@
 
 
         .imagen-titulo{
-            display: flex;
+            
             align-items: center;
             justify-content: center;
+            
             gap: 20px; /* Espacio horizontal entre el nombre y la imagen */
             flex-wrap: wrap; /* Se adapta a pantallas más chicas */
             text-align: center; /* Centra el texto en pantallas pequeñas */
             
         }
         .texto-principal{
-            font-size: 1.0em;
+            font-size: 2.0em;
             color: #FFD43B;
-            
+            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+
         }
 
         .social-media {
