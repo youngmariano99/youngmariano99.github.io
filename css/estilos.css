@@ -44,22 +44,9 @@
         /* BODY */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--python-fondo);
             color: var(--python-texto);
-            
-            
-            
-        }
-       
-
-        /* HEADER */
-        header{
             background: linear-gradient(to bottom, #0c162d, #16233d);
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-            margin: 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
         }
 
 
