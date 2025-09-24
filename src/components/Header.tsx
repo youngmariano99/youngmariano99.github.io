@@ -1,5 +1,34 @@
+import { useEffect,useState } from "react";
+
+
 export default function Header() {
+
+   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
+
+   
+  useEffect(
+    () => {
+      const horaActual = new Date();
+      const horas = horaActual.getHours();
+
+      if(horas >= 6 && horas < 13) {
+        setMensajeBienvenida("Buenos días, bienvenido a mi portfolio");
+      }
+      else if(horas >= 13 && horas <= 20){
+          setMensajeBienvenida("Buenas tardes, bienvenido a mi portfolio");
+
+      }
+      else {
+          setMensajeBienvenida("Buenas noches, bienvenido a mi portfolio");
+
+      }
+    },
+  []);
+
+ 
   return (
+
+
     <header className="py-16 bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <section className="max-w-4xl mx-auto px-6 text-center">
         {/* Nombre y título */}
@@ -7,6 +36,8 @@ export default function Header() {
           <h1 className="text-5xl font-extrabold tracking-tight mb-4">
             Mariano Young
           </h1>
+          <h1 className="text-5xl font-extrabold tracking-tight mb-4">{mensajeBienvenida}</h1>
+          <br></br>
           <p className="text-xl text-gray-300">
             Desarrollador Backend | Estudiante en programación
           </p>
