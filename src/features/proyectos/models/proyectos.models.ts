@@ -1,13 +1,16 @@
-export type Proyecto = {
-  nombre: string;
-  descripcion: string;
-  imagen: string;
-  lenguajes: string[];
-  link: string;
-};
+interface Proyecto {
+    id: number,
+    nombre: string,
+    descripcion: string,
+    imagen: string,
+    lenguajes: Array<string>,
+    link: string
+  }
 
-export const Proyectos: Proyecto[] = [
+
+const Proyectos: Proyecto[] = [
   {
+    id: 1,
     nombre: "Sistema de Gestión de Stock y Compras - Comercio Mayorista",
     descripcion:
       "Este proyecto es una aplicación de consola en C++ desarrollada en Code::Blocks como parte del parcial de la materia Programación I en la Tecnicatura Universitaria en Programación de la UTN - Facultad Regional Trenque Lauquen, Extensión Aulica Coronel Pringles.",
@@ -16,6 +19,7 @@ export const Proyectos: Proyecto[] = [
     link: "https://github.com/youngmariano99/sistema_gestion_mayorista.git",
   },
   {
+    id: 2,
     nombre: "Gestión de Empleados y Productos",
     descripcion:
       "Este sistema de escritorio permite la gestión de empleados y productos en un entorno de clínica, comercio u organización con roles diferenciados para administradores y trabajadores. Desarrollado en C# con Windows Forms y SQL Server como base de datos, sigue una arquitectura modular basada en bibliotecas de clases separadas para modelos, controladores, y acceso a datos.",
@@ -24,6 +28,7 @@ export const Proyectos: Proyecto[] = [
     link: "https://github.com/youngmariano99/gestion_empleados.git",
   },
   {
+    id: 3,
     nombre: "Sistema de Gestión de Almacén (CLI)",
     descripcion:
       "Este sistema CLI fue desarrollado como un proyecto personal con el propósito de aprender y practicar Python, bases de datos MySQL y el uso de Peewee como ORM. Es un trabajo en progreso, con algunas funcionalidades completas y otras en desarrollo.",
@@ -32,3 +37,5 @@ export const Proyectos: Proyecto[] = [
     link: "https://github.com/youngmariano99/sistema_gestion_",
   },
 ];
+
+export default Proyectos

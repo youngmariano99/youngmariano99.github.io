@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { Proyectos } from '../data/Proyectos.ts';
+import { useState } from "react";
+import Proyectos from "../models/proyectos.models.ts";
+
+
 
 const ProyectosSection = () => {
   const [mostrarProyectos, setMostrarProyectos] = useState(false);
