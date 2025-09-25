@@ -36,6 +36,8 @@ const Proyectos: Proyecto[] = [
     lenguajes: ["Python", "MySQL", "Peewee"],
     link: "https://github.com/youngmariano99/sistema_gestion_",
   },
+  
+
 ];
 
 export default Proyectos

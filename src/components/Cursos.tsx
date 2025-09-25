@@ -27,6 +27,16 @@ export default function Cursos() {
               Profesional de Base de Datos
             </a>
           </li>
+          <li className="bg-gray-800 p-6 rounded-lg shadow-lg hover:scale-105 transition-all">
+            <a
+              href="https://www.udemy.com/course/desarrollando-aplicaciones-en-react-y-aspnet-core-v2/?couponCode=MT250923G1"
+              target="_blank"
+              className="text-lg font-semibold flex items-center gap-4"
+            >
+              <img src="/public/React-icon.png" className="w-12 h-12" /> Desarrollo de aplicaciones con react y aspnet core
+              <img src="/public/NET_Core_Logo.png" className="w-12 h-12" /> 
+            </a>
+          </li>
         </ul>
       </div>
     </section>
