@@ -7,23 +7,42 @@ import HabilidadesPersonales from "./components/HabilidadesPersonales";
 import Contacto from "./components/Contacto";
 import Footer from "./components/Footer";
 import ProyectosDinamicos from "./features/proyectos/componentes/ProyectosDinamicos";
+import { BrowserRouter, Routes } from "react-router";
+import { Route } from "react-router";
 
 function App() {
   return (
-    <>
-      <Header />
-      <main>
+    <BrowserRouter>
+      <>
         <Navbar />
-        <SobreMi />
-        <ProyectosDinamicos />
-        <Estudios />
-        <Cursos />
-        <HabilidadesPersonales />
-        <Contacto />
-      </main>
-      <Footer />
-    </>
+        <main>
+          <Routes>
+            
+            <Route
+              path="/"
+              element={
+                <>
+                  
+                  <Header />
+                  <SobreMi />
+                  <ProyectosDinamicos />
+                  <Estudios />
+                  <Cursos />
+                  <HabilidadesPersonales />
+                </>
+              }
+            />
+
+            <Route path="/contacto" element = { <Contacto />} />
+          </Routes>
+          
+         
+        </main>
+        <Footer />
+      </>
+    </BrowserRouter>
   );
 }
+
 
 export default App;
