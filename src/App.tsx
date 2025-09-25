@@ -22,17 +22,15 @@ function App() {
               path="/"
               element={
                 <>
-                  
                   <Header />
-                  <SobreMi />
                   <ProyectosDinamicos />
-                  <Estudios />
-                  <Cursos />
-                  <HabilidadesPersonales />
                 </>
               }
             />
-
+            <Route path="/habilidadespersonales" element = {<HabilidadesPersonales />} />
+            <Route path="/sobremi" element = { <SobreMi />} />
+            <Route path="/estudios" element = { <Estudios />} />
+            <Route path="/cursos" element = {  <Cursos />} />
             <Route path="/contacto" element = { <Contacto />} />
           </Routes>
           

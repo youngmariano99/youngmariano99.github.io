@@ -21,20 +21,24 @@ export default function Navbar() {
 
         {/* Menú en desktop */}
         <ul className="hidden lg:flex space-x-6">
-          <li><a className="hover:text-yellow-500 transition-all" href="#sobre-mi">Sobre mí</a></li>
-          <li><a className="hover:text-yellow-500 transition-all" href="#proyectos">Proyectos</a></li>
-          <li><a className="hover:text-yellow-500 transition-all" href="#estudios">Estudios</a></li>
-          <li><a className="hover:text-yellow-500 transition-all" href="#contacto">Contacto</a></li>
+          <li><NavLink to="/" className="block hover:text-yellow-500 transition-all" >Inicio</NavLink></li>
+          <li><NavLink to="/sobremi" className="block hover:text-yellow-500 transition-all" >Sobre mí</NavLink></li>
+          <li><NavLink to="/estudios" className="block hover:text-yellow-500 transition-all" >Estudios</NavLink></li>
+          <li><NavLink to="/cursos" className="block hover:text-yellow-500 transition-all" >Cursos</NavLink></li>
+          <li><NavLink to="/habilidadespersonales" className="block hover:text-yellow-500 transition-all" >Habilidades</NavLink></li>
+           <li><NavLink to="/contacto" className="block hover:text-yellow-500 transition-all" >Contacto</NavLink></li>
         </ul>
       </div>
 
       {/* Menú desplegable en mobile */}
       {isOpen && (
         <ul className="lg:hidden bg-gray-800 px-6 py-4 space-y-4">
-          <li><a className="block hover:text-yellow-500 transition-all" href="#sobre-mi">Sobre mí</a></li>
-          <li><a className="block hover:text-yellow-500 transition-all" href="#proyectos">Proyectos</a></li>
-          <li><a className="block hover:text-yellow-500 transition-all" href="#estudios">Estudios</a></li>
-          <li><NavLink to="/contacto" className="block hover:text-yellow-500 transition-all" >Contacto</NavLink></li>
+         <li><NavLink to="/" className="block hover:text-yellow-500 transition-all" >Inicio</NavLink></li>
+          <li><NavLink to="/sobremi" className="block hover:text-yellow-500 transition-all" >Sobre mí</NavLink></li>
+          <li><NavLink to="/estudios" className="block hover:text-yellow-500 transition-all" >Estudios</NavLink></li>
+          <li><NavLink to="/cursos" className="block hover:text-yellow-500 transition-all" >Cursos</NavLink></li>
+          <li><NavLink to="/habilidadespersonales" className="block hover:text-yellow-500 transition-all" >Habilidades</NavLink></li>
+           <li><NavLink to="/contacto" className="block hover:text-yellow-500 transition-all" >Contacto</NavLink></li>
         </ul>
       )}
     </nav>
