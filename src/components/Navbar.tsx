@@ -1,45 +1,129 @@
-import { useState } from "react";
-import { NavLink } from "react-router";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("inicio");
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  return (
-    <nav className="fixed top-0 left-0 w-full bg-gray-900 text-white py-4 shadow-md z-50">
-      <div className="container mx-auto flex justify-between items-center px-6">
-        <NavLink to="/" className="text-2xl font-bold">Portfolio</NavLink>
+  const menuItems = [
+    { name: "Inicio", href: "#inicio" },
+    { name: "Proyectos", href: "#proyectos" },
+    { name: "Sobre mí", href: "#sobre-mi" },
+    { name: "Habilidades", href: "#habilidades" },
+    { name: "Formación", href: "#formacion" },
+    { name: "Contacto", href: "#contacto" }
+  ];
 
-        {/* Botón hamburguesa */}
+  const handleClick = (href: string) => {
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsOpen(false);
+  };
+
+  // Detectar sección activa al hacer scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['inicio', 'proyectos', 'sobre-mi', 'habilidades', 'formacion', 'contacto'];
+      const scrollY = window.scrollY + 100;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element && scrollY >= element.offsetTop && scrollY < element.offsetTop + element.offsetHeight) {
+          setActiveSection(section);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <nav className="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-xl text-gray-900 py-6 shadow-sm border-b border-gray-100 z-50">
+      <div className="container mx-auto flex justify-between items-center px-8">
+        <a 
+          href="#inicio" 
+          onClick={(e) => {
+            e.preventDefault();
+            handleClick('#inicio');
+          }}
+          className="text-xl font-light text-gray-900 hover:text-gray-600 transition-colors duration-300"
+        >
+          Mariano Young
+        </a>
+
+        {/* Botón hamburguesa minimalista */}
         <button
-          className="lg:hidden text-white text-3xl focus:outline-none"
+          className="lg:hidden text-gray-900 focus:outline-none p-2 hover:bg-gray-50 transition-colors duration-300"
           onClick={toggleMenu}
         >
-          &#9776;
+          <div className="w-6 h-6 flex flex-col justify-center space-y-1">
+            <div className={`w-5 h-0.5 bg-gray-900 transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-1.5' : ''}`}></div>
+            <div className={`w-5 h-0.5 bg-gray-900 transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`}></div>
+            <div className={`w-5 h-0.5 bg-gray-900 transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+          </div>
         </button>
 
-        {/* Menú en desktop */}
-        <ul className="hidden lg:flex space-x-6">
-          <li><NavLink to="/" className="block hover:text-yellow-500 transition-all" >Inicio</NavLink></li>
-          <li><NavLink to="/sobremi" className="block hover:text-yellow-500 transition-all" >Sobre mí</NavLink></li>
-          <li><NavLink to="/estudios" className="block hover:text-yellow-500 transition-all" >Estudios</NavLink></li>
-          <li><NavLink to="/cursos" className="block hover:text-yellow-500 transition-all" >Cursos</NavLink></li>
-          <li><NavLink to="/habilidadespersonales" className="block hover:text-yellow-500 transition-all" >Habilidades</NavLink></li>
-           <li><NavLink to="/contacto" className="block hover:text-yellow-500 transition-all" >Contacto</NavLink></li>
+        {/* Menú en desktop minimalista */}
+        <ul className="hidden lg:flex space-x-8">
+          {menuItems.map((item) => {
+            const isActive = activeSection === item.href.replace('#', '');
+            return (
+              <li key={item.name}>
+                <a
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleClick(item.href);
+                  }}
+                  className={`block py-2 text-sm font-light tracking-wide transition-all duration-300 relative ${
+                    isActive 
+                      ? 'text-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {item.name}
+                  {isActive && (
+                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900"></div>
+                  )}
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
-      {/* Menú desplegable en mobile */}
+      {/* Menú desplegable en mobile minimalista */}
       {isOpen && (
-        <ul className="lg:hidden bg-gray-800 px-6 py-4 space-y-4">
-         <li><NavLink to="/" className="block hover:text-yellow-500 transition-all" >Inicio</NavLink></li>
-          <li><NavLink to="/sobremi" className="block hover:text-yellow-500 transition-all" >Sobre mí</NavLink></li>
-          <li><NavLink to="/estudios" className="block hover:text-yellow-500 transition-all" >Estudios</NavLink></li>
-          <li><NavLink to="/cursos" className="block hover:text-yellow-500 transition-all" >Cursos</NavLink></li>
-          <li><NavLink to="/habilidadespersonales" className="block hover:text-yellow-500 transition-all" >Habilidades</NavLink></li>
-           <li><NavLink to="/contacto" className="block hover:text-yellow-500 transition-all" >Contacto</NavLink></li>
-        </ul>
+        <div className="lg:hidden bg-white/98 backdrop-blur-xl border-t border-gray-100 shadow-lg">
+          <ul className="px-8 py-6 space-y-4">
+            {menuItems.map((item) => {
+              const isActive = activeSection === item.href.replace('#', '');
+              return (
+                <li key={item.name}>
+                  <a
+                    href={item.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleClick(item.href);
+                    }}
+                    className={`block py-3 text-sm font-light tracking-wide transition-all duration-300 ${
+                      isActive 
+                        ? 'text-gray-900' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    {item.name}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
     </nav>
   );

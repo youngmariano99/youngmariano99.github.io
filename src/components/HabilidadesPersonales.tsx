@@ -1,49 +1,49 @@
 export default function HabilidadesPersonales() {
   return (
-    <section
-      id="Habilidades-personales"
-      className="bg-gradient-to-br from-gray-900 to-gray-800 text-white px-4 sm:px-6 lg:px-8 py-16 flex flex-col justify-center items-center min-h-screen"
-    >
-      {/* Elementos decorativos de fondo */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-yellow-400/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-yellow-400/5 rounded-full blur-3xl"></div>
+    <section className="max-w-6xl mx-auto">
+      {/* Encabezado */}
+      <div className="text-center mb-20" data-aos="fade-up">
+        <div className="mb-8" data-aos="fade-up" data-aos-delay="200">
+          <span className="text-sm text-gray-500 font-light tracking-widest uppercase">
+            Habilidades
+          </span>
+        </div>
+        <h2 className="text-6xl md:text-8xl font-light text-gray-900 mb-8 leading-none tracking-tight" data-aos="fade-up" data-aos-delay="400">
+          Habilidades Personales
+        </h2>
+        <div className="w-24 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-12" data-aos="fade-up" data-aos-delay="600"></div>
+      </div>
+
+      {/* Descripción */}
+      <div className="text-center mb-16" data-aos="fade-up" data-aos-delay="800">
+        <p className="text-xl text-gray-600 font-light leading-relaxed max-w-3xl mx-auto">
+          Me considero una persona <span className="font-medium text-gray-900">organizada</span> y{" "}
+          <span className="font-medium text-gray-900">responsable</span>, capaz de trabajar en equipo, 
+          adaptarme a diferentes contextos y con muchas ganas de seguir aprendiendo.
+        </p>
       </div>
       
-      <div className="max-w-4xl w-full text-center relative z-10 mt-16">
-        <h2 className="text-4xl sm:text-5xl font-bold mb-6 sm:mb-8 relative inline-block">
-          Habilidades Personales
-          <span className="absolute -bottom-2 left-1/4 w-1/2 h-1 bg-yellow-400 rounded-full"></span>
-        </h2>
-
-        <div className="bg-gray-800/80 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-700 text-base sm:text-lg leading-relaxed mb-8">
-          <p className="text-lg">
-            Me considero una persona{" "}
-            <span className="text-yellow-400 font-semibold">organizada</span> y{" "}
-            <span className="text-yellow-400 font-semibold">responsable</span>, capaz de trabajar en equipo, adaptarme a diferentes contextos y con muchas ganas de seguir aprendiendo y tener nuevas experiencias en el ámbito profesional.
-          </p>
-        </div>
-        
-        {/* Tarjetas de habilidades */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          {[
-            { title: "Trabajo en equipo", icon: "👥", desc: "Colaboración efectiva en grupos" },
-            { title: "Adaptabilidad", icon: "🔄", desc: "Ajuste rápido a cambios" },
-            { title: "Aprendizaje continuo", icon: "📚", desc: "Actualización constante" },
-            { title: "Comunicación", icon: "💬", desc: "Expresión clara y efectiva" },
-            { title: "Resolución de problemas", icon: "💡", desc: "Análisis y solución creativa" },
-            { title: "Proactividad", icon: "⚡", desc: "Iniciativa y anticipación" }
-          ].map((skill, index) => (
-            <div 
-              key={index}
-              className="bg-gray-800/70 backdrop-blur-sm p-5 rounded-lg border border-gray-700 hover:border-yellow-400/30 transition-all duration-300 hover:transform hover:scale-105"
-            >
-              <div className="text-3xl mb-3">{skill.icon}</div>
-              <h3 className="font-semibold text-yellow-400 text-lg mb-2">{skill.title}</h3>
-              <p className="text-gray-300 text-sm">{skill.desc}</p>
-            </div>
-          ))}
-        </div>
+      {/* Tarjetas de habilidades */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[
+          { title: "Trabajo en equipo", desc: "Colaboración efectiva en grupos" },
+          { title: "Adaptabilidad", desc: "Ajuste rápido a cambios" },
+          { title: "Aprendizaje continuo", desc: "Actualización constante" },
+          { title: "Comunicación", desc: "Expresión clara y efectiva" },
+          { title: "Resolución de problemas", desc: "Análisis y solución creativa" },
+          { title: "Proactividad", desc: "Iniciativa y anticipación" }
+        ].map((skill, index) => (
+          <div 
+            key={index}
+            className="bg-white p-8 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+            data-aos="fade-up"
+            data-aos-delay={200 + (index * 100)}
+          >
+            {/* <div className="text-4xl mb-4">{skill.icon}</div> */}
+            <h3 className="text-xl font-light text-gray-900 mb-3">{skill.title}</h3>
+            <p className="text-gray-600 font-light">{skill.desc}</p>
+          </div>
+        ))}
       </div>
     </section>
   );

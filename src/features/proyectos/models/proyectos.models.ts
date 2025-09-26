@@ -36,6 +36,15 @@ const Proyectos: Proyecto[] = [
     lenguajes: ["Python", "MySQL", "Peewee"],
     link: "https://github.com/youngmariano99/sistema_gestion_",
   },
+   {
+    id: 4,
+    nombre: "Sistema de gestión empleados y productos",
+    descripcion:
+      "Este proyecto fue realizado durante la carrera de tecnicatura en programación, para aprender conceptos tanto de backend con POO y conexión a base de datos y front con HTML y Tailwinds.",
+    imagen: "public/sistemaGestionWebForm.png",
+    lenguajes: ["C#", "SQLServer", "HTML", "Tailwinds"],
+    link: "https://github.com/youngmariano99/SistemaGestionWebForm.git",
+  },
   
 
 ];
