@@ -3,6 +3,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import ParallaxBackground from './ParallaxBackground';
 import TypedText from './TypedText';
+import { NavLink } from "react-router";
 
 export default function Header() {
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
@@ -51,9 +52,9 @@ export default function Header() {
 
         {/* Nombre con tipografía elegante */}
         <div className="mb-20" data-aos="fade-up" data-aos-delay="400">
-          <h1 className="text-7xl md:text-9xl font-light text-gray-900 mb-8 leading-none tracking-tight">
+          <NavLink to="/" className="text-7xl md:text-9xl font-light text-gray-900 mb-8 leading-none tracking-tight">
             Mariano Young
-          </h1>
+          </NavLink>
           <div className="w-24 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-8"></div>
           <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-light">
             <TypedText 
