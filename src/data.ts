@@ -25,6 +25,7 @@ export const whatsappHref = (message: string) =>
 export const navItems: NavItem[] = [
   { label: "El Viaje", href: "#viaje" },
   { label: "Fundador", href: "#autoridad" },
+  { label: "Contacto", href: "#contacto" },
 ];
 
 // --- SHOWCASE DE PROYECTOS (Flip Cards) ---

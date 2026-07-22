@@ -4,6 +4,6 @@
 
 body {
   font-family: "Inter", sans-serif;
-  /* respaldo del fondo fijo (SpaceBackground) para evitar flashes claros */
+  /* respaldo del fondo fijo (NeuralCanvas) para evitar flashes claros */
   background-color: #000000;
 }

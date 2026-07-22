@@ -19,6 +19,7 @@ import {
 } from "../data";
 import { MagneticButton } from "./shared/MagneticButton";
 import ScrollLaptop from "./ScrollLaptop";
+import PathStars from "./PathStars";
 
 /* ------------------------------------------------------------------ */
 /* EL MUNDO: mapa serpenteante en coordenadas % sobre un lienzo         */
@@ -44,29 +45,11 @@ const END = { x: 50, y: 99 }; // cierre, vuelve al centro
 const JOURNEY_NODES = [START, N1, N2, N3, P1, P2, P3];
 
 /*
- * La ruta se dibuja como una cadena de curvas cúbicas S: cada tramo nace
- * y llega con tangente vertical (los puntos de control comparten la "y"
- * del punto medio). Eso logra dos cosas a la vez:
- *  1) esquinas redondeadas, orgánicas — nada de ángulos de 90°.
- *  2) en cada nodo la línea pasa EXACTAMENTE vertical por su propio eje x,
- *     así nunca invade el lado libre donde vive el texto/laptop.
+ * El recorrido usa la misma curva S (tangente vertical en cada nodo, sin
+ * ángulos de 90°) que antes se dibujaba como trazo — ahora en cambio se
+ * puebla de estrellas (ver <PathStars>): el camino se "lee" porque esos
+ * puntos brillan más que el resto del campo, no porque haya una línea.
  */
-function buildSmoothPath(
-  points: { x: number; y: number }[],
-  toPx: (p: { x: number; y: number }) => { x: number; y: number }
-) {
-  if (points.length === 0) return "";
-  const p0 = toPx(points[0]);
-  let d = `M ${p0.x.toFixed(1)} ${p0.y.toFixed(1)}`;
-  for (let i = 1; i < points.length; i++) {
-    const a = toPx(points[i - 1]);
-    const b = toPx(points[i]);
-    const midY = ((a.y + b.y) / 2).toFixed(1);
-    d += ` C ${a.x.toFixed(1)} ${midY}, ${b.x.toFixed(1)} ${midY}, ${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
-  }
-  return d;
-}
-
 const ROUTE = [START, N1, N2, N3, P1, P2, P3, END];
 
 /* ------------------------------------------------------------------ */
@@ -148,16 +131,15 @@ function WorldNode({ node }: { node: { x: number; y: number } }) {
       style={{ left: `${node.x}%`, top: `${node.y}%` }}
     >
       <motion.span
-        className="absolute inset-0 -m-2 rounded-full border border-[#10B981]/35"
-        animate={{ scale: [1, 1.8], opacity: [0.5, 0] }}
+        className="absolute inset-0 -m-3 rounded-full border border-[#10B981]/30"
+        animate={{ scale: [1, 2], opacity: [0.5, 0] }}
         transition={{ duration: 2.6, ease: "easeOut", repeat: Infinity }}
       />
-      <span className="relative flex h-7 w-7 items-center justify-center rounded-full border border-[#10B981]/60 bg-black">
-        <span
-          className="h-1.5 w-1.5 rounded-full bg-[#10B981]"
-          style={{ boxShadow: "0 0 10px rgba(16,185,129,0.55)" }}
-        />
-      </span>
+      {/* una estrella particularmente brillante, no un ícono de UI */}
+      <span
+        className="relative block h-2 w-2 rounded-full bg-white"
+        style={{ boxShadow: "0 0 4px 1px #fff, 0 0 16px 4px rgba(16,185,129,0.9)" }}
+      />
     </div>
   );
 }
@@ -179,7 +161,7 @@ function CenterOverlay({
       style={{ opacity, y }}
       className="pointer-events-none absolute inset-x-6 bottom-[58%] z-10 flex justify-center text-center md:bottom-[56%]"
     >
-      <div className="max-w-md">
+      <div className="max-w-md rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl shadow-black/50 backdrop-blur-md md:p-7">
         <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
           {phase.kicker}
         </span>
@@ -217,7 +199,7 @@ function StoryOverlay({
           : "left-6 right-6 md:left-[4%] md:right-[64%] md:justify-end md:text-right"
       }`}
     >
-      <div className="max-w-md">
+      <div className="max-w-md rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl shadow-black/50 backdrop-blur-md md:p-7">
         <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
           {phase.kicker}
         </span>
@@ -262,7 +244,7 @@ function ProjectOverlay({
       <div className="flex w-full max-w-[480px] flex-col items-start gap-6">
         <ScrollLaptop project={project} lid={lid} />
 
-        <div className="w-full rounded-xl border border-white/10 bg-black/60 p-6 backdrop-blur-md">
+        <div className="w-full rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl shadow-black/50 backdrop-blur-md">
           <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
             {project.nombre} — {project.tagline}
           </span>
@@ -312,7 +294,6 @@ export default function JourneyExperience() {
     x: (p.x / 100) * size.w,
     y: (p.y / 100) * size.h,
   });
-  const pathD = buildSmoothPath(ROUTE, toPx);
 
   /* Cámara amortiguada: springs sobre valores numéricos, % al final */
   const xRaw = useTransform(scrollYProgress, CAM_T, CAM_X);
@@ -343,27 +324,7 @@ export default function JourneyExperience() {
           style={{ x: camX, y: camY, scale: camScale, originX: 0, originY: 0 }}
         >
           {size.w > 0 && (
-            <svg
-              viewBox={`0 0 ${size.w} ${size.h}`}
-              className="absolute inset-0 h-full w-full"
-              aria-hidden="true"
-            >
-              <path
-                d={pathD}
-                fill="none"
-                stroke="rgba(255,255,255,0.07)"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <motion.path
-                d={pathD}
-                fill="none"
-                stroke="#10B981"
-                strokeWidth="2"
-                strokeLinecap="round"
-                style={{ pathLength: draw }}
-              />
-            </svg>
+            <PathStars points={ROUTE} toPx={toPx} draw={draw} width={size.w} height={size.h} />
           )}
 
           {JOURNEY_NODES.map((node, i) => (
