@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Inter", sans-serif;
+  /* respaldo del fondo fijo (SpaceBackground) para evitar flashes claros */
+  background-color: #000000;
+}
