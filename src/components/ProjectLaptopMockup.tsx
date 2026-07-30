@@ -1,7 +1,62 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, useTransform, type MotionValue } from "framer-motion";
-import type { ProjectCard } from "../data";
+import type { Project } from "../projectsData";
+
+// Login ~2s, Dashboard ~5s — se alternan indefinidamente.
+const CROSSFADE_DURATIONS_MS = [2000, 5000];
+
+function LaptopScreenContent({ project }: { project: Project }) {
+  const { animationType, images, title } = project;
+  const [activeImage, setActiveImage] = useState(0);
+
+  useEffect(() => {
+    if (animationType !== "crossfade" || images.length < 2) return;
+    const duration = CROSSFADE_DURATIONS_MS[activeImage % CROSSFADE_DURATIONS_MS.length];
+    const timer = setTimeout(() => {
+      setActiveImage((i) => (i + 1) % images.length);
+    }, duration);
+    return () => clearTimeout(timer);
+  }, [animationType, images.length, activeImage]);
+
+  if (animationType === "crossfade") {
+    return (
+      <div className="absolute inset-0">
+        {images.map((src, i) => (
+          <motion.img
+            key={src}
+            src={src}
+            alt={`${title} — pantalla ${i + 1}`}
+            className="absolute inset-0 h-full w-full object-cover object-top"
+            animate={{ opacity: i === activeImage ? 1 : 0 }}
+            transition={{ duration: 0.9, ease: "easeInOut" }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // scroll: imagen vertical larga que recorre el viewport de la laptop,
+  // simulando a alguien navegando el sitio — sube, hace una pausa, y
+  // regresa pausadamente, en loop.
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <motion.img
+        src={images[0]}
+        alt={title}
+        className="absolute left-0 top-0 w-full"
+        animate={{ y: ["0%", "0%", "-75%", "-75%", "0%"] }}
+        transition={{
+          duration: 12,
+          times: [0, 0.12, 0.5, 0.62, 1],
+          ease: "easeInOut",
+          repeat: Infinity,
+        }}
+      />
+    </div>
+  );
+}
 
 /*
  * Laptop 3D controlada por scroll — render de alta fidelidad.
@@ -9,18 +64,18 @@ import type { ProjectCard } from "../data";
  * El padre lo deriva de scrollYProgress (con spring) y lo pasa como
  * MotionValue, así este componente queda 100% presentacional.
  */
-export default function ScrollLaptop({
+export default function ProjectLaptopMockup({
   project,
   lid,
 }: {
-  project: ProjectCard;
+  project: Project;
   lid: MotionValue<number>;
 }) {
   // La pantalla "enciende" a medida que se abre la tapa
   const screenGlow = useTransform(lid, [-75, -12], [0, 1]);
 
   return (
-    <div className="w-full max-w-[320px] [perspective:1600px] md:max-w-[460px]">
+    <div className="w-full max-w-[320px] [perspective:1600px] md:max-w-[420px]">
       <div className="[transform-style:preserve-3d]" style={{ transform: "rotateX(8deg)" }}>
         {/* TAPA / PANTALLA — bisel negro estilo MacBook, gira sobre su borde inferior */}
         <motion.div
@@ -30,33 +85,30 @@ export default function ScrollLaptop({
           {/* cámara del equipo */}
           <span className="absolute left-1/2 top-[1.8%] z-10 h-1 w-1 -translate-x-1/2 rounded-full bg-white/30" />
 
-          {/* pantalla dentro del bisel: reemplazar el placeholder por
-              <img src={project.imagen} alt={project.nombre} className="h-full w-full object-cover" /> */}
           <motion.div
             style={{ opacity: screenGlow }}
             className="relative h-full w-full overflow-hidden rounded-lg bg-gradient-to-br from-[#111A2C] via-[#0C1322] to-[#090E1A]"
           >
             <div className="flex h-full flex-col">
-              <div className="flex items-center gap-1.5 border-b border-white/[0.07] bg-black/30 px-3 py-1.5">
+              <div className="relative z-10 flex items-center gap-1.5 border-b border-white/[0.07] bg-black/40 px-3 py-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#FF5F57]/70" />
                 <span className="h-1.5 w-1.5 rounded-full bg-[#FEBC2E]/70" />
                 <span className="h-1.5 w-1.5 rounded-full bg-[#28C840]/70" />
                 <span className="ml-2 text-[9px] font-medium tracking-wide text-white/40">
-                  {project.nombre}
+                  {project.title.toLowerCase()}.nodexa.app
                 </span>
               </div>
-              <div className="flex flex-1 items-center justify-center">
-                <span className="px-4 text-center text-[9px] font-medium uppercase tracking-[0.25em] text-white/30">
-                  Captura — {project.tagline}
-                </span>
+
+              <div className="relative flex-1 overflow-hidden">
+                <LaptopScreenContent project={project} />
               </div>
             </div>
 
             {/* brillo glass sobre el vidrio de la pantalla */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.09]" />
+            <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.09]" />
             {/* resplandor emerald sutil desde abajo */}
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-1/3"
               style={{
                 background:
                   "radial-gradient(ellipse 80% 100% at 50% 100%, rgba(16,185,129,0.08), transparent 70%)",

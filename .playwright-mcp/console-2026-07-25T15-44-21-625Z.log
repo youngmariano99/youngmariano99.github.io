@@ -1,0 +1,131 @@
+[     234ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:21550
+[     349ms] [WARNING] Please ensure that the container has a non-static position, like 'relative', 'fixed', or 'absolute' to ensure scroll offset is calculated correctly. @ http://localhost:5173/node_modules/.vite/deps/framer-motion.js?v=07d41a64:695
+[  455415ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994716505:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994716505:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14582:28)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15924:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3674:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3699:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3733:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19765:15)
+[  455417ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994716505:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994716505:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14582:28)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15924:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3674:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3699:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3733:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19765:15)
+[  455435ms] [ERROR] The above error occurred in the <HeroHub> component:
+
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994716505:213:19)
+    at main
+    at div
+    at SmoothScrollProvider (http://localhost:5173/src/lib/SmoothScroll.tsx:32:48)
+    at NodexaLanding (http://localhost:5173/src/NodexaLanding.tsx?t=1784994189830:31:37)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14031
+[  455480ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994716505:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994716505:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14582:28)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15924:22)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19753:22)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19198:20)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19137:13)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19116:15)
+[  464313ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994725671:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994725671:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14926:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15914:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3674:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3699:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3733:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19765:15)
+[  464365ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994725671:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994725671:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14926:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15914:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3674:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3699:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3733:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19765:15)
+[  464412ms] [ERROR] The above error occurred in the <HeroHub> component:
+
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994725671:213:19)
+    at main
+    at div
+    at SmoothScrollProvider (http://localhost:5173/src/lib/SmoothScroll.tsx:32:48)
+    at NodexaLanding (http://localhost:5173/src/NodexaLanding.tsx?t=1784994189830:31:37)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14031
+[  464415ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994725671:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994725671:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14926:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15914:22)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19753:22)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19198:20)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19137:13)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19116:15)
+[  472416ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994733820:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994733820:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14926:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15914:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3674:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3699:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3733:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19765:15)
+[  472512ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994733820:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994733820:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14926:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15914:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3674:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3699:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:3733:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19765:15)
+[  472546ms] [ERROR] The above error occurred in the <HeroHub> component:
+
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994733820:213:19)
+    at main
+    at div
+    at SmoothScrollProvider (http://localhost:5173/src/lib/SmoothScroll.tsx:32:48)
+    at NodexaLanding (http://localhost:5173/src/NodexaLanding.tsx?t=1784994189830:31:37)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14031
+[  472555ms] ReferenceError: STAT_POSITIONS is not defined
+    at http://localhost:5173/src/components/HeroHub.tsx?t=1784994733820:219:124
+    at Array.map (<anonymous>)
+    at HeroHub (http://localhost:5173/src/components/HeroHub.tsx?t=1784994733820:213:19)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:11548:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:14926:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:15914:22)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19753:22)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19198:20)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19137:13)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/chunk-NUMECXU6.js?v=07d41a64:19116:15)

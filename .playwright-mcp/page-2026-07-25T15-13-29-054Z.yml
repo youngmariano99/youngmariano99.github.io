@@ -1,0 +1,174 @@
+- generic [ref=f1e3]:
+  - button "Abrir menú" [ref=f1e4] [cursor=pointer]
+  - main [ref=f1e8]:
+    - generic [ref=f1e9]:
+      - generic [ref=f1e10]:
+        - generic [ref=f1e11]: NODEXΛ
+        - generic [ref=f1e12]: Estructura · Datos · Resultados
+      - generic [ref=f1e14]:
+        - generic [ref=f1e15]:
+          - generic [ref=f1e16]: Estructura. Datos. Resultados.
+          - heading "Organizamos tu negocio para que trabajes mejor y tomes decisiones con claridad." [level=1] [ref=f1e17]:
+            - generic [ref=f1e18]: Organizamos tu negocio
+            - generic [ref=f1e19]: para que trabajes mejor
+            - generic [ref=f1e20]: y tomes decisiones con
+            - generic [ref=f1e21]: claridad.
+          - paragraph [ref=f1e22]: Ayudamos a comercios y empresas a ordenar sus procesos, centralizar su información y transformar datos en resultados reales.
+          - generic [ref=f1e23]:
+            - generic [ref=f1e27]:
+              - generic [ref=f1e28]: Más control
+              - generic [ref=f1e29]: de tu negocio
+            - generic [ref=f1e35]:
+              - generic [ref=f1e36]: Procesos claros
+              - generic [ref=f1e37]: y eficientes
+            - generic [ref=f1e43]:
+              - generic [ref=f1e44]: Decisiones
+              - generic [ref=f1e45]: con datos
+        - img "Nodexa — dashboard de gestión en una laptop" [ref=f1e48]
+    - generic [ref=f1e50]:
+      - generic:
+        - generic:
+          - heading "Todo comienza escuchándote." [level=2]
+          - paragraph: Cada gran cambio empieza con una charla. Contanos qué le falta o qué frena a tu negocio hoy y trazamos el camino.
+          - link "Contanos tu caso →" [ref=f1e73] [cursor=pointer]:
+            - /url: https://wa.me/2923511691?text=Hola%2C%20quiero%20contarte%20cu%C3%A1l%20es%20mi%20caso%20para%20ver%20c%C3%B3mo%20Nodexa%20puede%20ayudarme.
+      - generic:
+        - generic:
+          - heading "01 — Identificamos la falla real." [level=2]
+          - paragraph: "Analizamos a fondo lo que le pasa a tu negocio: falta de automatización, dificultad para llegar a nuevos clientes o pérdidas de dinero invisibles."
+          - link "Agendar consulta gratuita →" [ref=f1e75] [cursor=pointer]:
+            - /url: https://wa.me/2923511691?text=Hola%2C%20quiero%20agendar%20una%20consulta%20gratuita%20para%20ver%20qu%C3%A9%20le%20pasa%20a%20mi%20negocio.
+      - generic:
+        - generic:
+          - heading "02 — Unimos los puntos clave." [level=2]
+          - paragraph: No nos quedamos con lo primero que nos contás. Conectamos la información de tus ventas, stock y tareas diarias para diseñar la solución exacta a tu medida.
+      - generic:
+        - generic:
+          - heading "03 — Una herramienta que resuelve (y evoluciona)." [level=2]
+          - paragraph: Te entregamos un sistema simple y listo para usar. Y cuando tu negocio crezca, seguimos a tu lado para adaptarlo y actualizarlo.
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: argoot.nodexa.app
+                    - generic:
+                      - generic:
+                        - img "Argoot"
+        - generic:
+          - generic:
+            - generic: Argoot — Marketplace de servicios
+            - generic:
+              - generic:
+                - text: El Problema
+                - paragraph: Desconexión entre profesionales de la construcción y clientes que requerían contrataciones confiables.
+              - generic:
+                - text: La Solución Nodexa
+                - paragraph: Plataforma marketplace donde los profesionales exponen su trabajo y los clientes pueden descubrirlos, solicitar servicios y valorarlos.
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: filomena.nodexa.app
+                    - generic:
+                      - generic:
+                        - img "Filomena"
+        - generic:
+          - generic:
+            - generic: Filomena — Catálogo Online
+            - generic:
+              - generic:
+                - text: El Problema
+                - paragraph: Carecían de un canal digital propio, lo que les impedía llegar a clientes acostumbrados a comprar por internet de forma rápida.
+              - generic:
+                - text: La Solución Nodexa
+                - paragraph: Catálogo digital 100% personalizado que permite a los clientes explorar productos y realizar pedidos al instante desde cualquier dispositivo.
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: la leñera.nodexa.app
+                    - generic:
+                      - generic:
+                        - img "La Leñera — pantalla 1"
+                        - img "La Leñera — pantalla 2"
+        - generic:
+          - generic:
+            - generic: La Leñera — Sistema de gestión y repartos
+            - generic:
+              - generic:
+                - text: El Problema
+                - paragraph: Registros manuales en papel que generaban confusión en los pedidos, pérdidas financieras y roces en la atención al cliente.
+              - generic:
+                - text: La Solución Nodexa
+                - paragraph: Sistema integral que centraliza finanzas, control de pedidos, stock, rutas de reparto, cuentas corrientes y punto de venta (POS).
+      - generic:
+        - generic:
+          - heading "¿Te gustaría ser parte de los negocios que ya recuperaron su tranquilidad con NODEXA?" [level=2]
+          - link "Agendar charla sin compromiso":
+            - /url: https://wa.me/2923511691?text=Hola%2C%20quiero%20agendar%20una%20charla%20sin%20compromiso%20para%20ver%20c%C3%B3mo%20Nodexa%20puede%20ayudar%20a%20mi%20negocio.
+    - generic [ref=f1e77]:
+      - generic [ref=f1e78]:
+        - generic [ref=f1e79]: Arquitectura de Soluciones
+        - heading "Cómo podemos ayudarte — Soluciones simples a problemas reales" [level=2] [ref=f1e80]
+      - generic [ref=f1e84]:
+        - generic [ref=f1e85]:
+          - button "01 Sistemas a medida" [pressed] [ref=f1e86] [cursor=pointer]:
+            - generic [ref=f1e87]: "01"
+            - generic [ref=f1e91]: Sistemas a medida
+          - button "02 Mini-módulos" [ref=f1e92] [cursor=pointer]:
+            - generic [ref=f1e93]: "02"
+            - generic [ref=f1e96]: Mini-módulos
+          - button "03 Asesoramiento" [ref=f1e97] [cursor=pointer]:
+            - generic [ref=f1e98]: "03"
+            - generic [ref=f1e101]: Asesoramiento
+        - generic [ref=f1e102]:
+          - generic [ref=f1e103]: nodexa — servicio 01
+          - generic [ref=f1e108]:
+            - text: "01"
+            - heading "Sistemas a medida" [level=3] [ref=f1e109]
+            - paragraph [ref=f1e110]: Te escuchamos, entendemos tu problema operativo y te devolvemos una herramienta diseñada exactamente a la medida de tu negocio para resolverlo de raíz.
+            - link "Quiero sistemas a medida →" [ref=f1e111] [cursor=pointer]:
+              - /url: https://wa.me/2923511691?text=Hola%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20%22Sistemas%20a%20medida%22.
+              - generic [ref=f1e112]: Quiero sistemas a medida
+              - generic [ref=f1e113]: →
+    - generic [ref=f1e114]:
+      - img "Mariano - Fundador de Nodexa" [ref=f1e116]
+      - generic [ref=f1e117]:
+        - generic [ref=f1e118]: Fundador
+        - heading "¿Quién está detrás de Nodexa?" [level=2] [ref=f1e119]:
+          - generic [ref=f1e120]:
+            - generic [ref=f1e121]: ¿Quién está detrás
+            - generic [ref=f1e123]: de Nodexa?
+        - paragraph [ref=f1e125]: Soy Mariano. Mi trabajo no es venderte tecnología complicada, sino darte herramientas simples y útiles para que dirijas tu negocio con tranquilidad y sin perder tiempo en tareas repetitivas.
+        - paragraph [ref=f1e126]: "Técnico de la UTN. Sé lo frustrante que es lidiar con anotaciones que se traspapelan o procesos manuales que te quitan el día. Por eso creé Nodexa: para sentarme a escucharte, entender qué frena tu crecimiento y armarte algo a tu medida. Queremos que tu negocio rinda más, pero sobre todo, devolverte el tiempo y el control."
+    - generic [ref=f1e127]:
+      - generic [ref=f1e128]:
+        - heading "Es hora de que la tecnología trabaje para tu negocio, y no al revés." [level=2] [ref=f1e129]:
+          - generic [ref=f1e130]:
+            - generic [ref=f1e131]: Es hora de que la tecnología
+            - generic [ref=f1e133]: trabaje para tu negocio,
+            - generic [ref=f1e135]: y no al revés.
+        - paragraph [ref=f1e137]: Sin importar el tamaño de tu comercio o empresa, coordinemos una breve charla sin compromiso para ver cómo podemos ayudarte.
+        - button "Agendar Diagnóstico por WhatsApp" [ref=f1e139] [cursor=pointer]
+      - generic [ref=f1e140]:
+        - generic [ref=f1e141]:
+          - generic [ref=f1e142]:
+            - generic [ref=f1e143]: MY
+            - generic [ref=f1e145]: Nodexa
+          - generic [ref=f1e146]:
+            - generic [ref=f1e147]: © 2026 Nodexa. Todos los derechos reservados.
+            - link "Aviso de Privacidad" [ref=f1e148] [cursor=pointer]:
+              - /url: "#privacidad"
+            - link "Términos de Servicio" [ref=f1e149] [cursor=pointer]:
+              - /url: "#terminos"
+            - generic [ref=f1e150]: Conexión segura SSL
+        - generic: Nodexa

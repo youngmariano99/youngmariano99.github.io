@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   motion,
   useScroll,
@@ -11,14 +11,15 @@ import {
 import {
   journeyPhases,
   journeyStartPhase,
-  projects,
   projectsFinalCta,
   projectsFinalTitle,
+  whatsappHref,
+  WHATSAPP_CHAT_MESSAGE,
   type JourneyPhase,
-  type ProjectCard,
 } from "../data";
+import { projectsData, type Project } from "../projectsData";
 import { MagneticButton } from "./shared/MagneticButton";
-import ScrollLaptop from "./ScrollLaptop";
+import ProjectLaptopMockup from "./ProjectLaptopMockup";
 import PathStars from "./PathStars";
 
 /* ------------------------------------------------------------------ */
@@ -33,6 +34,16 @@ import PathStars from "./PathStars";
    que la curva tarde demasiado en "enderezarse" cerca de cada nodo e
    invada el lado del contenido. Con ±6 desde el centro, la curva queda
    verticalmente estable durante todo el tramo cercano a cada nodo. */
+/*
+ * Con la cámara centrada en START a t=0 (s=1.4), un punto en x=50,y=-29.7
+ * cae justo en el borde superior-centro de la pantalla (screenX 50%,
+ * screenY 0%) — exactamente debajo de donde termina, en x=50%, la línea
+ * vertical del Hero. Se usa solo como origen del camino de estrellas —
+ * nunca como nodo (no entra en JOURNEY_NODES) — para que el trazo ya esté
+ * ahí, tocando el punto exacto donde termina la línea del Hero, sin salto
+ * ni corte de fondo.
+ */
+const PRE_START = { x: 50, y: -29.7 };
 const START = { x: 50, y: 6 }; // "Todo comienza aquí" — nace del Hero
 const N1 = { x: 44, y: 20 }; // 01 El Caos
 const N2 = { x: 56, y: 36 }; // 02 La Conexión
@@ -50,7 +61,7 @@ const JOURNEY_NODES = [START, N1, N2, N3, P1, P2, P3];
  * puebla de estrellas (ver <PathStars>): el camino se "lee" porque esos
  * puntos brillan más que el resto del campo, no porque haya una línea.
  */
-const ROUTE = [START, N1, N2, N3, P1, P2, P3, END];
+const ROUTE = [PRE_START, START, N1, N2, N3, P1, P2, P3, END];
 
 /* ------------------------------------------------------------------ */
 /* LA CÁMARA: keyframes (t = scrollYProgress del wrapper de 750vh).    */
@@ -100,27 +111,23 @@ const STORY = [
   { phase: journeyPhases[2], side: "right" as const, win: [0.39, 0.415, 0.465, 0.495] },
 ];
 
-/* Proyectos: win = visibilidad del overlay, lidWin = apertura de la tapa */
-const PROJ = [
-  {
-    project: projects[0],
-    side: "left" as const,
-    win: [0.53, 0.565, 0.635, 0.67],
-    lidWin: [0.535, 0.585, 0.62, 0.665],
-  },
-  {
-    project: projects[1],
-    side: "right" as const,
-    win: [0.68, 0.715, 0.785, 0.82],
-    lidWin: [0.685, 0.735, 0.77, 0.815],
-  },
-  {
-    project: projects[2],
-    side: "left" as const,
-    win: [0.83, 0.865, 0.935, 0.97],
-    lidWin: [0.835, 0.885, 0.92, 0.965],
-  },
-];
+/* Proyectos: win = visibilidad del overlay, lidWin = apertura de la tapa.
+   laptopSide = de qué lado va la laptop (el texto ocupa el lado opuesto) —
+   se alterna por proyecto, igual que el zigzag del camino. Mapea
+   directamente projectsData: agregar un 4º proyecto es sumar un objeto acá
+   con su propia ventana de scroll. */
+const PROJ = projectsData.map((project, i) => {
+  const windows = [
+    { win: [0.53, 0.565, 0.635, 0.67], lidWin: [0.535, 0.585, 0.62, 0.665] },
+    { win: [0.68, 0.715, 0.785, 0.82], lidWin: [0.685, 0.735, 0.77, 0.815] },
+    { win: [0.83, 0.865, 0.935, 0.97], lidWin: [0.835, 0.885, 0.92, 0.965] },
+  ];
+  return {
+    project,
+    laptopSide: (i % 2 === 0 ? "left" : "right") as "left" | "right",
+    ...windows[i % windows.length],
+  };
+});
 
 /* ------------------------------------------------------------------ */
 
@@ -144,6 +151,20 @@ function WorldNode({ node }: { node: { x: number; y: number } }) {
   );
 }
 
+function PhaseCta({ phase }: { phase: JourneyPhase }) {
+  if (!phase.ctaLabel || !phase.ctaMessage) return null;
+  return (
+    <a
+      href={whatsappHref(phase.ctaMessage)}
+      target="_blank"
+      rel="noopener"
+      className="pointer-events-auto group mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#10B981] no-underline transition-colors hover:text-white"
+    >
+      <span>{phase.ctaLabel}</span>
+    </a>
+  );
+}
+
 function CenterOverlay({
   progress,
   phase,
@@ -161,16 +182,19 @@ function CenterOverlay({
       style={{ opacity, y }}
       className="pointer-events-none absolute inset-x-6 bottom-[58%] z-10 flex justify-center text-center md:bottom-[56%]"
     >
-      <div className="max-w-md rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl shadow-black/50 backdrop-blur-md md:p-7">
-        <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
-          {phase.kicker}
-        </span>
+      <div className="max-w-md rounded-xl border border-white/10 bg-black/75 p-6 shadow-2xl shadow-black/50 backdrop-blur-sm md:p-7">
+        {phase.kicker && (
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
+            {phase.kicker}
+          </span>
+        )}
         <h2 className="mt-3 text-[24px] font-extrabold leading-[1.1] tracking-tight text-white md:text-[32px]">
           {phase.title}
         </h2>
         <p className="mt-3 text-[14px] leading-relaxed text-white/60 md:text-[15px]">
           {phase.copy}
         </p>
+        <PhaseCta phase={phase} />
       </div>
     </motion.div>
   );
@@ -199,16 +223,19 @@ function StoryOverlay({
           : "left-6 right-6 md:left-[4%] md:right-[64%] md:justify-end md:text-right"
       }`}
     >
-      <div className="max-w-md rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl shadow-black/50 backdrop-blur-md md:p-7">
-        <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
-          {phase.kicker}
-        </span>
+      <div className="max-w-md rounded-xl border border-white/10 bg-black/75 p-6 shadow-2xl shadow-black/50 backdrop-blur-sm md:p-7">
+        {phase.kicker && (
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
+            {phase.kicker}
+          </span>
+        )}
         <h2 className="mt-3 text-[26px] font-extrabold leading-[1.1] tracking-tight text-white md:text-[38px]">
           {phase.title}
         </h2>
         <p className="mt-4 text-[15px] leading-relaxed text-white/60 md:text-base">
           {phase.copy}
         </p>
+        <PhaseCta phase={phase} />
       </div>
     </motion.div>
   );
@@ -217,13 +244,13 @@ function StoryOverlay({
 function ProjectOverlay({
   progress,
   project,
-  side,
+  laptopSide,
   win,
   lidWin,
 }: {
   progress: MotionValue<number>;
-  project: ProjectCard;
-  side: "left" | "right";
+  project: Project;
+  laptopSide: "left" | "right";
   win: number[];
   lidWin: number[];
 }) {
@@ -232,21 +259,27 @@ function ProjectOverlay({
   const lidRaw = useTransform(progress, lidWin, [-88, 0, 0, -88]);
   const lid = useSpring(lidRaw, { stiffness: 80, damping: 20 });
 
+  const laptopFirst = laptopSide === "left";
+
   return (
     <motion.div
       style={{ opacity, y }}
-      className={`pointer-events-none absolute bottom-0 top-0 z-10 flex items-center ${
-        side === "right"
-          ? "left-6 right-6 md:left-[62%] md:right-[4%]"
-          : "left-6 right-6 md:left-[4%] md:right-[62%] md:justify-end"
-      }`}
+      className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-6 py-10 md:flex-row md:justify-between md:gap-6 md:px-[6%] md:py-0 lg:px-[7%]"
     >
-      <div className="flex w-full max-w-[480px] flex-col items-start gap-6">
-        <ScrollLaptop project={project} lid={lid} />
+      {/* Laptop — el lado se alterna por proyecto (layout tipo zigzag) */}
+      <div
+        className={`flex w-full flex-none justify-center md:w-[420px] ${
+          laptopFirst ? "md:order-1 md:justify-start" : "md:order-2 md:justify-end"
+        }`}
+      >
+        <ProjectLaptopMockup project={project} lid={lid} />
+      </div>
 
-        <div className="w-full rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl shadow-black/50 backdrop-blur-md">
+      {/* Tarjeta de texto — siempre en el lado libre, lejos de las estrellas del camino */}
+      <div className={`w-full max-w-md flex-none md:w-[380px] ${laptopFirst ? "md:order-2" : "md:order-1"}`}>
+        <div className="rounded-xl border border-emerald-500/20 bg-black/75 p-6 shadow-xl backdrop-blur-sm md:p-7">
           <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#10B981]">
-            {project.nombre} — {project.tagline}
+            {project.title} — {project.subtitle}
           </span>
           <div className="mt-4 divide-y divide-white/10">
             <div className="pb-4">
@@ -254,7 +287,7 @@ function ProjectOverlay({
                 El Problema
               </span>
               <p className="mt-1.5 text-[13px] leading-relaxed text-white/70 md:text-sm">
-                {project.problema}
+                {project.problem}
               </p>
             </div>
             <div className="pt-4">
@@ -262,7 +295,7 @@ function ProjectOverlay({
                 La Solución Nodexa
               </span>
               <p className="mt-1.5 text-[13px] leading-relaxed text-white/70 md:text-sm">
-                {project.solucion}
+                {project.solution}
               </p>
             </div>
           </div>
@@ -290,10 +323,18 @@ export default function JourneyExperience() {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  const toPx = (p: { x: number; y: number }) => ({
-    x: (p.x / 100) * size.w,
-    y: (p.y / 100) * size.h,
-  });
+  // useCallback: sin esto, toPx era una función nueva en cada render de
+  // JourneyExperience, y al ser dependencia del useEffect de PathStars que
+  // regenera las ~160 estrellas (sampleSmoothPath), cualquier re-render
+  // ajeno al tamaño real de la ventana forzaba recalcular todo el trazo de
+  // nuevo. Memoizada, solo cambia cuando `size` realmente cambia.
+  const toPx = useCallback(
+    (p: { x: number; y: number }) => ({
+      x: (p.x / 100) * size.w,
+      y: (p.y / 100) * size.h,
+    }),
+    [size.w, size.h]
+  );
 
   /* Cámara amortiguada: springs sobre valores numéricos, % al final */
   const xRaw = useTransform(scrollYProgress, CAM_T, CAM_X);
@@ -350,7 +391,7 @@ export default function JourneyExperience() {
             key={p.project.id}
             progress={scrollYProgress}
             project={p.project}
-            side={p.side}
+            laptopSide={p.laptopSide}
             win={p.win}
             lidWin={p.lidWin}
           />
@@ -372,12 +413,14 @@ export default function JourneyExperience() {
                 filter: "blur(32px)",
               }}
             />
-            <h2 className="max-w-[18ch] text-[40px] font-extrabold leading-[1.05] tracking-tight text-white md:text-[64px] lg:text-[72px]">
+            <h2 className="max-w-2xl text-[28px] font-extrabold leading-[1.15] tracking-tight text-white md:text-[42px] lg:text-[50px]">
               {projectsFinalTitle}
             </h2>
             <MagneticButton
-              href="#"
-              className="inline-block rounded-[4px] border border-white/25 px-8 py-4 text-[15px] font-semibold text-white no-underline transition-colors hover:border-[#10B981] hover:text-[#10B981]"
+              href={whatsappHref(WHATSAPP_CHAT_MESSAGE)}
+              target="_blank"
+              rel="noopener"
+              className="inline-block rounded-[4px] border-none bg-[#10B981] px-8 py-4 text-[15px] font-semibold text-[#05080F] shadow-[0_10px_34px_-8px_rgba(16,185,129,0.55)] transition-all duration-300 hover:bg-[#0EA672] hover:shadow-[0_14px_44px_-6px_rgba(16,185,129,0.7)]"
             >
               {projectsFinalCta}
             </MagneticButton>

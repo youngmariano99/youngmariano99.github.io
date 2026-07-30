@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { navItems } from "../data";
 
 const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const;
@@ -29,6 +30,12 @@ const linkVariants: Variants = {
  */
 export default function FullscreenMenu() {
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  // Los navItems son anclas de la home ("#viaje", etc.) — si no estamos en
+  // "/", hay que anteponer "/" para que primero navegue a home y recién
+  // ahí el navegador salte al ancla, en vez de buscar un id que no existe
+  // en la página actual.
+  const resolveHref = (href: string) => (pathname === "/" ? href : `/${href}`);
 
   useEffect(() => {
     document.documentElement.style.overflow = open ? "hidden" : "";
@@ -87,7 +94,7 @@ export default function FullscreenMenu() {
               {navItems.map((item) => (
                 <motion.a
                   key={item.href}
-                  href={item.href}
+                  href={resolveHref(item.href)}
                   onClick={() => setOpen(false)}
                   variants={linkVariants}
                   className="text-[clamp(2.25rem,7vw,5rem)] font-extrabold uppercase leading-none tracking-tight text-white no-underline transition-colors hover:text-[#10B981]"

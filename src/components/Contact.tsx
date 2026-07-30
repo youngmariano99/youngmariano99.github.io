@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { contactLines } from "../data";
+import { contactLines, contactSubtitle } from "../data";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
 import { AnimatedTitle } from "./shared/AnimatedTitle";
 import { MagneticButton } from "./shared/MagneticButton";
@@ -23,9 +23,8 @@ export default function Contact({ onOpenModal }: { onOpenModal: () => void }) {
           lines={contactLines}
           className="max-w-[20ch] text-[30px] font-extrabold leading-[1.1] tracking-tight text-white md:text-[42px] lg:text-[52px]"
         />
-        <motion.p variants={fadeUp} className="max-w-[44ch] text-[17px] leading-relaxed text-white/60">
-          Comencemos a mapear la solución que tu operativa necesita para
-          escalar.
+        <motion.p variants={fadeUp} className="max-w-[48ch] text-[17px] leading-relaxed text-white/60">
+          {contactSubtitle}
         </motion.p>
         <motion.div variants={fadeUp}>
           <MagneticButton

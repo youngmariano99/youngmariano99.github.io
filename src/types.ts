@@ -21,10 +21,15 @@ export interface MethodStep {
 
 export type ServiceIcon = "network" | "flow" | "terminal";
 
-export interface ServiceCard {
+export interface Service {
+  index: string;
   title: string;
-  copy: string;
-  icon: ServiceIcon;
+  /** Nombre técnico entre paréntesis junto al título (ej. "Sistemas a medida") */
+  subtitle?: string;
+  description: string;
+  /** Si está presente, el CTA navega a esta ruta interna en vez de abrir WhatsApp */
+  route?: string;
+  ctaLabel?: string;
 }
 
 export interface CaseNode {

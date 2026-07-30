@@ -3,7 +3,7 @@ import type {
   GridRow,
   PersonaCard,
   MethodStep,
-  ServiceCard,
+  Service,
   CaseNode,
   DecorativeNode,
   NetworkLine,
@@ -11,11 +11,11 @@ import type {
 } from "./types";
 
 // NOTA: número de WhatsApp de placeholder — reemplazar por el número real del negocio.
-export const WHATSAPP_NUMBER = "000000000000";
+export const WHATSAPP_NUMBER = "2923511691";
 export const WHATSAPP_QUICK_MESSAGE =
-  "Hola, quiero hacer una consulta rápida sobre mi operación.";
+  "Hola, quiero hacer una consulta rápida.";
 export const WHATSAPP_CONTROL_MESSAGE =
-  "Hola, quiero recuperar el control de mi operación con Nodexa.";
+  "Hola, quiero recuperar el control de mi Negocio con Nodexa.";
 export const WHATSAPP_CASE_MESSAGE =
   "Hola, vi los casos de éxito de Nodexa y quiero una solución así para mi negocio.";
 
@@ -24,55 +24,20 @@ export const whatsappHref = (message: string) =>
 
 export const navItems: NavItem[] = [
   { label: "El Viaje", href: "#viaje" },
+  { label: "Servicios", href: "#servicios" },
   { label: "Fundador", href: "#autoridad" },
   { label: "Contacto", href: "#contacto" },
 ];
 
-// --- SHOWCASE DE PROYECTOS (Flip Cards) ---
-export interface ProjectCard {
-  id: string;
-  nombre: string;
-  tagline: string;
-  problema: string;
-  solucion: string;
-  imagen: string; // ruta en /public — placeholder hasta tener capturas reales
-}
-
-export const projects: ProjectCard[] = [
-  {
-    id: "lenneria",
-    nombre: "La Leñería",
-    tagline: "Control de stock y pedidos",
-    problema:
-      "Perdía ventas por un control de stock manual y caótico: nadie sabía con certeza qué había en el depósito hasta que era tarde.",
-    solucion:
-      "Herramienta centralizada que sincroniza caja, depósito y reparto. Hoy todos operan sobre la misma información, ahorrando horas diarias.",
-    imagen: "/projects/lenneria.jpg",
-  },
-  {
-    id: "argoot",
-    nombre: "Argoot",
-    tagline: "Sincronización de datos en tiempo real",
-    problema:
-      "Capturaba datos por canales que no se hablaban entre sí; cada reporte era un trabajo manual contra reloj.",
-    solucion:
-      "Infraestructura a medida con sincronización en tiempo real. Reportes que tardaban un día, listos al instante.",
-    imagen: "/projects/argoot.jpg",
-  },
-  {
-    id: "tu-negocio",
-    nombre: "Tu Negocio",
-    tagline: "El próximo nodo de la red",
-    problema:
-      "Ese cuello de botella que hoy te roba horas: planillas, stock desfasado, sistemas que no se hablan.",
-    solucion:
-      "Contanos tu operativa y diseñamos el sistema que lo resuelve, a tu medida.",
-    imagen: "/projects/tu-negocio.jpg",
-  },
-];
-
-export const projectsFinalTitle = "Descubre de lo que somos capaces";
-export const projectsFinalCta = "Ver más proyectos";
+// --- SHOWCASE DE PROYECTOS ---
+// Los datos de cada proyecto viven en src/projectsData.ts (Project /
+// projectsData) — módulo dedicado y escalable, agregar uno nuevo es sumar
+// un objeto al array.
+export const projectsFinalTitle =
+  "¿Te gustaría ser parte de los negocios que ya recuperaron su tranquilidad con NODEXA?";
+export const projectsFinalCta = "Agendar charla sin compromiso";
+export const WHATSAPP_CHAT_MESSAGE =
+  "Hola, quiero agendar una charla sin compromiso para ver cómo Nodexa puede ayudar a mi negocio.";
 
 // --- EL VIAJE (Pinned Scrollytelling) ---
 export interface JourneyPhase {
@@ -80,33 +45,40 @@ export interface JourneyPhase {
   kicker: string;
   title: string;
   copy: string;
+  /** CTA sutil opcional dentro de la tarjeta — abre WhatsApp con ctaMessage */
+  ctaLabel?: string;
+  ctaMessage?: string;
 }
 
 export const journeyStartPhase: JourneyPhase = {
   id: "inicio",
-  kicker: "Nodexa",
-  title: "Todo comienza aquí.",
-  copy: "Un origen, una red de datos por ordenar. Seguí bajando.",
+  kicker: "",
+  title: "Todo comienza escuchándote.",
+  copy: "Cada gran cambio empieza con una charla. Contanos qué le falta o qué frena a tu negocio hoy y trazamos el camino.",
+  ctaLabel: "Contanos tu caso →",
+  ctaMessage: "Hola, quiero contarte cuál es mi caso para ver cómo Nodexa puede ayudarme.",
 };
 
 export const journeyPhases: JourneyPhase[] = [
   {
     id: "caos",
-    kicker: "01 — El Caos",
-    title: "Tus datos están por todas partes.",
-    copy: "Planillas que no cuadran, stock desfasado y horas apagando incendios. El desorden te cuesta tiempo y ventas.",
+    kicker: "",
+    title: "01 — Identificamos la falla real.",
+    copy: "Analizamos a fondo lo que le pasa a tu negocio: falta de automatización, dificultad para llegar a nuevos clientes o pérdidas de dinero invisibles.",
+    ctaLabel: "Agendar consulta gratuita →",
+    ctaMessage: "Hola, quiero agendar una consulta gratuita para ver qué le pasa a mi negocio.",
   },
   {
     id: "conexion",
-    kicker: "02 — La Conexión",
-    title: "Unimos cada punta de tu operación.",
-    copy: "No vendemos tecnología: conectamos tu información para que fluya sola, en un solo sistema.",
+    kicker: "",
+    title: "02 — Unimos los puntos clave.",
+    copy: "No nos quedamos con lo primero que nos contás. Conectamos la información de tus ventas, stock y tareas diarias para diseñar la solución exacta a tu medida.",
   },
   {
     id: "solucion",
-    kicker: "03 — La Solución",
-    title: "Un sistema que trabaja por ti.",
-    copy: "Negocios reales que ya operan sincronizados, con el control de vuelta en sus manos.",
+    kicker: "",
+    title: "03 — Una herramienta que resuelve (y evoluciona).",
+    copy: "Te entregamos un sistema simple y listo para usar. Y cuando tu negocio crezca, seguimos a tu lado para adaptarlo y actualizarlo.",
   },
 ];
 
@@ -116,13 +88,53 @@ export const journeyFinalLines = [
 ];
 export const journeyFinalCta = "Agendar Diagnóstico por WhatsApp";
 
-// --- 1. EL GANCHO (Hero) ---
-export const heroEyebrow = "Nodexa — Sistemas de Datos";
-export const heroLines = ["Tu negocio crece,", "pero el desorden operativo te frena."];
-export const heroSubtitle =
-  "Convertimos tu caos de datos en un sistema que trabaja por ti, para que recuperes el control y tu tiempo.";
-export const heroPrimaryCta = "Quiero recuperar el control";
-export const heroSecondaryCta = "Solo tengo una duda rápida";
+// --- 1. EL GANCHO (Hero — Nodo Cero) ---
+export const heroEyebrow = "Estructura. Datos. Resultados.";
+
+// Cada línea es un array de tramos — los tramos con highlight:true van en
+// verde de marca y peso 700, el resto en blanco/300 (ver HeroHub).
+export interface HeroTitleSpan {
+  text: string;
+  highlight?: boolean;
+}
+export const heroTitleLines: HeroTitleSpan[][] = [
+  [{ text: "Organizamos tu negocio" }],
+  [{ text: "para que trabajes " }, { text: "mejor", highlight: true }],
+  [{ text: "y tomes decisiones con" }],
+  [{ text: "claridad.", highlight: true }],
+];
+
+export const heroDescription =
+  "Ayudamos a comercios y empresas a ordenar sus procesos, centralizar su información y transformar datos en resultados reales.";
+
+export interface HeroFeature {
+  title: string;
+  subtitle: string;
+  icon: "chart" | "gear" | "trend";
+}
+export const heroFeatures: HeroFeature[] = [
+  { title: "Más control", subtitle: "de tu negocio", icon: "chart" },
+  { title: "Procesos claros", subtitle: "y eficientes", icon: "gear" },
+  { title: "Decisiones", subtitle: "con datos", icon: "trend" },
+];
+
+export interface HeroStat {
+  value: string;
+  label: string;
+  icon: "trend" | "calendar" | "users";
+}
+// Métricas de impacto real (no datos genéricos de dashboard) — lo que el
+// visitante gana al trabajar con Nodexa, no un ejemplo de "Resumen general".
+export const heroStats: HeroStat[] = [
+  { value: "+18 hrs", label: "Semanales recuperadas por automatización", icon: "trend" },
+  { value: "-35%", label: "En pérdidas por descontrol de stock y caja", icon: "calendar" },
+  { value: "100%", label: "Visibilidad operativa en tiempo real", icon: "users" },
+];
+
+// CTA reservados para cuando se diseñe el bloque inferior del Hero —
+// no se renderizan todavía (ver nota "VERY IMPORTANT" del brief de diseño).
+export const heroScrollCta = "Agendar charla sin compromiso";
+export const heroSecondaryCta = "Conocé cómo podemos ayudarte";
 
 export const gridRows: GridRow[] = [
   { index: "01", label: "Arquitectura de software a medida" },
@@ -179,21 +191,34 @@ export const methodSteps: MethodStep[] = [
   },
 ];
 
-export const serviceCards: ServiceCard[] = [
+// --- SERVICIOS (Consola de Control) ---
+export const servicesEyebrow = "Arquitectura de Soluciones";
+export const servicesTitle = "Cómo podemos ayudarte — Soluciones simples a problemas reales";
+
+export const services: Service[] = [
   {
-    title: "Control de Stock y Planificación",
-    copy: "Arquitecturas de software altamente personalizadas. Trazabilidad absoluta de tu mercadería, adaptada a la lógica única de tu negocio.",
-    icon: "network",
+    index: "01",
+    title: "NODEXA Custom",
+    subtitle: "Sistemas a medida",
+    description:
+      "Te escuchamos, entendemos tu problema operativo y te devolvemos una herramienta diseñada exactamente a la medida de tu negocio para resolverlo de raíz.",
+    route: "/nodexa-custom",
+    ctaLabel: "Quiero ver NODEXA Custom",
   },
   {
-    title: "Automatización de Operaciones",
-    copy: "Eliminación radical de rutinas manuales. Conectamos tus herramientas para que la información fluya sola y tu equipo se enfoque en tareas de alto valor.",
-    icon: "flow",
+    index: "02",
+    title: "NODEXA Modular",
+    subtitle: "Mini-módulos",
+    description:
+      "¿No te decidís a invertir en un sistema grande? Contamos con módulos independientes que solucionan un problema a la vez, con un modelo de suscripción accesible (estilo mensualidad).",
+    route: "/mini-modulos",
+    ctaLabel: "Quiero ver NODEXA Modular",
   },
   {
-    title: "Inteligencia Artificial Integrada",
-    copy: "Implementación de APIs de IA directamente en tus flujos de trabajo diarios para predecir demandas, optimizar recursos y potenciar tu eficiencia.",
-    icon: "terminal",
+    index: "03",
+    title: "Asesoramiento",
+    description:
+      "¿Sabés que algo anda mal en tu operativa pero no sabés cómo solucionarlo? Te asesoramos de forma 100% gratuita y sin compromiso para mapear la solución ideal.",
   },
 ];
 
@@ -251,23 +276,33 @@ export const networkLines: NetworkLine[] = [
 export const authorityEyebrow = "Fundador";
 export const authorityLines = ["¿Quién está detrás", "de Nodexa?"];
 export const authorityQuote =
-  "Soy Mariano. Mi trabajo no es escribir código complejo, es darte herramientas tecnológicas para que disfrutes dirigir tu negocio sin que la operativa te consuma.";
+  "Soy Mariano. Mi trabajo no es venderte tecnología complicada, sino darte herramientas simples y útiles para que dirijas tu negocio con tranquilidad y sin perder tiempo en tareas repetitivas.";
 export const authorityBody =
-  "Técnico de la UTN. Sé lo frustrante que es cuando la información está desordenada o las tareas manuales te quitan tiempo valioso. Por eso creé Nodexa: me siento a escucharte, entiendo qué le frena el crecimiento a tu negocio y armo un sistema que lo resuelva. Queremos mejorar tu rentabilidad, pero, principalmente, devolverte la tranquilidad de saber que todo está bajo control.";
+  "Técnico de la UTN. Sé lo frustrante que es lidiar con anotaciones que se traspapelan o procesos manuales que te quitan el día. Por eso creé Nodexa: para sentarme a escucharte, entender qué frena tu crecimiento y armarte algo a tu medida. Queremos que tu negocio rinda más, pero sobre todo, devolverte el tiempo y el control.";
 
-export const contactLines = ["Es hora de que la tecnología", "trabaje para tu empresa,", "y no al revés."];
+export const contactLines = [
+  "Es hora de que la tecnología",
+  "trabaje para tu negocio,",
+  "y no al revés.",
+];
+export const contactSubtitle =
+  "Sin importar el tamaño de tu comercio o empresa, coordinemos una breve charla sin compromiso para ver cómo podemos ayudarte.";
 
 export const diagnosticOptions: DiagnosticOption[] = [
   {
-    value: "procesos-manuales",
-    label: "Procesos manuales que consumen demasiado tiempo",
+    value: "manual",
+    label: "Tareas manuales en papel, planillas o chats que te consumen horas.",
   },
   {
-    value: "datos-dispersos",
-    label: "Datos dispersos entre sistemas sin integrar",
+    value: "control",
+    label: "Falta de control en stock, ventas o caja (datos desordenados).",
   },
   {
-    value: "escalabilidad",
-    label: "La operación no escala al ritmo del negocio",
+    value: "visibilidad",
+    label: "Dificultad para mostrar mis productos/servicios y vender más.",
+  },
+  {
+    value: "otro",
+    label: "Otro motivo...",
   },
 ];

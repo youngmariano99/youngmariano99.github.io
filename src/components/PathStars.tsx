@@ -37,13 +37,15 @@ export default function PathStars({
   useEffect(() => {
     if (width === 0 || height === 0) return;
     const samples = sampleSmoothPath(points, toPx, 40);
-    // uno de cada ~3 muestras + jitter leve = espaciado orgánico, no mecánico
+    // uno de cada ~2 muestras (antes 3) + jitter reducido (antes 5px) — más
+    // densidad y menos ruido lateral para que el ojo lea "trazo continuo",
+    // no una nube dispersa de puntos sueltos.
     const stars: Star[] = [];
-    for (let i = 0; i < samples.length; i += 3) {
+    for (let i = 0; i < samples.length; i += 2) {
       const s = samples[i];
       stars.push({
-        x: s.x + (Math.random() - 0.5) * 5,
-        y: s.y + (Math.random() - 0.5) * 5,
+        x: s.x + (Math.random() - 0.5) * 2.5,
+        y: s.y + (Math.random() - 0.5) * 2.5,
         u: s.u,
         r: 0.9 + Math.random() * 1.5,
         phase: Math.random() * Math.PI * 2,
@@ -65,6 +67,7 @@ export default function PathStars({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     let rafId = 0;
+    let running = false;
     let t = 0;
     const REVEAL_SOFTNESS = 0.035;
 
@@ -72,6 +75,20 @@ export default function PathStars({
       t += 1;
       ctx.clearRect(0, 0, width, height);
       const progress = draw.get();
+
+      // Igual que en NeuralCanvas: fillStyle estático + ctx.globalAlpha en
+      // vez de un template string rgba(...) por estrella en cada frame. Se
+      // reasigna una sola vez por frame (no por estrella) — el draw de la
+      // "cabeza" más abajo pisa fillStyle a blanco, así que hay que
+      // reponerlo acá, no basta con setearlo una vez fuera del loop.
+      ctx.fillStyle = "rgb(16,185,129)";
+
+      // "cabeza" del trazo: la estrella más avanzada visible en este
+      // frame — se dibuja después, más grande y brillante, como un
+      // cometa guiando el ojo hacia el próximo nodo. Sin esto, el trazo
+      // es solo una nube de puntos parejos y cuesta leer hacia dónde
+      // "avanza" la revelación.
+      let lead: Star | null = null;
 
       for (const star of starsRef.current) {
         if (star.u > progress + REVEAL_SOFTNESS) continue;
@@ -82,20 +99,61 @@ export default function PathStars({
         const alpha = reveal * twinkle;
         if (alpha <= 0.02) continue;
 
+        ctx.globalAlpha = alpha;
         ctx.beginPath();
-        ctx.fillStyle = `rgba(16,185,129,${alpha})`;
         ctx.shadowColor = "rgba(16,185,129,0.9)";
         ctx.shadowBlur = 5 + reveal * 3;
         ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
         ctx.fill();
+
+        if (!lead || star.u > lead.u) lead = star;
       }
       ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
 
-      rafId = requestAnimationFrame(tick);
+      if (lead) {
+        const pulse = 0.85 + 0.15 * Math.sin(t * 0.08);
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.shadowColor = "rgba(16,185,129,1)";
+        ctx.shadowBlur = 16;
+        ctx.arc(lead.x, lead.y, (lead.r + 1.6) * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      if (running) rafId = requestAnimationFrame(tick);
     };
 
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+    const start = () => {
+      if (running) return;
+      running = true;
+      rafId = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+    };
+
+    start();
+
+    // Fuera del rango visible de #viaje (antes de llegar o después de
+    // pasarlo) el canvas sigue montado pero invisible — pausarlo ahí
+    // ahorra trabajo sin afectar la revelación (progress) al volver.
+    const journeyEl = document.getElementById("viaje");
+    let observer: IntersectionObserver | null = null;
+    if (journeyEl) {
+      observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) start();
+        else stop();
+      });
+      observer.observe(journeyEl);
+    }
+
+    return () => {
+      stop();
+      observer?.disconnect();
+    };
   }, [draw, width, height]);
 
   return (
