@@ -109,7 +109,8 @@ export const heroFeatures: HeroFeature[] = [
 ];
 
 export const heroScrollCta = "Agendar charla sin compromiso";
-export const heroSecondaryCta = "Conocé cómo podemos ayudarte";
+export const heroRecursosText = "¿Todavía no estás listo para invertir?";
+export const heroRecursosCta = "Probá nuestros recursos gratuitos";
 
 export const gridRows: GridRow[] = [
   { index: "01", label: "Arquitectura de software a medida" },

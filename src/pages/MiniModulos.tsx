@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
@@ -26,14 +25,13 @@ import {
   solucionTitle,
   nucleoTitle,
   nucleoSubtitle,
-  nucleoPrice,
-  nucleoPriceUnit,
   nucleoSecondaryCta,
   coreFeatures,
   type CoreFeature,
   marketplaceEyebrow,
   marketplaceTitle,
   marketplaceSubtitle,
+  marketplaceCta,
   marketplaceModules,
   onboardingEyebrow,
   onboardingTitle,
@@ -49,7 +47,6 @@ import {
 } from "../miniModulosData";
 
 const ACCENT = "#10B981";
-const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const;
 
 /* ------------------------------------------------------------------ */
 /* Íconos: mismo lenguaje minimalista de trazo grueso que el resto del  */
@@ -225,14 +222,9 @@ function NucleoCore() {
           {nucleoSubtitle}
         </motion.p>
 
-        <motion.div variants={fadeUp} className="mt-8 flex items-end justify-center gap-1.5">
-          <span className="text-[40px] font-extrabold leading-none text-white md:text-[52px]">{nucleoPrice}</span>
-          <span className="pb-1.5 text-base text-white/45">{nucleoPriceUnit}</span>
-        </motion.div>
-
         <motion.div
           variants={fadeUp}
-          className="mx-auto mt-12 grid max-w-[720px] grid-cols-2 gap-4 text-left sm:grid-cols-4"
+          className="mx-auto mt-10 grid max-w-[720px] grid-cols-2 gap-4 text-left sm:grid-cols-4"
         >
           {coreFeatures.map((feature) => {
             const Icon = CORE_ICONS[feature.icon];
@@ -263,24 +255,8 @@ function NucleoCore() {
   );
 }
 
-function ModuleToggle({ active }: { active: boolean }) {
-  return (
-    <span
-      className="relative inline-flex h-6 w-11 flex-none items-center rounded-full transition-colors duration-300"
-      style={{ background: active ? "rgba(16,185,129,.9)" : "rgba(255,255,255,.12)" }}
-    >
-      <motion.span
-        className="block h-4.5 w-4.5 rounded-full bg-white"
-        style={{ height: 18, width: 18 }}
-        animate={{ x: active ? 22 : 4 }}
-        transition={{ duration: 0.2, ease: PREMIUM_EASE }}
-      />
-    </span>
-  );
-}
-
 function MarketplaceModulos() {
-  const [active, setActive] = useState<Record<string, boolean>>({});
+  const { openLeadModal } = useLeadModal();
 
   return (
     <section className="relative border-y border-white/10 bg-white/[0.015] px-6 py-20 md:px-10 lg:py-28">
@@ -303,39 +279,33 @@ function MarketplaceModulos() {
         </motion.p>
 
         <motion.div variants={fadeUp} className="mt-14 grid grid-cols-1 gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-          {marketplaceModules.map((mod) => {
-            const isActive = !!active[mod.id];
-            return (
-              <div
-                key={mod.id}
-                className="relative flex flex-col rounded-2xl border border-white/10 bg-black/50 p-6 shadow-md backdrop-blur-md transition-colors duration-300 hover:border-emerald-500/30"
-              >
-                {mod.tag && (
-                  <span
-                    className="absolute -top-3 left-6 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-black"
-                    style={{ background: ACCENT }}
-                  >
-                    {mod.tag}
-                  </span>
-                )}
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-[17px] font-bold text-white">{mod.name}</h3>
-                  <button
-                    type="button"
-                    aria-pressed={isActive}
-                    aria-label={`Activar ${mod.name}`}
-                    onClick={() => setActive((prev) => ({ ...prev, [mod.id]: !prev[mod.id] }))}
-                  >
-                    <ModuleToggle active={isActive} />
-                  </button>
-                </div>
-                <p className="mt-3 flex-1 text-[13.5px] leading-relaxed text-white/55">{mod.description}</p>
-                <span className="mt-5 text-[15px] font-semibold" style={{ color: ACCENT }}>
-                  {mod.price}
+          {marketplaceModules.map((mod) => (
+            <div
+              key={mod.id}
+              className="relative flex flex-col rounded-2xl border border-white/10 bg-black/50 p-6 shadow-md backdrop-blur-md transition-colors duration-300 hover:border-emerald-500/30"
+            >
+              {mod.tag && (
+                <span
+                  className="absolute -top-3 left-6 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-black"
+                  style={{ background: ACCENT }}
+                >
+                  {mod.tag}
                 </span>
-              </div>
-            );
-          })}
+              )}
+              <h3 className="text-[17px] font-bold text-white">{mod.name}</h3>
+              <p className="mt-3 flex-1 text-[13.5px] leading-relaxed text-white/55">{mod.description}</p>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="mt-10">
+          <MagneticButton
+            onClick={() => openLeadModal("mini_modulos_marketplace")}
+            className="inline-flex items-center gap-2 rounded-full bg-[#10B981] px-7 py-3.5 text-[14px] font-bold text-[#05080F] transition-colors duration-300 hover:bg-[#0EA672]"
+          >
+            <span>{marketplaceCta}</span>
+            <span aria-hidden="true">→</span>
+          </MagneticButton>
         </motion.div>
       </motion.div>
     </section>

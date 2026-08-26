@@ -21,8 +21,6 @@ export const solucionTitle =
 export const nucleoTitle = "El Núcleo Innegociable: NODEXA Core";
 export const nucleoSubtitle =
   "Todo lo que necesitás para tener tu depósito y mostrador bajo control.";
-export const nucleoPrice = "$20.000";
-export const nucleoPriceUnit = "/mes";
 export const nucleoSecondaryCta = "Ver detalles de instalación";
 
 export interface CoreFeature {
@@ -40,11 +38,11 @@ export const marketplaceEyebrow = "Marketplace de Módulos";
 export const marketplaceTitle = "Elegí lo que necesitás, apagá costos fijos";
 export const marketplaceSubtitle =
   "Módulos a la carta que se conectan a tu núcleo en un clic.";
+export const marketplaceCta = "Consultar por estos módulos";
 
 export interface ModuleCard {
   id: string;
   name: string;
-  price: string;
   description: string;
   tag?: string;
 }
@@ -52,32 +50,27 @@ export const marketplaceModules: ModuleCard[] = [
   {
     id: "catalogo-web",
     name: "Catálogo Web",
-    price: "$8.000/mes",
     description: "Vidriera online de tus productos, siempre sincronizada con tu stock real.",
   },
   {
     id: "carga-magica",
     name: "Carga Mágica IA",
-    price: "$12.000/mes",
     description: "Sacale una foto a tu lista de precios y la IA la carga sola en tu sistema.",
     tag: "Más elegido",
   },
   {
     id: "cuentas-corrientes",
     name: "Cuentas Corrientes",
-    price: "$6.000/mes",
     description: "Fiá con tranquilidad: control de saldos y pagos por cliente.",
   },
   {
     id: "devoluciones",
     name: "Devoluciones",
-    price: "$4.000/mes",
     description: "Gestioná cambios y devoluciones sin perder el hilo de tu stock.",
   },
   {
     id: "bot-whatsapp",
     name: "Bot de WhatsApp",
-    price: "$10.000/mes",
     description: "Respuestas automáticas de stock y precios directo por WhatsApp.",
   },
 ];

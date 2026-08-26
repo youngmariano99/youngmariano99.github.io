@@ -2,10 +2,13 @@
 
 import { motion } from "framer-motion";
 import type { CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import {
   heroDescription,
   heroEyebrow,
   heroFeatures,
+  heroRecursosCta,
+  heroRecursosText,
   heroScrollCta,
   heroTitleLines,
   type HeroFeature,
@@ -270,6 +273,16 @@ export default function HeroHub() {
               <span>{heroScrollCta}</span>
               <span aria-hidden="true">→</span>
             </motion.button>
+
+            <motion.p
+              {...fadeUp(0.38)}
+              className="mt-4 self-center text-[13px] text-white/45 lg:self-start"
+            >
+              {heroRecursosText}{" "}
+              <Link to="/recursos" className="font-semibold text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline">
+                {heroRecursosCta} →
+              </Link>
+            </motion.p>
           </div>
         </div>
       </div>

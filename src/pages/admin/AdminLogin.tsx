@@ -5,6 +5,20 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
 
+// Supabase devuelve el mismo "Invalid login credentials" tanto para
+// contraseña incorrecta como para email inexistente (por seguridad, no
+// distingue). Para el resto de los casos sí conviene traducir el mensaje
+// real, porque apunta directo al problema.
+function mapAuthError(message: string): string {
+  if (message.includes("Invalid login credentials")) {
+    return "Email o contraseña incorrectos — o el usuario no existe con ese email en este proyecto.";
+  }
+  if (message.includes("Email not confirmed")) {
+    return "Tu email todavía no está confirmado. Andá a Supabase → Authentication → Users, abrí tu usuario y confirmalo manualmente.";
+  }
+  return message;
+}
+
 export default function AdminLogin() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
@@ -22,11 +36,17 @@ export default function AdminLogin() {
     setSubmitting(true);
     setError(null);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
     setSubmitting(false);
     if (signInError) {
-      setError("Email o contraseña incorrectos.");
+      // Mostramos el mensaje real de Supabase (no uno genérico inventado)
+      // para poder diagnosticar el problema real en vez de adivinar.
+      console.error("Error de login Supabase:", signInError);
+      setError(mapAuthError(signInError.message));
       return;
     }
     navigate("/admin", { replace: true });

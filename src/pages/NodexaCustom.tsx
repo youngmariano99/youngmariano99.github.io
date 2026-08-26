@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
 import { useLeadModal } from "../lib/LeadModalContext";
 import { AnimatedTitle } from "../components/shared/AnimatedTitle";
@@ -9,6 +10,7 @@ import { ProblemSolutionSection } from "../components/shared/ProblemSolution";
 import { FaqSection } from "../components/shared/FaqAccordion";
 import { ClosingCta } from "../components/shared/ClosingCta";
 import { BackToHome } from "../components/shared/BackToHome";
+import { heroRecursosCta, heroRecursosText } from "../data";
 import {
   customHeroTitle,
   customHeroSubtitle,
@@ -143,6 +145,16 @@ function CustomHero() {
             {customHeroCtaSecondary}
           </MagneticButton>
         </motion.div>
+
+        <motion.p variants={fadeUp} className="mt-5 text-[13px] text-white/45">
+          {heroRecursosText}{" "}
+          <Link
+            to="/recursos"
+            className="font-semibold text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline"
+          >
+            {heroRecursosCta} →
+          </Link>
+        </motion.p>
       </motion.div>
     </section>
   );
