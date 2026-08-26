@@ -11,8 +11,6 @@ export const miniHeroTitleLine2 = "Pagá solo lo que usás.";
 export const miniHeroSubtitle =
   "El primer sistema de gestión modular para comercios. Empezá con el control de stock y sumá funciones a medida que las necesites.";
 export const miniHeroCta = "Solicitar acceso por WhatsApp";
-export const MINI_MODULOS_WHATSAPP_MESSAGE =
-  "Hola, quiero solicitar acceso a Nodexa Modular.";
 
 export const problemaTitle =
   "¿No te convence pagar por sistemas complejos, llenos de botones y funciones que nunca usás y que son difíciles de aprender?";

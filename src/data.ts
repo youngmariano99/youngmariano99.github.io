@@ -7,17 +7,11 @@ import type {
   CaseNode,
   DecorativeNode,
   NetworkLine,
-  DiagnosticOption,
+  CtaFormOption,
 } from "./types";
 
 // NOTA: número de WhatsApp de placeholder — reemplazar por el número real del negocio.
 export const WHATSAPP_NUMBER = "2923511691";
-export const WHATSAPP_QUICK_MESSAGE =
-  "Hola, quiero hacer una consulta rápida.";
-export const WHATSAPP_CONTROL_MESSAGE =
-  "Hola, quiero recuperar el control de mi Negocio con Nodexa.";
-export const WHATSAPP_CASE_MESSAGE =
-  "Hola, vi los casos de éxito de Nodexa y quiero una solución así para mi negocio.";
 
 export const whatsappHref = (message: string) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -25,6 +19,7 @@ export const whatsappHref = (message: string) =>
 export const navItems: NavItem[] = [
   { label: "El Viaje", href: "#viaje" },
   { label: "Servicios", href: "#servicios" },
+  { label: "Recursos", href: "/recursos" },
   { label: "Fundador", href: "#autoridad" },
   { label: "Contacto", href: "#contacto" },
 ];
@@ -36,8 +31,6 @@ export const navItems: NavItem[] = [
 export const projectsFinalTitle =
   "¿Te gustaría ser parte de los negocios que ya recuperaron su tranquilidad con NODEXA?";
 export const projectsFinalCta = "Agendar charla sin compromiso";
-export const WHATSAPP_CHAT_MESSAGE =
-  "Hola, quiero agendar una charla sin compromiso para ver cómo Nodexa puede ayudar a mi negocio.";
 
 // --- EL VIAJE (Pinned Scrollytelling) ---
 export interface JourneyPhase {
@@ -45,9 +38,8 @@ export interface JourneyPhase {
   kicker: string;
   title: string;
   copy: string;
-  /** CTA sutil opcional dentro de la tarjeta — abre WhatsApp con ctaMessage */
+  /** CTA sutil opcional dentro de la tarjeta — abre el modal calificador */
   ctaLabel?: string;
-  ctaMessage?: string;
 }
 
 export const journeyStartPhase: JourneyPhase = {
@@ -56,7 +48,6 @@ export const journeyStartPhase: JourneyPhase = {
   title: "Todo comienza escuchándote.",
   copy: "Cada gran cambio empieza con una charla. Contanos qué le falta o qué frena a tu negocio hoy y trazamos el camino.",
   ctaLabel: "Contanos tu caso →",
-  ctaMessage: "Hola, quiero contarte cuál es mi caso para ver cómo Nodexa puede ayudarme.",
 };
 
 export const journeyPhases: JourneyPhase[] = [
@@ -66,7 +57,6 @@ export const journeyPhases: JourneyPhase[] = [
     title: "01 — Identificamos la falla real.",
     copy: "Analizamos a fondo lo que le pasa a tu negocio: falta de automatización, dificultad para llegar a nuevos clientes o pérdidas de dinero invisibles.",
     ctaLabel: "Agendar consulta gratuita →",
-    ctaMessage: "Hola, quiero agendar una consulta gratuita para ver qué le pasa a mi negocio.",
   },
   {
     id: "conexion",
@@ -118,21 +108,6 @@ export const heroFeatures: HeroFeature[] = [
   { title: "Decisiones", subtitle: "con datos", icon: "trend" },
 ];
 
-export interface HeroStat {
-  value: string;
-  label: string;
-  icon: "trend" | "calendar" | "users";
-}
-// Métricas de impacto real (no datos genéricos de dashboard) — lo que el
-// visitante gana al trabajar con Nodexa, no un ejemplo de "Resumen general".
-export const heroStats: HeroStat[] = [
-  { value: "+18 hrs", label: "Semanales recuperadas por automatización", icon: "trend" },
-  { value: "-35%", label: "En pérdidas por descontrol de stock y caja", icon: "calendar" },
-  { value: "100%", label: "Visibilidad operativa en tiempo real", icon: "users" },
-];
-
-// CTA reservados para cuando se diseñe el bloque inferior del Hero —
-// no se renderizan todavía (ver nota "VERY IMPORTANT" del brief de diseño).
 export const heroScrollCta = "Agendar charla sin compromiso";
 export const heroSecondaryCta = "Conocé cómo podemos ayudarte";
 
@@ -288,21 +263,30 @@ export const contactLines = [
 export const contactSubtitle =
   "Sin importar el tamaño de tu comercio o empresa, coordinemos una breve charla sin compromiso para ver cómo podemos ayudarte.";
 
-export const diagnosticOptions: DiagnosticOption[] = [
-  {
-    value: "manual",
-    label: "Tareas manuales en papel, planillas o chats que te consumen horas.",
-  },
-  {
-    value: "control",
-    label: "Falta de control en stock, ventas o caja (datos desordenados).",
-  },
-  {
-    value: "visibilidad",
-    label: "Dificultad para mostrar mis productos/servicios y vender más.",
-  },
-  {
-    value: "otro",
-    label: "Otro motivo...",
-  },
+// --- FORMULARIO CALIFICADOR (LeadFormModal) ---
+// Reemplaza al viejo diagnosticOptions — mismo modal para TODOS los CTA
+// del sitio que antes iban directo a WhatsApp. Cada opción suma puntos
+// para el prioridad_score que se guarda junto al lead.
+export const ctaFormTitle = "Contanos un poco de tu negocio";
+export const ctaFormSubtitle =
+  "Así te contactamos con la propuesta justa para lo que necesitás — sin vueltas.";
+export const ctaFormSubmitLabel = "Enviar por WhatsApp";
+
+export const ctaFormPainOptions: CtaFormOption[] = [
+  { value: "stock", label: "Tengo un descontrol con el stock y la mercadería.", points: 2 },
+  { value: "planillas", label: "Tengo todo anotado en planillas sueltas y pierdo horas cruzando datos.", points: 2 },
+  { value: "plata", label: "No sé exactamente a dónde se va la plata ni cómo vienen los números.", points: 2 },
+  { value: "crecio", label: "Mi negocio creció mucho y los sistemas estándar ya no me sirven.", points: 3 },
+];
+
+export const ctaFormVolumeOptions: CtaFormOption[] = [
+  { value: "menos_1000", label: "Menos de 1.000 artículos activos.", points: 1 },
+  { value: "mas_1000", label: "Más de 1.000 artículos o necesito procesos muy específicos.", points: 3 },
+  { value: "servicios", label: "Vendo servicios, no manejo stock físico.", points: 1 },
+];
+
+export const ctaFormUrgencyOptions: CtaFormOption[] = [
+  { value: "ya", label: "Para ayer. Es un caos y necesito empezar a ordenar ya.", points: 3 },
+  { value: "meses", label: "En los próximos meses, estoy evaluando opciones para mejorar.", points: 2 },
+  { value: "averiguando", label: "Solo estoy averiguando.", points: 1 },
 ];

@@ -3,11 +3,6 @@
 
 import type { FaqItem } from "./components/shared/FaqAccordion";
 
-export const CUSTOM_AUDIT_WHATSAPP_MESSAGE =
-  "Hola, quiero agendar una reunión para un desarrollo a medida con NODEXA Custom.";
-export const CUSTOM_ARCHITECT_WHATSAPP_MESSAGE =
-  "Hola, quiero contactarme sin compromiso por mi próximo proyecto con NODEXA Custom.";
-
 export const customHeroTitle = [
   { text: "Soluciones a medida para operaciones que no entran en " },
   { text: "NODEXA Modular", highlight: true },

@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import SmoothScrollProvider, { useLenis } from "./lib/SmoothScroll";
+import { LeadModalProvider } from "./lib/LeadModalContext";
 import NeuralCanvas from "./components/NeuralCanvas";
 import FullscreenMenu from "./components/FullscreenMenu";
+import { RequireAuth } from "./components/admin/RequireAuth";
 import Home from "./pages/Home";
 import MiniModulos from "./pages/MiniModulos";
 import NodexaCustom from "./pages/NodexaCustom";
+import Recursos from "./pages/Recursos";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // Sin esto, navegar a otra página deja el scroll donde estaba (podés
 // terminar en /mini-modulos scrolleado 4000px, en medio de la nada) — el
@@ -26,24 +32,49 @@ function ScrollToTopOnNavigate() {
   return null;
 }
 
-// Shell de la app: todo lo que es GLOBAL y persiste entre páginas vive acá
-// (fondo de estrellas, menú, smooth scroll) — las páginas en sí (Home,
-// MiniModulos) solo aportan su propio <main>, nunca repiten estos fijos.
-export default function NodexaLanding() {
+// Shell del sitio PÚBLICO: fondo de estrellas, menú, smooth scroll, modal
+// de leads — todo lo que comparten Home/MiniModulos/NodexaCustom/Recursos.
+// /admin vive completamente afuera de esto (ver AdminLayout): es una
+// herramienta interna, no tiene sentido que cargue el menú público ni el
+// smooth scroll de la landing.
+function PublicLayout() {
   return (
-    <BrowserRouter>
-      <SmoothScrollProvider>
+    <SmoothScrollProvider>
+      <LeadModalProvider>
         <div className="relative min-h-screen font-sans text-white antialiased">
           <NeuralCanvas />
           <FullscreenMenu />
           <ScrollToTopOnNavigate />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/mini-modulos" element={<MiniModulos />} />
-            <Route path="/nodexa-custom" element={<NodexaCustom />} />
-          </Routes>
+          <Outlet />
         </div>
-      </SmoothScrollProvider>
+      </LeadModalProvider>
+    </SmoothScrollProvider>
+  );
+}
+
+export default function NodexaLanding() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/mini-modulos" element={<MiniModulos />} />
+          <Route path="/nodexa-custom" element={<NodexaCustom />} />
+          <Route path="/recursos" element={<Recursos />} />
+        </Route>
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="login" element={<AdminLogin />} />
+          <Route
+            index
+            element={
+              <RequireAuth>
+                <AdminDashboard />
+              </RequireAuth>
+            }
+          />
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

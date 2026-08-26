@@ -13,11 +13,10 @@ import {
   journeyStartPhase,
   projectsFinalCta,
   projectsFinalTitle,
-  whatsappHref,
-  WHATSAPP_CHAT_MESSAGE,
   type JourneyPhase,
 } from "../data";
 import { projectsData, type Project } from "../projectsData";
+import { useLeadModal } from "../lib/LeadModalContext";
 import { MagneticButton } from "./shared/MagneticButton";
 import ProjectLaptopMockup from "./ProjectLaptopMockup";
 import PathStars from "./PathStars";
@@ -152,16 +151,16 @@ function WorldNode({ node }: { node: { x: number; y: number } }) {
 }
 
 function PhaseCta({ phase }: { phase: JourneyPhase }) {
-  if (!phase.ctaLabel || !phase.ctaMessage) return null;
+  const { openLeadModal } = useLeadModal();
+  if (!phase.ctaLabel) return null;
   return (
-    <a
-      href={whatsappHref(phase.ctaMessage)}
-      target="_blank"
-      rel="noopener"
-      className="pointer-events-auto group mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#10B981] no-underline transition-colors hover:text-white"
+    <button
+      type="button"
+      onClick={() => openLeadModal(`viaje_${phase.id}`)}
+      className="pointer-events-auto group mt-4 inline-flex items-center gap-1.5 border-none bg-transparent p-0 text-[13px] font-semibold text-[#10B981] transition-colors hover:text-white"
     >
       <span>{phase.ctaLabel}</span>
-    </a>
+    </button>
   );
 }
 
@@ -308,6 +307,7 @@ function ProjectOverlay({
 /* ------------------------------------------------------------------ */
 
 export default function JourneyExperience() {
+  const { openLeadModal } = useLeadModal();
   const wrapRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: wrapRef,
@@ -417,9 +417,7 @@ export default function JourneyExperience() {
               {projectsFinalTitle}
             </h2>
             <MagneticButton
-              href={whatsappHref(WHATSAPP_CHAT_MESSAGE)}
-              target="_blank"
-              rel="noopener"
+              onClick={() => openLeadModal("viaje_cierre")}
               className="inline-block rounded-[4px] border-none bg-[#10B981] px-8 py-4 text-[15px] font-semibold text-[#05080F] shadow-[0_10px_34px_-8px_rgba(16,185,129,0.55)] transition-all duration-300 hover:bg-[#0EA672] hover:shadow-[0_14px_44px_-6px_rgba(16,185,129,0.7)]"
             >
               {projectsFinalCta}

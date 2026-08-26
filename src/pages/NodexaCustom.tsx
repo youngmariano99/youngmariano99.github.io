@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { whatsappHref } from "../data";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
+import { useLeadModal } from "../lib/LeadModalContext";
 import { AnimatedTitle } from "../components/shared/AnimatedTitle";
 import { MagneticButton } from "../components/shared/MagneticButton";
 import { ProblemSolutionSection } from "../components/shared/ProblemSolution";
@@ -10,8 +10,6 @@ import { FaqSection } from "../components/shared/FaqAccordion";
 import { ClosingCta } from "../components/shared/ClosingCta";
 import { BackToHome } from "../components/shared/BackToHome";
 import {
-  CUSTOM_AUDIT_WHATSAPP_MESSAGE,
-  CUSTOM_ARCHITECT_WHATSAPP_MESSAGE,
   customHeroTitle,
   customHeroSubtitle,
   customHeroCtaPrimary,
@@ -91,6 +89,7 @@ const BENEFIT_ICONS: Record<CustomBenefit["icon"], () => JSX.Element> = {
 /* ------------------------------------------------------------------ */
 
 function CustomHero() {
+  const { openLeadModal } = useLeadModal();
   const scrollToMetodologia = () => {
     document.getElementById("metodologia")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -132,9 +131,7 @@ function CustomHero() {
 
         <motion.div variants={fadeUp} className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <MagneticButton
-            href={whatsappHref(CUSTOM_AUDIT_WHATSAPP_MESSAGE)}
-            target="_blank"
-            rel="noopener"
+            onClick={() => openLeadModal("custom_hero")}
             className="inline-flex items-center gap-2 rounded-full bg-[#10B981] px-8 py-4 text-[15px] font-bold text-[#05080F] shadow-[0_10px_34px_-8px_rgba(16,185,129,0.55)] transition-all duration-300 hover:bg-[#0EA672] hover:shadow-[0_14px_44px_-6px_rgba(16,185,129,0.7)]"
           >
             {customHeroCtaPrimary}
@@ -290,7 +287,7 @@ export default function NodexaCustom() {
         title={customFooterTitle}
         subtitle={customFooterSubtitle}
         buttonLabel={customFooterButton}
-        whatsappMessage={CUSTOM_ARCHITECT_WHATSAPP_MESSAGE}
+        source="custom_footer"
       />
     </main>
   );

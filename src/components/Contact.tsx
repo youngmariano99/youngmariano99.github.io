@@ -3,10 +3,12 @@
 import { motion } from "framer-motion";
 import { contactLines, contactSubtitle } from "../data";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
+import { useLeadModal } from "../lib/LeadModalContext";
 import { AnimatedTitle } from "./shared/AnimatedTitle";
 import { MagneticButton } from "./shared/MagneticButton";
 
-export default function Contact({ onOpenModal }: { onOpenModal: () => void }) {
+export default function Contact() {
+  const { openLeadModal } = useLeadModal();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -28,7 +30,7 @@ export default function Contact({ onOpenModal }: { onOpenModal: () => void }) {
         </motion.p>
         <motion.div variants={fadeUp}>
           <MagneticButton
-            onClick={onOpenModal}
+            onClick={() => openLeadModal("contact")}
             strength={0.25}
             className="mt-3 inline-block rounded-[4px] border-none bg-[#10B981] px-10 py-6 text-lg font-bold text-[#0B1120] transition-colors hover:bg-[#0E9E70]"
           >

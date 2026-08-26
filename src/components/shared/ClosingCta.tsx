@@ -1,23 +1,24 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { whatsappHref } from "../../data";
 import { fadeUp, staggerContainer, viewportOnce } from "../../lib/motion";
+import { useLeadModal } from "../../lib/LeadModalContext";
 import { MagneticButton } from "./MagneticButton";
 
 export function ClosingCta({
   title,
   subtitle,
   buttonLabel,
-  whatsappMessage,
+  source,
   trustBadge,
 }: {
   title: string;
   subtitle?: string;
   buttonLabel: string;
-  whatsappMessage: string;
+  source: string;
   trustBadge?: string;
 }) {
+  const { openLeadModal } = useLeadModal();
   return (
     <section className="relative border-t border-white/10 px-6 pb-20 pt-24 md:px-10">
       <motion.div
@@ -37,9 +38,7 @@ export function ClosingCta({
         )}
         <motion.div variants={fadeUp}>
           <MagneticButton
-            href={whatsappHref(whatsappMessage)}
-            target="_blank"
-            rel="noopener"
+            onClick={() => openLeadModal(source)}
             strength={0.25}
             className="inline-block rounded-[4px] border-none bg-[#10B981] px-10 py-6 text-lg font-bold text-[#0B1120] transition-colors hover:bg-[#0E9E70]"
           >

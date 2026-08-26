@@ -31,11 +31,16 @@ const linkVariants: Variants = {
 export default function FullscreenMenu() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
-  // Los navItems son anclas de la home ("#viaje", etc.) — si no estamos en
-  // "/", hay que anteponer "/" para que primero navegue a home y recién
-  // ahí el navegador salte al ancla, en vez de buscar un id que no existe
-  // en la página actual.
-  const resolveHref = (href: string) => (pathname === "/" ? href : `/${href}`);
+  // La mayoría de los navItems son anclas de la home ("#viaje", etc.) — si
+  // no estamos en "/", hay que anteponer "/" para que primero navegue a
+  // home y recién ahí el navegador salte al ancla, en vez de buscar un id
+  // que no existe en la página actual. "Recursos" en cambio ya es una ruta
+  // absoluta ("/recursos") — esas van sin tocar, prefijarlas rompería el
+  // link (quedaría "//recursos").
+  const resolveHref = (href: string) => {
+    if (href.startsWith("/")) return href;
+    return pathname === "/" ? href : `/${href}`;
+  };
 
   useEffect(() => {
     document.documentElement.style.overflow = open ? "hidden" : "";

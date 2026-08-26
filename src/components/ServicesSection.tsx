@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { services, servicesEyebrow, servicesTitle, whatsappHref } from "../data";
+import { services, servicesEyebrow, servicesTitle } from "../data";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
+import { useLeadModal } from "../lib/LeadModalContext";
 import { AnimatedTitle } from "./shared/AnimatedTitle";
 import { MagneticButton } from "./shared/MagneticButton";
 
@@ -17,6 +18,7 @@ const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const;
  * de fondo (NeuralCanvas, fixed global) sigue corriendo detrás sin cortes.
  */
 export default function ServicesSection() {
+  const { openLeadModal } = useLeadModal();
   const [activeIndex, setActiveIndex] = useState(0);
   const active = services[activeIndex];
 
@@ -169,9 +171,7 @@ export default function ServicesSection() {
                 </Link>
               ) : (
                 <MagneticButton
-                  href={whatsappHref(`Hola, quiero más información sobre "${active.title}".`)}
-                  target="_blank"
-                  rel="noopener"
+                  onClick={() => openLeadModal("servicios_asesoramiento")}
                   className="group mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#10B981] no-underline transition-colors hover:text-white"
                 >
                   <span>Quiero {active.title.toLowerCase()}</span>

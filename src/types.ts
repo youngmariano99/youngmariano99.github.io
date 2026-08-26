@@ -56,7 +56,21 @@ export interface NetworkLine {
   y2: number;
 }
 
-export interface DiagnosticOption {
+export interface CtaFormOption {
   value: string;
   label: string;
+  /** Puntos que aporta esta opción al cálculo de prioridad del lead */
+  points: number;
+}
+
+// Mapea 1 a 1 la tabla `resources` de Supabase (ver supabase/migrations/0001_init.sql).
+export interface Resource {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  tipo: "excel" | "web" | "pdf";
+  dolor: "stock" | "caja" | "carga" | "rentabilidad";
+  url_acceso: string;
+  activo: boolean;
+  created_at: string;
 }

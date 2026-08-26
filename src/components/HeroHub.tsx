@@ -7,12 +7,11 @@ import {
   heroEyebrow,
   heroFeatures,
   heroScrollCta,
-  heroStats,
   heroTitleLines,
   type HeroFeature,
-  type HeroStat,
 } from "../data";
 import { useLenis } from "../lib/SmoothScroll";
+import { useLeadModal } from "../lib/LeadModalContext";
 
 const ACCENT = "#27D79C";
 
@@ -50,59 +49,15 @@ function TrendIcon() {
   );
 }
 
-function CalendarIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
-      <path d="M3.5 10h17M8 3v3.5M16 3v3.5" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="8" r="3.2" />
-      <path d="M2.8 20c.7-3.4 3.2-5.4 6.2-5.4s5.5 2 6.2 5.4" />
-      <path d="M15.5 5.2c1.5.4 2.6 1.8 2.6 3.4 0 1.7-1.1 3-2.6 3.4M18.6 14.9c2.2.5 3.8 2.2 4.4 4.9" />
-    </svg>
-  );
-}
-
 const ICONS: Record<HeroFeature["icon"], () => JSX.Element> = {
   chart: ChartIcon,
   gear: GearIcon,
   trend: TrendIcon,
 };
 
-const STAT_ICONS: Record<HeroStat["icon"], () => JSX.Element> = {
-  trend: TrendIcon,
-  calendar: CalendarIcon,
-  users: UsersIcon,
-};
-
-// Tres rondas intentando "flotar" las tarjetas con posiciones en % contra
-// la laptop terminaron siempre en lo mismo: alguna se recortaba contra el
-// viewport, o tapaba el dashboard, porque estaba adivinando coordenadas
-// contra una foto que no puedo medir con precisión. Fix estructural en vez
-// de otro ajuste a ojo: una fila real (flexbox), mismo ancho garantizado
-// por CSS, ARRIBA de la imagen en el flujo normal del documento — así es
-// geométricamente imposible que tape la laptop, sin adivinar nada.
-// La asimetría queda en el desplazamiento vertical de reposo de cada
-// tarjeta (translateY fijo, distinto por tarjeta) más la levitación.
-const CARD_REST_OFFSET = [0, -14, 6]; // px — asimetría sutil, misma fila
-
-// Levitación suave e infinita, desfasada por tarjeta — vive en un
-// motion.div INTERNO separado del que maneja la entrada (fadeUp), para
-// que el loop infinito no pelee con la transición de aparición única.
-const FLOAT_TRANSITIONS = [
-  { duration: 5, delay: 0 },
-  { duration: 6, delay: 0.6 },
-  { duration: 4.5, delay: 1.1 },
-];
-
 export default function HeroHub() {
   const lenisRef = useLenis();
+  const { openLeadModal } = useLeadModal();
 
   const scrollToJourney = () => {
     const target = document.getElementById("viaje");
@@ -196,51 +151,6 @@ export default function HeroHub() {
                   "radial-gradient(circle at center, rgba(39,215,156,.05), transparent 70%)",
               }}
             />
-
-            {/* Fila de métricas — flujo normal, ARRIBA de la imagen. Tres
-                columnas de igual ancho garantizadas por flexbox (flex-1),
-                nunca superpuestas a la laptop porque el <img> viene DESPUÉS
-                en el documento. La asimetría es el translateY de reposo
-                (CARD_REST_OFFSET), distinto por tarjeta, más la levitación
-                infinita — no la posición, que ahora es una fila prolija. */}
-            <div className="relative z-10 mb-5 flex gap-3">
-              {heroStats.map((stat, i) => {
-                const Icon = STAT_ICONS[stat.icon];
-                return (
-                  <motion.div
-                    key={stat.label}
-                    {...fadeUp(0.3 + i * 0.08)}
-                    className="flex-1 overflow-hidden rounded-xl backdrop-blur-sm"
-                    style={{
-                      border: "1px solid rgba(255,255,255,.1)",
-                      background: "rgba(20,21,23,.72)",
-                      transform: `translateY(${CARD_REST_OFFSET[i]}px)`,
-                    }}
-                  >
-                    <motion.div
-                      className="px-4 py-3"
-                      animate={{ y: [0, -8, 0] }}
-                      transition={{
-                        duration: FLOAT_TRANSITIONS[i].duration,
-                        delay: FLOAT_TRANSITIONS[i].delay,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    >
-                      <div className="flex items-center gap-1.5 text-white/55">
-                        <Icon />
-                      </div>
-                      <div className="mt-1 text-[19px] font-bold leading-none" style={{ color: ACCENT }}>
-                        {stat.value}
-                      </div>
-                      <div className="mt-1.5 text-[10.5px] leading-snug text-white/55">
-                        {stat.label}
-                      </div>
-                    </motion.div>
-                  </motion.div>
-                );
-              })}
-            </div>
 
             {/*
               mask-image (no una capa opaca encima): funde la imagen a
@@ -353,7 +263,7 @@ export default function HeroHub() {
                 las pills. */}
             <motion.button
               type="button"
-              onClick={scrollToJourney}
+              onClick={() => openLeadModal("hero")}
               {...fadeUp(0.32)}
               className="mt-10 inline-flex items-center gap-2.5 self-center rounded-full bg-emerald-500 px-6 py-3.5 font-bold text-black shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-colors duration-300 hover:bg-emerald-400 lg:self-start"
             >

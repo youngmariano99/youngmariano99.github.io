@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { whatsappHref } from "../data";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
+import { useLeadModal } from "../lib/LeadModalContext";
 import { AnimatedTitle } from "../components/shared/AnimatedTitle";
 import { MagneticButton } from "../components/shared/MagneticButton";
 import { ProblemSolutionSection } from "../components/shared/ProblemSolution";
@@ -12,11 +12,15 @@ import { FaqSection } from "../components/shared/FaqAccordion";
 import { ClosingCta } from "../components/shared/ClosingCta";
 import { BackToHome } from "../components/shared/BackToHome";
 import {
+  miniModulosBannerCta,
+  miniModulosBannerEyebrow,
+  miniModulosBannerTitle,
+} from "../recursosData";
+import {
   miniHeroTitle,
   miniHeroTitleLine2,
   miniHeroSubtitle,
   miniHeroCta,
-  MINI_MODULOS_WHATSAPP_MESSAGE,
   problemaTitle,
   solucionEyebrow,
   solucionTitle,
@@ -140,6 +144,7 @@ function StackedBlocks() {
 /* ------------------------------------------------------------------ */
 
 function MiniHero() {
+  const { openLeadModal } = useLeadModal();
   const scrollToNucleo = () => {
     document.getElementById("nucleo-core")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -178,9 +183,7 @@ function MiniHero() {
 
           <motion.div variants={fadeUp} className="mt-9 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
             <MagneticButton
-              href={whatsappHref(MINI_MODULOS_WHATSAPP_MESSAGE)}
-              target="_blank"
-              rel="noopener"
+              onClick={() => openLeadModal("mini_modulos_hero")}
               className="inline-flex items-center gap-2 rounded-full bg-[#10B981] px-8 py-4 text-[15px] font-bold text-[#05080F] shadow-[0_10px_34px_-8px_rgba(16,185,129,0.55)] transition-all duration-300 hover:bg-[#0EA672] hover:shadow-[0_14px_44px_-6px_rgba(16,185,129,0.7)]"
             >
               {miniHeroCta}
@@ -412,6 +415,36 @@ function DivisionCustom() {
   );
 }
 
+function RecursosBanner() {
+  return (
+    <section className="relative px-6 pb-20 md:px-10">
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+        variants={staggerContainer(0.1)}
+        className="mx-auto max-w-[1000px] rounded-2xl border border-white/10 bg-white/[0.02] p-8 text-center md:p-10"
+      >
+        <motion.span variants={fadeUp} className="text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: ACCENT }}>
+          {miniModulosBannerEyebrow}
+        </motion.span>
+        <motion.p variants={fadeUp} className="mx-auto mt-3 max-w-[44ch] text-[17px] font-semibold leading-snug text-white md:text-[19px]">
+          {miniModulosBannerTitle}
+        </motion.p>
+        <motion.div variants={fadeUp} className="mt-6">
+          <Link
+            to="/recursos"
+            className="inline-flex items-center gap-2 border-none bg-[#10B981] px-6 py-3 text-sm font-semibold text-[#090B0B] no-underline transition-colors hover:bg-[#0EA672]"
+          >
+            <span>{miniModulosBannerCta}</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+}
+
 export default function MiniModulos() {
   return (
     <main id="mini-modulos-top" className="relative">
@@ -427,11 +460,12 @@ export default function MiniModulos() {
       <MarketplaceModulos />
       <ProcesoOnboarding />
       <DivisionCustom />
+      <RecursosBanner />
       <FaqSection id="faqs" title={faqsTitle} items={faqItems} />
       <ClosingCta
         title={footerCtaTitle}
         buttonLabel={footerCtaButton}
-        whatsappMessage={MINI_MODULOS_WHATSAPP_MESSAGE}
+        source="mini_modulos_footer"
         trustBadge={footerTrustBadge}
       />
     </main>
