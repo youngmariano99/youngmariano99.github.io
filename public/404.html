@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Nodexa</title>
+    <!--
+      GitHub Pages es un host estático puro: no reescribe rutas en el
+      servidor, así que cualquier navegación directa a algo que no sea "/"
+      (ej. /admin, /mini-modulos) devuelve un 404 real ANTES de que React
+      Router llegue a correr. Este es el workaround estándar
+      (https://github.com/rafgraph/spa-github-pages): redirige codificando
+      la ruta pedida como querystring hacia index.html, que la decodifica
+      y la restaura con history.replaceState antes de montar la app — ver
+      el script equivalente en index.html.
+    -->
+    <script type="text/javascript">
+      var pathSegmentsToKeep = 0;
+      var l = window.location;
+      l.replace(
+        l.protocol + "//" + l.hostname + (l.port ? ":" + l.port : "") +
+        l.pathname.split("/").slice(0, 1 + pathSegmentsToKeep).join("/") + "/?/" +
+        l.pathname.slice(1).split("/").slice(pathSegmentsToKeep).join("/").replace(/&/g, "~and~") +
+        (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
