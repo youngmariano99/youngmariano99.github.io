@@ -23,6 +23,9 @@ const EMPTY_FORM = {
   slug: "",
   slugTouched: false,
   imagen_portada_url: "",
+  imagen_mobile_url: "",
+  mostrar_desktop: true,
+  mostrar_mobile: false,
   problema: "",
   solucion: "",
   insignia: false,
@@ -37,6 +40,7 @@ export default function GestionPortfolioTab() {
   const [pasos, setPasos] = useState<PortfolioStep[]>([{ ...EMPTY_STEP }]);
   const [galeria, setGaleria] = useState<string[]>([]);
   const [uploadingPortada, setUploadingPortada] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
   const [uploadingGaleria, setUploadingGaleria] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -76,8 +80,15 @@ export default function GestionPortfolioTab() {
   const handlePortadaUpload = async (file: File) => {
     setUploadingPortada(true);
     const url = await uploadFile(file);
-    if (url) setForm((prev) => ({ ...prev, imagen_portada_url: url }));
+    if (url) setForm((prev) => ({ ...prev, imagen_portada_url: url, mostrar_desktop: true }));
     setUploadingPortada(false);
+  };
+
+  const handleMobileUpload = async (file: File) => {
+    setUploadingMobile(true);
+    const url = await uploadFile(file);
+    if (url) setForm((prev) => ({ ...prev, imagen_mobile_url: url, mostrar_mobile: true }));
+    setUploadingMobile(false);
   };
 
   const handleGaleriaUpload = async (files: FileList) => {
@@ -106,6 +117,9 @@ export default function GestionPortfolioTab() {
       cliente_nombre: form.cliente_nombre.trim(),
       rubro: form.rubro.trim(),
       imagen_portada_url: form.imagen_portada_url || null,
+      imagen_mobile_url: form.imagen_mobile_url || null,
+      mostrar_desktop: form.mostrar_desktop,
+      mostrar_mobile: form.mostrar_mobile,
       problema: form.problema.trim(),
       solucion: form.solucion.trim(),
       pasos: pasos.filter((p) => p.titulo.trim() !== ""),
@@ -122,7 +136,10 @@ export default function GestionPortfolioTab() {
     load();
   };
 
-  const toggleField = async (project: PortfolioProject, field: "activo" | "insignia") => {
+  const toggleField = async (
+    project: PortfolioProject,
+    field: "activo" | "insignia" | "mostrar_desktop" | "mostrar_mobile"
+  ) => {
     const next = !project[field];
     setProjects((prev) => prev.map((p) => (p.id === project.id ? { ...p, [field]: next } : p)));
     const { error } = await supabase.from("portfolio_projects").update({ [field]: next }).eq("id", project.id);
@@ -185,22 +202,73 @@ export default function GestionPortfolioTab() {
               onChange={(e) => setForm((prev) => ({ ...prev, slug: slugify(e.target.value), slugTouched: true }))}
               className="border border-white/15 bg-black/40 px-4 py-3 font-mono text-sm text-white placeholder:text-white/35 focus:border-[#10B981] focus:outline-none"
             />
-            <div>
-              <label className="mb-1.5 block text-[12px] text-white/45">Imagen de portada</label>
-              <input
-                type="file"
-                accept="image/*"
-                disabled={uploadingPortada}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handlePortadaUpload(file);
-                }}
-                className="text-[13px] text-white/70"
-              />
-              {uploadingPortada && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
-              {form.imagen_portada_url && !uploadingPortada && (
-                <span className="ml-2 text-[12px] text-[#10B981]">✓ Cargada</span>
-              )}
+            <div className="sm:col-span-2 grid grid-cols-1 gap-4 border border-white/10 bg-black/20 p-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-[12.5px] font-semibold text-white/80">
+                  Captura de escritorio (laptop)
+                </label>
+                <p className="mb-2 text-[11.5px] text-white/40">
+                  Recomendado: 2560×1600px (16:10) o similar, mínimo 1600px de ancho. Se recorta desde arriba, así
+                  que lo importante de la pantalla tiene que estar en la mitad superior.
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingPortada}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handlePortadaUpload(file);
+                  }}
+                  className="text-[13px] text-white/70"
+                />
+                {uploadingPortada && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
+                {form.imagen_portada_url && !uploadingPortada && (
+                  <span className="ml-2 text-[12px] text-[#10B981]">✓ Cargada</span>
+                )}
+                <label className="mt-2 flex items-center gap-2 text-[12.5px] text-white/70">
+                  <input
+                    type="checkbox"
+                    checked={form.mostrar_desktop}
+                    onChange={(e) => setForm((prev) => ({ ...prev, mostrar_desktop: e.target.checked }))}
+                    className="h-3.5 w-3.5 accent-[#10B981]"
+                  />
+                  Mostrar vista de escritorio
+                </label>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-[12.5px] font-semibold text-white/80">
+                  Captura de celular (mobile)
+                </label>
+                <p className="mb-2 text-[11.5px] text-white/40">
+                  Recomendado: 1170×2532px (proporción de iPhone, 9:19.5) o similar, vertical y angosta. Opcional —
+                  dejalo vacío si el proyecto no tiene versión mobile.
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingMobile}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleMobileUpload(file);
+                  }}
+                  className="text-[13px] text-white/70"
+                />
+                {uploadingMobile && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
+                {form.imagen_mobile_url && !uploadingMobile && (
+                  <span className="ml-2 text-[12px] text-[#10B981]">✓ Cargada</span>
+                )}
+                <label className="mt-2 flex items-center gap-2 text-[12.5px] text-white/70">
+                  <input
+                    type="checkbox"
+                    checked={form.mostrar_mobile}
+                    disabled={!form.imagen_mobile_url}
+                    onChange={(e) => setForm((prev) => ({ ...prev, mostrar_mobile: e.target.checked }))}
+                    className="h-3.5 w-3.5 accent-[#10B981] disabled:opacity-30"
+                  />
+                  Mostrar vista mobile
+                </label>
+              </div>
             </div>
           </div>
         )}
@@ -347,13 +415,15 @@ export default function GestionPortfolioTab() {
         <p className="text-sm text-white/40">Cargando...</p>
       ) : (
         <div className="overflow-x-auto border border-white/10">
-          <table className="w-full min-w-[720px] text-left text-[13px]">
+          <table className="w-full min-w-[880px] text-left text-[13px]">
             <thead>
               <tr className="border-b border-white/10 text-white/45">
                 <th className="px-4 py-3 font-semibold">Cliente</th>
                 <th className="px-4 py-3 font-semibold">Rubro</th>
                 <th className="px-4 py-3 font-semibold">Insignia</th>
                 <th className="px-4 py-3 font-semibold">Activo</th>
+                <th className="px-4 py-3 font-semibold">Desktop</th>
+                <th className="px-4 py-3 font-semibold">Mobile</th>
                 <th className="px-4 py-3 font-semibold">Acciones</th>
               </tr>
             </thead>
@@ -379,6 +449,24 @@ export default function GestionPortfolioTab() {
                     />
                   </td>
                   <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={p.mostrar_desktop}
+                      disabled={!p.imagen_portada_url}
+                      onChange={() => toggleField(p, "mostrar_desktop")}
+                      className="h-4 w-4 accent-[#10B981] disabled:opacity-30"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={p.mostrar_mobile}
+                      disabled={!p.imagen_mobile_url}
+                      onChange={() => toggleField(p, "mostrar_mobile")}
+                      className="h-4 w-4 accent-[#10B981] disabled:opacity-30"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
                     <button
                       onClick={() => deleteProject(p)}
                       className="border-none bg-transparent p-0 text-[12px] font-semibold text-red-400 hover:text-red-300"
@@ -390,7 +478,7 @@ export default function GestionPortfolioTab() {
               ))}
               {projects.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-white/35">
+                  <td colSpan={7} className="px-4 py-8 text-center text-white/35">
                     Todavía no hay casos cargados.
                   </td>
                 </tr>

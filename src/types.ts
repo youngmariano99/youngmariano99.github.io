@@ -81,13 +81,17 @@ export interface PortfolioStep {
 }
 
 // Mapea 1 a 1 la tabla `portfolio_projects` de Supabase (ver
-// supabase/migrations/0002_portfolio.sql) — sección "Casos de Éxito".
+// supabase/migrations/0002_portfolio.sql y 0003_portfolio_devices.sql) —
+// sección "Casos de Éxito". imagen_portada_url = captura de escritorio.
 export interface PortfolioProject {
   id: string;
   slug: string;
   cliente_nombre: string;
   rubro: string;
   imagen_portada_url: string | null;
+  imagen_mobile_url: string | null;
+  mostrar_desktop: boolean;
+  mostrar_mobile: boolean;
   problema: string;
   solucion: string;
   pasos: PortfolioStep[];

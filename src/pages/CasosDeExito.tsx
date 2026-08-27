@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
 import { supabase } from "../lib/supabase";
 import { BackToHome } from "../components/shared/BackToHome";
+import { LaptopFrame, PhoneFrame } from "../components/portfolio/CaseDeviceMockups";
 import {
   cardCta,
   heroEmptySubtitle,
@@ -37,40 +38,47 @@ interface Node {
   xr: number;
   yr: number;
   isInsignia: boolean;
+  /** Radio de la órbita en px — 0 para el insignia, que queda fijo como ancla. */
+  orbitR: number;
+  orbitSpeed: number;
+  orbitPhase: number;
 }
 
 const MAX_HERO_NODES = 6;
+const GOLDEN_ANGLE = 2.399963; // radianes — reparte puntos en espiral sin que ninguno quede alineado con otro
 
+// Sin caso insignia, o para el resto de las marcas: nunca se calculan con
+// seno/coseno "prolijo" (eso es lo que colapsaba 2 estrellas en la misma
+// línea vertical antes) — espiral tipo semillas de girasol + una órbita
+// lenta e individual por estrella, para que floten sueltas por la pantalla.
 function computeNodes(projects: PortfolioProject[]): Node[] {
   const insignia = projects.filter((p) => p.insignia);
   const regular = projects.filter((p) => !p.insignia);
   const ordered = [...insignia, ...regular].slice(0, MAX_HERO_NODES);
+  const regularOrdered = ordered.filter((p) => !p.insignia);
+
+  const nodes: Node[] = [];
 
   if (insignia.length > 0) {
-    const center = insignia[0];
-    const rest = ordered.filter((p) => p.id !== center.id);
-    const nodes: Node[] = [{ project: center, xr: 0.5, yr: 0.5, isInsignia: true }];
-    rest.forEach((p, i) => {
-      const angle = (i / Math.max(rest.length, 1)) * Math.PI * 2 - Math.PI / 2;
-      nodes.push({
-        project: p,
-        xr: 0.5 + Math.cos(angle) * 0.3,
-        yr: 0.5 + Math.sin(angle) * 0.24,
-        isInsignia: false,
-      });
-    });
-    return nodes;
+    nodes.push({ project: insignia[0], xr: 0.5, yr: 0.5, isInsignia: true, orbitR: 0, orbitSpeed: 0, orbitPhase: 0 });
   }
 
-  return ordered.map((p, i) => {
-    const angle = (i / Math.max(ordered.length, 1)) * Math.PI * 2;
-    return {
+  regularOrdered.forEach((p, i) => {
+    const idx = i + 1;
+    const angle = idx * GOLDEN_ANGLE;
+    const radius = Math.sqrt(idx / Math.max(regularOrdered.length, 1)) * 0.4;
+    nodes.push({
       project: p,
-      xr: 0.5 + Math.cos(angle) * 0.28,
-      yr: 0.5 + Math.sin(angle) * 0.22,
+      xr: 0.5 + Math.cos(angle) * radius,
+      yr: 0.5 + Math.sin(angle) * radius * 0.75,
       isInsignia: false,
-    };
+      orbitR: 16 + (idx % 3) * 8,
+      orbitSpeed: 0.12 + (idx % 4) * 0.05,
+      orbitPhase: idx * 1.7,
+    });
   });
+
+  return nodes;
 }
 
 /* ------------------------------------------------------------------ */
@@ -132,13 +140,24 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
       }
     }
 
+    // Posición actual en px CSS (sin dpr): base + paralaje + deriva orbital
+    // individual — el insignia (orbitR=0) queda anclado como centro fijo.
+    function currentPos(n: (typeof nodesPx)[number]) {
+      const spread = n.isInsignia ? 6 : 14;
+      let px = n.x + parallax.x * spread;
+      let py = n.y + parallax.y * spread;
+      if (n.orbitR > 0) {
+        px += Math.cos(t * n.orbitSpeed + n.orbitPhase) * n.orbitR;
+        py += Math.sin(t * n.orbitSpeed + n.orbitPhase) * n.orbitR * 0.7;
+      }
+      return { px, py };
+    }
+
     function positionOverlay() {
       nodesPx.forEach((n) => {
         const refs = overlayRefs.current[n.project.id];
         if (!refs) return;
-        const spread = n.isInsignia ? 6 : 14;
-        const px = n.x + parallax.x * spread;
-        const py = n.y + parallax.y * spread;
+        const { px, py } = currentPos(n);
         const hitR = n.isInsignia ? 96 : 60;
 
         if (refs.hit) {
@@ -186,24 +205,12 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
         ctx!.fill();
       });
 
-      if (nodesPx.length > 1) {
-        ctx!.strokeStyle = "rgba(16,185,129,0.3)";
-        ctx!.lineWidth = 1.2 * dpr;
-        ctx!.beginPath();
-        nodesPx.forEach((n, i) => {
-          const spread = n.isInsignia ? 6 : 14;
-          const px = (n.x + parallax.x * spread) * dpr;
-          const py = (n.y + parallax.y * spread) * dpr;
-          if (i === 0) ctx!.moveTo(px, py);
-          else ctx!.lineTo(px, py);
-        });
-        ctx!.stroke();
-      }
-
+      // Sin líneas conectando las estrellas — cada marca flota suelta,
+      // no "forma parte de una red" con las demás.
       nodesPx.forEach((n) => {
-        const spread = n.isInsignia ? 6 : 14;
-        const px = (n.x + parallax.x * spread) * dpr;
-        const py = (n.y + parallax.y * spread) * dpr;
+        const pos = currentPos(n);
+        const px = pos.px * dpr;
+        const py = pos.py * dpr;
         const pulse = reduced ? 1 : 1 + 0.14 * Math.sin(t * 1.3 + n.x);
         const color = n.isInsignia ? GOLD : ACCENT;
         const baseR = n.isInsignia ? 13 : 6.5;
@@ -275,24 +282,34 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
         }}
       />
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="pointer-events-none absolute left-1/2 top-[9%] z-[3] w-full -translate-x-1/2 px-5 text-center"
-      >
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/55">{heroEyebrow}</span>
-        <h1 className="mt-3 font-display text-[38px] font-semibold leading-[1.02] tracking-tight text-white sm:text-[54px] lg:text-[68px]">
-          {heroTitleLine1}
-          <br />
-          <span className="italic" style={{ color: "#10B981" }}>
-            {heroTitleHighlight}
-          </span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-[46ch] text-[15.5px] leading-relaxed text-white/60">
-          {insigniaNode ? heroSubtitleWithInsignia(insigniaNode.project.cliente_nombre) : heroSubtitleDefault}
-        </p>
-      </motion.div>
+      {/*
+        El centrado (left-1/2 + -translate-x-1/2) vive en ESTE wrapper, sin
+        animación — el motion.div de adentro solo maneja el fade-in (y),
+        nunca la posición. Framer Motion escribe su propio `transform`
+        inline sobre el elemento que anima, así que si el centrado vivía en
+        el mismo nodo, esa transición pisaba silenciosamente el
+        -translate-x-1/2 (por eso el título aparecía corrido a la derecha,
+        sin relación con el centro real de la constelación).
+      */}
+      <div className="pointer-events-none absolute left-1/2 top-[9%] z-[3] w-full -translate-x-1/2 px-5 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/55">{heroEyebrow}</span>
+          <h1 className="mt-3 font-display text-[38px] font-semibold leading-[1.02] tracking-tight text-white sm:text-[54px] lg:text-[68px]">
+            {heroTitleLine1}
+            <br />
+            <span className="italic" style={{ color: "#10B981" }}>
+              {heroTitleHighlight}
+            </span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-[46ch] text-[15.5px] leading-relaxed text-white/60">
+            {insigniaNode ? heroSubtitleWithInsignia(insigniaNode.project.cliente_nombre) : heroSubtitleDefault}
+          </p>
+        </motion.div>
+      </div>
 
       <div className="pointer-events-none absolute bottom-[5%] left-1/2 z-[3] flex -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-white/35">
         <span>{heroScrollCue}</span>
@@ -373,8 +390,8 @@ function NodeOverlay({
               {insigniaTag}
             </span>
           )}
-          {project.imagen_portada_url ? (
-            <img src={project.imagen_portada_url} alt="" className="h-full w-full object-cover" />
+          {project.mostrar_desktop && project.imagen_portada_url ? (
+            <img src={project.imagen_portada_url} alt="" className="h-full w-full object-cover object-top" />
           ) : (
             <div
               className="h-full w-full"
@@ -397,24 +414,46 @@ function NodeOverlay({
 /* ------------------------------------------------------------------ */
 
 function WallCard({ project }: { project: PortfolioProject }) {
+  const [open, setOpen] = useState(false);
+  const hasDesktop = project.mostrar_desktop && !!project.imagen_portada_url;
+  const hasMobile = project.mostrar_mobile && !!project.imagen_mobile_url;
+  const hasAnyDevice = hasDesktop || hasMobile;
+  const accentColor = project.insignia ? "#e3b866" : "#10B981";
+
   return (
-    <Link
-      to={`/casos-de-exito/${project.slug}`}
-      className={`group relative flex flex-col overflow-hidden border border-white/10 bg-[#0d151b] no-underline transition-all duration-300 hover:-translate-y-1 ${
+    <div
+      className={`group relative flex flex-col border border-white/10 bg-[#0d151b] transition-all duration-300 hover:-translate-y-1 ${
         project.insignia ? "hover:border-[#e3b86680] sm:col-span-4" : "hover:border-emerald-500/40 sm:col-span-2"
       }`}
     >
-      <div className={`relative border-b border-white/10 ${project.insignia ? "h-[200px]" : "h-[168px]"}`}>
+      <div
+        role={hasAnyDevice ? "button" : undefined}
+        tabIndex={hasAnyDevice ? 0 : undefined}
+        onClick={() => hasAnyDevice && setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (hasAnyDevice && (e.key === "Enter" || e.key === " ")) setOpen((o) => !o);
+        }}
+        className={`relative flex items-center justify-center gap-5 border-b border-white/10 bg-black/25 px-6 py-9 ${
+          hasAnyDevice ? "cursor-pointer" : ""
+        }`}
+      >
         {project.insignia && (
           <span className="absolute right-3.5 top-3.5 z-[2] bg-[#e3b866] px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-wide text-[#1a1206]">
             ✦ {insigniaTag}
           </span>
         )}
-        {project.imagen_portada_url ? (
-          <img src={project.imagen_portada_url} alt={project.cliente_nombre} className="h-full w-full object-cover" />
+        {hasAnyDevice ? (
+          <>
+            {hasDesktop && (
+              <LaptopFrame imageUrl={project.imagen_portada_url!} open={open} label={`${project.slug}.nodexa.app`} />
+            )}
+            {hasMobile && (
+              <PhoneFrame imageUrl={project.imagen_mobile_url!} open={open} label={project.cliente_nombre} />
+            )}
+          </>
         ) : (
           <div
-            className="h-full w-full"
+            className="h-[168px] w-full"
             style={{
               background: project.insignia
                 ? "linear-gradient(135deg, rgba(227,184,102,.28), rgba(16,185,129,.12) 55%, #0d151b 100%)"
@@ -430,20 +469,18 @@ function WallCard({ project }: { project: PortfolioProject }) {
         <h3 className={`font-display font-semibold text-white ${project.insignia ? "text-[23px]" : "text-[19px]"}`}>
           {project.cliente_nombre}
         </h3>
-        <span
-          className="-mt-2 text-[12.5px] font-semibold"
-          style={{ color: project.insignia ? "#e3b866" : "#10B981" }}
-        >
+        <span className="-mt-2 text-[12.5px] font-semibold" style={{ color: accentColor }}>
           {project.rubro}
         </span>
         <p className="flex-1 text-[13.5px] leading-relaxed text-white/55">{project.problema}</p>
-        <span
-          className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-white/50 transition-colors group-hover:text-white"
+        <Link
+          to={`/casos-de-exito/${project.slug}`}
+          className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-white/50 no-underline transition-colors hover:text-white"
         >
-          Ver el caso completo →
-        </span>
+          {cardCta}
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
 

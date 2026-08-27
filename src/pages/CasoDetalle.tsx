@@ -127,16 +127,33 @@ export default function CasoDetalle() {
         </motion.div>
       </section>
 
-      {project.imagen_portada_url && (
+      {(project.mostrar_desktop || project.mostrar_mobile) && (
         <section className="px-6 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewportOnce}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto max-w-[980px] overflow-hidden border border-white/10"
+            className="mx-auto flex max-w-[980px] flex-wrap items-end justify-center gap-8"
           >
-            <img src={project.imagen_portada_url} alt={project.cliente_nombre} className="w-full object-cover" />
+            {project.mostrar_desktop && project.imagen_portada_url && (
+              <div className="w-full max-w-[640px] overflow-hidden border border-white/10">
+                <img
+                  src={project.imagen_portada_url}
+                  alt={project.cliente_nombre}
+                  className="w-full object-cover object-top"
+                />
+              </div>
+            )}
+            {project.mostrar_mobile && project.imagen_mobile_url && (
+              <div className="w-[140px] flex-none overflow-hidden rounded-[18px] border border-white/10">
+                <img
+                  src={project.imagen_mobile_url}
+                  alt={`${project.cliente_nombre} — versión mobile`}
+                  className="w-full object-cover object-top"
+                />
+              </div>
+            )}
           </motion.div>
         </section>
       )}
