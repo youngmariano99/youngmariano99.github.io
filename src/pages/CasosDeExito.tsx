@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
 import { supabase } from "../lib/supabase";
@@ -9,6 +9,7 @@ import { BackToHome } from "../components/shared/BackToHome";
 import { LaptopFrame, PhoneFrame } from "../components/portfolio/CaseDeviceMockups";
 import {
   cardCta,
+  heroClickHint,
   heroEmptySubtitle,
   heroEmptyTitle,
   heroEyebrow,
@@ -26,11 +27,13 @@ import type { PortfolioProject } from "../types";
 
 const ACCENT = "16,185,129"; // rgb, para armar rgba() dinámicos
 const GOLD = "227,184,102";
+const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const;
 
 /* ------------------------------------------------------------------ */
-/* Layout de la constelación: si hay un caso insignia, va al centro y   */
-/* el resto se reparte en un anillo alrededor. Si no hay ninguno, todos */
-/* se reparten parejo — nunca depende de una cantidad fija de casos.    */
+/* Layout de la constelación: los casos "insignia" (puede haber más de   */
+/* uno — todos son igual de destacados, no hay un "primero entre         */
+/* iguales") se reparten en una fila central; el resto flota alrededor   */
+/* en espiral, cada uno con su propia órbita lenta.                      */
 /* ------------------------------------------------------------------ */
 
 interface Node {
@@ -38,39 +41,45 @@ interface Node {
   xr: number;
   yr: number;
   isInsignia: boolean;
-  /** Radio de la órbita en px — 0 para el insignia, que queda fijo como ancla. */
+  /** Radio de la órbita en px — 0 para los insignia, que quedan fijos como ancla. */
   orbitR: number;
   orbitSpeed: number;
   orbitPhase: number;
 }
 
-const MAX_HERO_NODES = 6;
+const MAX_HERO_NODES = 8;
+const MAX_FEATURED = 3;
 const GOLDEN_ANGLE = 2.399963; // radianes — reparte puntos en espiral sin que ninguno quede alineado con otro
 
-// Sin caso insignia, o para el resto de las marcas: nunca se calculan con
-// seno/coseno "prolijo" (eso es lo que colapsaba 2 estrellas en la misma
-// línea vertical antes) — espiral tipo semillas de girasol + una órbita
-// lenta e individual por estrella, para que floten sueltas por la pantalla.
 function computeNodes(projects: PortfolioProject[]): Node[] {
-  const insignia = projects.filter((p) => p.insignia);
+  const featured = projects.filter((p) => p.insignia).slice(0, MAX_FEATURED);
   const regular = projects.filter((p) => !p.insignia);
-  const ordered = [...insignia, ...regular].slice(0, MAX_HERO_NODES);
+  const ordered = [...featured, ...regular].slice(0, MAX_HERO_NODES);
+  const featuredOrdered = ordered.filter((p) => p.insignia);
   const regularOrdered = ordered.filter((p) => !p.insignia);
 
   const nodes: Node[] = [];
 
-  if (insignia.length > 0) {
-    nodes.push({ project: insignia[0], xr: 0.5, yr: 0.5, isInsignia: true, orbitR: 0, orbitSpeed: 0, orbitPhase: 0 });
-  }
+  // Insignia: fila central pareja — todos con el mismo trato, ninguno
+  // "más grande que los demás insignia" (el tamaño extra es respecto a
+  // los NO insignia, no una jerarquía entre insignia).
+  featuredOrdered.forEach((p, i) => {
+    const n = featuredOrdered.length;
+    const spacing = 0.17;
+    const xr = 0.5 + (i - (n - 1) / 2) * spacing;
+    nodes.push({ project: p, xr, yr: 0.46, isInsignia: true, orbitR: 0, orbitSpeed: 0, orbitPhase: 0 });
+  });
 
   regularOrdered.forEach((p, i) => {
     const idx = i + 1;
     const angle = idx * GOLDEN_ANGLE;
-    const radius = Math.sqrt(idx / Math.max(regularOrdered.length, 1)) * 0.4;
+    const radius = 0.16 + Math.sqrt(idx / Math.max(regularOrdered.length, 1)) * 0.32;
+    const xr = Math.min(0.93, Math.max(0.07, 0.5 + Math.cos(angle) * radius));
+    const yr = Math.min(0.92, Math.max(0.16, 0.5 + Math.sin(angle) * radius * 0.8));
     nodes.push({
       project: p,
-      xr: 0.5 + Math.cos(angle) * radius,
-      yr: 0.5 + Math.sin(angle) * radius * 0.75,
+      xr,
+      yr,
       isInsignia: false,
       orbitR: 16 + (idx % 3) * 8,
       orbitSpeed: 0.12 + (idx % 4) * 0.05,
@@ -83,18 +92,24 @@ function computeNodes(projects: PortfolioProject[]): Node[] {
 
 /* ------------------------------------------------------------------ */
 
-function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
-  const sectionRef = useRef<HTMLDivElement>(null);
+function ConstellationHero({
+  projects,
+  onSelect,
+}: {
+  projects: PortfolioProject[];
+  onSelect: (project: PortfolioProject) => void;
+}) {
+  const skyRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const overlayRefs = useRef<Record<string, { hit: HTMLDivElement | null; card: HTMLDivElement | null; label: HTMLDivElement | null }>>({});
+  const overlayRefs = useRef<Record<string, { hit: HTMLButtonElement | null; label: HTMLDivElement | null }>>({});
 
   const nodes = useMemo(() => computeNodes(projects), [projects]);
-  const insigniaNode = nodes.find((n) => n.isInsignia);
+  const featuredNodes = nodes.filter((n) => n.isInsignia);
 
   useEffect(() => {
-    const section = sectionRef.current;
+    const sky = skyRef.current;
     const canvas = canvasRef.current;
-    if (!section || !canvas || nodes.length === 0) return;
+    if (!sky || !canvas || nodes.length === 0) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -114,9 +129,9 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
     const nodesPx = nodes.map((n) => ({ ...n, x: 0, y: 0 }));
 
     function layout() {
-      if (!section) return;
-      w = section.clientWidth;
-      h = section.clientHeight;
+      if (!sky) return;
+      w = sky.clientWidth;
+      h = sky.clientHeight;
       canvas!.width = w * dpr;
       canvas!.height = h * dpr;
       canvas!.style.width = w + "px";
@@ -141,7 +156,7 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
     }
 
     // Posición actual en px CSS (sin dpr): base + paralaje + deriva orbital
-    // individual — el insignia (orbitR=0) queda anclado como centro fijo.
+    // individual — los insignia (orbitR=0) quedan anclados.
     function currentPos(n: (typeof nodesPx)[number]) {
       const spread = n.isInsignia ? 6 : 14;
       let px = n.x + parallax.x * spread;
@@ -166,19 +181,15 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
           refs.hit.style.width = hitR + "px";
           refs.hit.style.height = hitR + "px";
         }
-        if (refs.card) {
-          refs.card.style.left = px + "px";
-          refs.card.style.top = py - (n.isInsignia ? 138 : 116) + "px";
-        }
         if (refs.label) {
           refs.label.style.left = px + "px";
-          refs.label.style.top = py + (n.isInsignia ? 50 : 32) + "px";
+          refs.label.style.top = py + (n.isInsignia ? 56 : 32) + "px";
         }
       });
     }
 
     function onMouseMove(e: MouseEvent) {
-      const rect = section!.getBoundingClientRect();
+      const rect = sky!.getBoundingClientRect();
       targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
       targetY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
     }
@@ -205,16 +216,15 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
         ctx!.fill();
       });
 
-      // Sin líneas conectando las estrellas — cada marca flota suelta,
-      // no "forma parte de una red" con las demás.
+      // Sin líneas conectando las estrellas — cada marca flota suelta.
       nodesPx.forEach((n) => {
         const pos = currentPos(n);
         const px = pos.px * dpr;
         const py = pos.py * dpr;
         const pulse = reduced ? 1 : 1 + 0.14 * Math.sin(t * 1.3 + n.x);
         const color = n.isInsignia ? GOLD : ACCENT;
-        const baseR = n.isInsignia ? 13 : 6.5;
-        const glowR = baseR * (n.isInsignia ? 9 : 6) * dpr;
+        const baseR = n.isInsignia ? 12 : 6.5;
+        const glowR = baseR * (n.isInsignia ? 8 : 6) * dpr;
 
         const glow = ctx!.createRadialGradient(px, py, 0, px, py, glowR);
         glow.addColorStop(0, `rgba(${color},0.6)`);
@@ -244,16 +254,16 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
       raf = requestAnimationFrame(draw);
     }
 
-    section.addEventListener("mousemove", onMouseMove);
-    section.addEventListener("mouseleave", onMouseLeave);
+    sky.addEventListener("mousemove", onMouseMove);
+    sky.addEventListener("mouseleave", onMouseLeave);
     window.addEventListener("resize", layout);
     layout();
     draw();
 
     return () => {
       cancelAnimationFrame(raf);
-      section.removeEventListener("mousemove", onMouseMove);
-      section.removeEventListener("mouseleave", onMouseLeave);
+      sky.removeEventListener("mousemove", onMouseMove);
+      sky.removeEventListener("mouseleave", onMouseLeave);
       window.removeEventListener("resize", layout);
     };
   }, [nodes]);
@@ -271,34 +281,19 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
   }
 
   return (
-    <section ref={sectionRef} className="relative h-[92vh] min-h-[620px] max-h-[900px] overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 55% at 50% 45%, transparent 40%, #05080a 95%), linear-gradient(to bottom, #05080a 0%, transparent 14%, transparent 78%, #05080a 100%)",
-        }}
-      />
-
-      {/*
-        El centrado (left-1/2 + -translate-x-1/2) vive en ESTE wrapper, sin
-        animación — el motion.div de adentro solo maneja el fade-in (y),
-        nunca la posición. Framer Motion escribe su propio `transform`
-        inline sobre el elemento que anima, así que si el centrado vivía en
-        el mismo nodo, esa transición pisaba silenciosamente el
-        -translate-x-1/2 (por eso el título aparecía corrido a la derecha,
-        sin relación con el centro real de la constelación).
-      */}
-      <div className="pointer-events-none absolute left-1/2 top-[9%] z-[3] w-full -translate-x-1/2 px-5 text-center">
+    <section className="relative">
+      {/* Título: en flujo normal, SU PROPIO espacio — ya no flota encima
+          del cielo. Antes compartía capa con las estrellas (absolute
+          sobre el mismo canvas) y a cualquier ancho/alto de viewport
+          alguna quedaba atrás de la otra. Separados, nunca compiten. */}
+      <div className="relative z-[2] px-6 pb-10 pt-32 text-center md:pt-40">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.6, ease: PREMIUM_EASE }}
         >
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/55">{heroEyebrow}</span>
-          <h1 className="mt-3 font-display text-[38px] font-semibold leading-[1.02] tracking-tight text-white sm:text-[54px] lg:text-[68px]">
+          <h1 className="mx-auto mt-3 max-w-[16ch] font-display text-[38px] font-semibold leading-[1.02] tracking-tight text-white sm:text-[54px] lg:text-[64px]">
             {heroTitleLine1}
             <br />
             <span className="italic" style={{ color: "#10B981" }}>
@@ -306,106 +301,102 @@ function ConstellationHero({ projects }: { projects: PortfolioProject[] }) {
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-[46ch] text-[15.5px] leading-relaxed text-white/60">
-            {insigniaNode ? heroSubtitleWithInsignia(insigniaNode.project.cliente_nombre) : heroSubtitleDefault}
+            {featuredNodes.length > 0
+              ? heroSubtitleWithInsignia(featuredNodes.map((n) => n.project.cliente_nombre))
+              : heroSubtitleDefault}
           </p>
         </motion.div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-[5%] left-1/2 z-[3] flex -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-white/35">
-        <span>{heroScrollCue}</span>
-        <span
-          className="h-6 w-px animate-pulse"
-          style={{ background: "linear-gradient(to bottom, rgba(16,185,129,.4), transparent)" }}
-        />
-      </div>
-
-      {nodes.map((n) => (
-        <NodeOverlay
-          key={n.project.id}
-          node={n}
-          registerRefs={(refs) => {
-            overlayRefs.current[n.project.id] = refs;
+      {/* El cielo: contenedor propio, con su propia altura — coordenadas
+          de las estrellas relativas a ESTE bloque, no al viewport entero. */}
+      <div ref={skyRef} className="relative h-[56vh] min-h-[420px] max-h-[640px] overflow-hidden">
+        <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 60% at 50% 50%, transparent 45%, #05080a 96%), linear-gradient(to bottom, #05080a 0%, transparent 12%, transparent 85%, #05080a 100%)",
           }}
         />
-      ))}
+
+        <div className="pointer-events-none absolute bottom-[4%] left-1/2 z-[3] flex -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-white/35">
+          <span>{heroScrollCue}</span>
+          <span
+            className="h-6 w-px animate-pulse"
+            style={{ background: "linear-gradient(to bottom, rgba(16,185,129,.4), transparent)" }}
+          />
+        </div>
+
+        {nodes.map((n) => (
+          <NodeOverlay
+            key={n.project.id}
+            node={n}
+            onSelect={onSelect}
+            registerRefs={(refs) => {
+              overlayRefs.current[n.project.id] = refs;
+            }}
+          />
+        ))}
+      </div>
     </section>
   );
 }
 
 function NodeOverlay({
   node,
+  onSelect,
   registerRefs,
 }: {
   node: Node;
-  registerRefs: (refs: { hit: HTMLDivElement | null; card: HTMLDivElement | null; label: HTMLDivElement | null }) => void;
+  onSelect: (project: PortfolioProject) => void;
+  registerRefs: (refs: { hit: HTMLButtonElement | null; label: HTMLDivElement | null }) => void;
 }) {
-  const hitRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const hitRef = useRef<HTMLButtonElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState(false);
 
   useEffect(() => {
-    registerRefs({ hit: hitRef.current, card: cardRef.current, label: labelRef.current });
+    registerRefs({ hit: hitRef.current, label: labelRef.current });
   }, [registerRefs]);
 
   const { project, isInsignia } = node;
 
   return (
     <>
-      <div
+      <button
         ref={hitRef}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        className="absolute z-[4] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full"
+        type="button"
+        onClick={() => onSelect(project)}
+        aria-label={`Ver ${project.cliente_nombre} en detalle`}
+        className="absolute z-[4] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border-none bg-transparent p-0"
       >
-        <Link to={`/casos-de-exito/${project.slug}`} className="block h-full w-full" aria-label={project.cliente_nombre} />
-      </div>
+        {/* Anillo discontinuo + invitación a tocar — solo en las
+            destacadas, para que el usuario entienda que se puede
+            interactuar sin necesitar un tooltip permanente. */}
+        {isInsignia && (
+          <span
+            className="pointer-events-none absolute inset-[-14px] animate-spin rounded-full border border-dashed"
+            style={{ borderColor: "rgba(227,184,102,.55)", animationDuration: "22s" }}
+          />
+        )}
+      </button>
 
-      <div
-        ref={labelRef}
-        className="pointer-events-none absolute z-[3] -translate-x-1/2 -translate-y-1/2 text-center transition-opacity duration-200"
-        style={{ opacity: hover ? 0 : 1 }}
-      >
+      <div ref={labelRef} className="pointer-events-none absolute z-[3] -translate-x-1/2 -translate-y-1/2 text-center">
         <div
           className="whitespace-nowrap text-[13.5px] font-bold"
           style={{ color: isInsignia ? "#f5e6c4" : "#fff", textShadow: "0 2px 12px rgba(0,0,0,.8)" }}
         >
           {project.cliente_nombre}
         </div>
-      </div>
-
-      <div
-        ref={cardRef}
-        className="pointer-events-none absolute z-[5] w-[240px] -translate-x-1/2 -translate-y-1/2 border p-3.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)] transition-all duration-300"
-        style={{
-          background: "#0d151b",
-          borderColor: isInsignia ? "rgba(227,184,102,.4)" : "rgba(255,255,255,.09)",
-          opacity: hover ? 1 : 0,
-          transform: `translate(-50%, ${hover ? "-50%" : "-46%"}) scale(${hover ? 1 : 0.96})`,
-        }}
-      >
-        <div className="relative mb-3 h-[108px] overflow-hidden border border-white/10">
-          {isInsignia && (
-            <span className="absolute -right-px -top-px z-[1] bg-[#e3b866] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-[#1a1206]">
-              {insigniaTag}
-            </span>
-          )}
-          {project.mostrar_desktop && project.imagen_portada_url ? (
-            <img src={project.imagen_portada_url} alt="" className="h-full w-full object-cover object-top" />
-          ) : (
-            <div
-              className="h-full w-full"
-              style={{
-                background: `linear-gradient(140deg, ${isInsignia ? "rgba(227,184,102,.35)" : "rgba(16,185,129,.28)"}, transparent 70%)`,
-              }}
-            />
-          )}
-        </div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: isInsignia ? "#e3b866" : "#5b6b72" }}>
-          {project.rubro}
-        </div>
-        <div className="mt-1 text-[16px] font-bold text-white">{project.cliente_nombre}</div>
-        <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-white/55">{cardCta}</div>
+        {isInsignia && (
+          <div
+            className="mt-1 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.1em]"
+            style={{ color: "#e3b866" }}
+          >
+            ↑ {heroClickHint}
+          </div>
+        )}
       </div>
     </>
   );
@@ -413,8 +404,7 @@ function NodeOverlay({
 
 /* ------------------------------------------------------------------ */
 
-function WallCard({ project }: { project: PortfolioProject }) {
-  const [open, setOpen] = useState(false);
+function WallCard({ project, onSelect }: { project: PortfolioProject; onSelect: (project: PortfolioProject) => void }) {
   const hasDesktop = project.mostrar_desktop && !!project.imagen_portada_url;
   const hasMobile = project.mostrar_mobile && !!project.imagen_mobile_url;
   const hasAnyDevice = hasDesktop || hasMobile;
@@ -429,9 +419,9 @@ function WallCard({ project }: { project: PortfolioProject }) {
       <div
         role={hasAnyDevice ? "button" : undefined}
         tabIndex={hasAnyDevice ? 0 : undefined}
-        onClick={() => hasAnyDevice && setOpen((o) => !o)}
+        onClick={() => hasAnyDevice && onSelect(project)}
         onKeyDown={(e) => {
-          if (hasAnyDevice && (e.key === "Enter" || e.key === " ")) setOpen((o) => !o);
+          if (hasAnyDevice && (e.key === "Enter" || e.key === " ")) onSelect(project);
         }}
         className={`relative flex items-center justify-center gap-5 border-b border-white/10 bg-black/25 px-6 py-9 ${
           hasAnyDevice ? "cursor-pointer" : ""
@@ -445,11 +435,9 @@ function WallCard({ project }: { project: PortfolioProject }) {
         {hasAnyDevice ? (
           <>
             {hasDesktop && (
-              <LaptopFrame imageUrl={project.imagen_portada_url!} open={open} label={`${project.slug}.nodexa.app`} />
+              <LaptopFrame imageUrl={project.imagen_portada_url!} open label={`${project.slug}.nodexa.app`} />
             )}
-            {hasMobile && (
-              <PhoneFrame imageUrl={project.imagen_mobile_url!} open={open} label={project.cliente_nombre} />
-            )}
+            {hasMobile && <PhoneFrame imageUrl={project.imagen_mobile_url!} open label={project.cliente_nombre} />}
           </>
         ) : (
           <div
@@ -484,7 +472,7 @@ function WallCard({ project }: { project: PortfolioProject }) {
   );
 }
 
-function Wall({ projects }: { projects: PortfolioProject[] }) {
+function Wall({ projects, onSelect }: { projects: PortfolioProject[]; onSelect: (project: PortfolioProject) => void }) {
   return (
     <section className="relative px-6 py-24 md:px-10 lg:py-28">
       <motion.div
@@ -503,7 +491,7 @@ function Wall({ projects }: { projects: PortfolioProject[] }) {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-6">
           {projects.map((p) => (
-            <WallCard key={p.id} project={p} />
+            <WallCard key={p.id} project={p} onSelect={onSelect} />
           ))}
           <div className="flex min-h-[168px] flex-col items-center justify-center gap-2 border border-dashed border-white/15 px-6 py-10 text-center text-white/35 sm:col-span-2">
             <span className="text-2xl">+</span>
@@ -516,10 +504,102 @@ function Wall({ projects }: { projects: PortfolioProject[] }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Visor de dispositivos: pantalla completa, SIN fondo opaco (un tinte  */
+/* sutil + blur nomás, para que el cielo se siga sintiendo detrás) —    */
+/* laptop y celular grandes, con botón directo a la ficha completa.     */
+/* ------------------------------------------------------------------ */
+
+function DeviceViewerOverlay({
+  project,
+  onClose,
+}: {
+  project: PortfolioProject | null;
+  onClose: () => void;
+}) {
+  const hasDesktop = project?.mostrar_desktop && !!project.imagen_portada_url;
+  const hasMobile = project?.mostrar_mobile && !!project.imagen_mobile_url;
+  const accentColor = project?.insignia ? "#e3b866" : "#10B981";
+
+  return (
+    <AnimatePresence>
+      {project && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          onClick={onClose}
+          className="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-10 overflow-y-auto px-6 py-20 backdrop-blur-md"
+          style={{ background: "rgba(5,8,10,0.55)" }}
+        >
+          <button
+            onClick={onClose}
+            aria-label="Cerrar"
+            className="fixed right-6 top-6 z-[210] flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/40 text-xl leading-none text-white/70 backdrop-blur-md transition-colors hover:border-white/30 hover:text-white"
+          >
+            &times;
+          </button>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.96 }}
+            transition={{ duration: 0.3, ease: PREMIUM_EASE }}
+            onClick={(e) => e.stopPropagation()}
+            className="flex flex-col items-center gap-10"
+          >
+            {(hasDesktop || hasMobile) && (
+              <div className="flex flex-wrap items-end justify-center gap-10">
+                {hasDesktop && (
+                  <LaptopFrame
+                    size="lg"
+                    imageUrl={project.imagen_portada_url!}
+                    open
+                    label={`${project.slug}.nodexa.app`}
+                  />
+                )}
+                {hasMobile && (
+                  <PhoneFrame size="lg" imageUrl={project.imagen_mobile_url!} open label={project.cliente_nombre} />
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-col items-center gap-2 text-center">
+              {project.insignia && (
+                <span
+                  className="mb-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[10.5px] font-bold uppercase tracking-wide"
+                  style={{ background: "rgba(227,184,102,.14)", color: "#e3b866" }}
+                >
+                  ✦ {insigniaTag}
+                </span>
+              )}
+              <h3 className="font-display text-[26px] font-semibold text-white md:text-[32px]">
+                {project.cliente_nombre}
+              </h3>
+              <span className="text-[13px] font-semibold" style={{ color: accentColor }}>
+                {project.rubro}
+              </span>
+            </div>
+
+            <Link
+              to={`/casos-de-exito/${project.slug}`}
+              className="inline-flex items-center gap-2 rounded-full bg-[#10B981] px-7 py-3.5 text-[14px] font-bold text-[#05080F] no-underline transition-colors duration-300 hover:bg-[#0EA672]"
+            >
+              {cardCta}
+            </Link>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 
 export default function CasosDeExito() {
   const [projects, setProjects] = useState<PortfolioProject[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewerProject, setViewerProject] = useState<PortfolioProject | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -543,8 +623,9 @@ export default function CasosDeExito() {
   return (
     <main id="casos-de-exito-top" className="relative">
       <BackToHome />
-      {!loading && <ConstellationHero projects={projects} />}
-      {!loading && projects.length > 0 && <Wall projects={projects} />}
+      {!loading && <ConstellationHero projects={projects} onSelect={setViewerProject} />}
+      {!loading && projects.length > 0 && <Wall projects={projects} onSelect={setViewerProject} />}
+      <DeviceViewerOverlay project={viewerProject} onClose={() => setViewerProject(null)} />
     </main>
   );
 }

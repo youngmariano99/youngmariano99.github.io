@@ -5,11 +5,27 @@
 export const heroEyebrow = "Marcas que confiaron en Nodexa";
 export const heroTitleLine1 = "Cada marca,";
 export const heroTitleHighlight = "una estrella.";
-export const heroSubtitleWithInsignia = (nombre: string) =>
-  `${nombre} brilla más porque fue el caso más completo hasta ahora — el sistema es así: cuanto más armamos con una marca, más grande es su lugar acá.`;
+
+// El brillo/tamaño mayor NO es por lo que facturó esa marca — es por la
+// complejidad del desafío técnico. Evitar cualquier lectura de "pagó más,
+// brilla más": la copy tiene que dejarlo explícito.
+function joinNombres(nombres: string[]) {
+  if (nombres.length === 1) return nombres[0];
+  return `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}`;
+}
+export const heroSubtitleWithInsignia = (nombres: string[]) => {
+  const plural = nombres.length > 1;
+  const brillar = plural ? "brillan" : "brilla";
+  const ser = plural ? "fueron" : "fue";
+  const desafio = plural ? "los mayores desafíos" : "el mayor desafío";
+  const facturar = plural ? "facturaron" : "facturó";
+  const lo = plural ? "resolverlos" : "resolverlo";
+  return `${joinNombres(nombres)} ${brillar} más porque ${ser} ${desafio} que enfrentamos hasta ahora — no por lo que ${facturar}, sino por lo que exigió ${lo}.`;
+};
 export const heroSubtitleDefault =
   "Cada trabajo que hacemos se suma a este cielo. Con el tiempo, se convierte en una galaxia.";
 export const heroScrollCue = "Recorré el cielo";
+export const heroClickHint = "Tocá una estrella para verla en detalle";
 export const heroEmptyTitle = "El cielo todavía está despejado.";
 export const heroEmptySubtitle = "Acá van a brillar las próximas marcas que confíen en Nodexa.";
 

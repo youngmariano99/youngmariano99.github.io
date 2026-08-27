@@ -3,20 +3,27 @@
 import { useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
+const LAPTOP_MAX_WIDTH = { sm: 280, lg: 560 };
+const PHONE_WIDTH = { sm: 92, lg: 190 };
+
 /*
  * Mismo lenguaje visual que ProjectLaptopMockup.tsx (home) pero:
  * - toma una sola imagen estática (no crossfade/scroll), pensado para una
  *   captura fija por caso, no una animación de navegación del sitio.
  * - la tapa la controla un click (open/close), no el scroll.
+ * - `size="lg"` es la versión grande que se usa en el visor a pantalla
+ *   completa (DeviceViewerOverlay) — "sm" es la miniatura del muro.
  */
 export function LaptopFrame({
   imageUrl,
   open,
   label,
+  size = "sm",
 }: {
   imageUrl: string;
   open: boolean;
   label: string;
+  size?: "sm" | "lg";
 }) {
   const target = useMotionValue(open ? 0 : -78);
   const lid = useSpring(target, { stiffness: 120, damping: 20 });
@@ -27,7 +34,7 @@ export function LaptopFrame({
   }, [open, target]);
 
   return (
-    <div className="w-full max-w-[280px] [perspective:1600px]">
+    <div className="w-full [perspective:1600px]" style={{ maxWidth: LAPTOP_MAX_WIDTH[size] }}>
       <div className="[transform-style:preserve-3d]" style={{ transform: "rotateX(8deg)" }}>
         <motion.div
           style={{ rotateX: lid, transformOrigin: "50% 100%" }}
@@ -62,13 +69,23 @@ export function LaptopFrame({
   );
 }
 
-export function PhoneFrame({ imageUrl, open, label }: { imageUrl: string; open: boolean; label: string }) {
+export function PhoneFrame({
+  imageUrl,
+  open,
+  label,
+  size = "sm",
+}: {
+  imageUrl: string;
+  open: boolean;
+  label: string;
+  size?: "sm" | "lg";
+}) {
   return (
     <motion.div
       animate={{ opacity: open ? 1 : 0.35, scale: open ? 1 : 0.94, y: open ? 0 : 6 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="relative w-[92px] flex-none overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#05070C] p-[3px] shadow-xl shadow-black/40"
-      style={{ aspectRatio: "9 / 19.5" }}
+      className="relative flex-none overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#05070C] p-[3px] shadow-xl shadow-black/40"
+      style={{ width: PHONE_WIDTH[size], aspectRatio: "9 / 19.5" }}
     >
       <span className="absolute left-1/2 top-[5px] z-10 h-[3px] w-6 -translate-x-1/2 rounded-full bg-black/60" />
       <div className="relative h-full w-full overflow-hidden rounded-[13px] bg-gradient-to-br from-[#111A2C] via-[#0C1322] to-[#090E1A]">
