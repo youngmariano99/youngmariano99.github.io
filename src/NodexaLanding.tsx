@@ -11,6 +11,8 @@ import Home from "./pages/Home";
 import MiniModulos from "./pages/MiniModulos";
 import NodexaCustom from "./pages/NodexaCustom";
 import Recursos from "./pages/Recursos";
+import CasosDeExito from "./pages/CasosDeExito";
+import CasoDetalle from "./pages/CasoDetalle";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -61,6 +63,8 @@ export default function NodexaLanding() {
           <Route path="/mini-modulos" element={<MiniModulos />} />
           <Route path="/nodexa-custom" element={<NodexaCustom />} />
           <Route path="/recursos" element={<Recursos />} />
+          <Route path="/casos-de-exito" element={<CasosDeExito />} />
+          <Route path="/casos-de-exito/:slug" element={<CasoDetalle />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>

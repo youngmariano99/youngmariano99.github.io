@@ -7,6 +7,7 @@ import { ctaFormPainOptions, ctaFormUrgencyOptions, ctaFormVolumeOptions } from 
 import { dolorFormOptions, painFilterOptions, rubroOptions, typeFilterOptions } from "../../recursosData";
 import type { CtaFormOption, Resource } from "../../types";
 import type { FilterOption } from "../../recursosData";
+import GestionPortfolioTab from "./PortfolioTab";
 
 /* ------------------------------------------------------------------ */
 /* Tipos — mapean 1 a 1 las tablas de Supabase (ver 0001_init.sql)      */
@@ -636,13 +637,14 @@ function GestionRecursosTab() {
 
 /* ------------------------------------------------------------------ */
 
-type Tab = "cta-leads" | "recursos-leads" | "analiticas" | "gestion-recursos";
+type Tab = "cta-leads" | "recursos-leads" | "analiticas" | "gestion-recursos" | "gestion-portfolio";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "cta-leads", label: "Leads de Contacto" },
   { id: "recursos-leads", label: "Leads de Recursos" },
   { id: "analiticas", label: "Analíticas" },
   { id: "gestion-recursos", label: "Gestión de Recursos" },
+  { id: "gestion-portfolio", label: "Gestión de Portfolio" },
 ];
 
 export default function AdminDashboard() {
@@ -685,6 +687,7 @@ export default function AdminDashboard() {
         {tab === "recursos-leads" && <LeadsRecursosTab />}
         {tab === "analiticas" && <AnaliticasTab />}
         {tab === "gestion-recursos" && <GestionRecursosTab />}
+        {tab === "gestion-portfolio" && <GestionPortfolioTab />}
       </div>
     </div>
   );

@@ -15,8 +15,10 @@ import {
   projectsFinalTitle,
   type JourneyPhase,
 } from "../data";
+import { Link } from "react-router-dom";
 import { projectsData, type Project } from "../projectsData";
 import { useLeadModal } from "../lib/LeadModalContext";
+import { journeyCtaLabel } from "../portfolioData";
 import { MagneticButton } from "./shared/MagneticButton";
 import ProjectLaptopMockup from "./ProjectLaptopMockup";
 import PathStars from "./PathStars";
@@ -416,12 +418,20 @@ export default function JourneyExperience() {
             <h2 className="max-w-2xl text-[28px] font-extrabold leading-[1.15] tracking-tight text-white md:text-[42px] lg:text-[50px]">
               {projectsFinalTitle}
             </h2>
-            <MagneticButton
-              onClick={() => openLeadModal("viaje_cierre")}
-              className="inline-block rounded-[4px] border-none bg-[#10B981] px-8 py-4 text-[15px] font-semibold text-[#05080F] shadow-[0_10px_34px_-8px_rgba(16,185,129,0.55)] transition-all duration-300 hover:bg-[#0EA672] hover:shadow-[0_14px_44px_-6px_rgba(16,185,129,0.7)]"
-            >
-              {projectsFinalCta}
-            </MagneticButton>
+            <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-3">
+              <MagneticButton
+                onClick={() => openLeadModal("viaje_cierre")}
+                className="inline-block rounded-[4px] border-none bg-[#10B981] px-8 py-4 text-[15px] font-semibold text-[#05080F] shadow-[0_10px_34px_-8px_rgba(16,185,129,0.55)] transition-all duration-300 hover:bg-[#0EA672] hover:shadow-[0_14px_44px_-6px_rgba(16,185,129,0.7)]"
+              >
+                {projectsFinalCta}
+              </MagneticButton>
+              <Link
+                to="/casos-de-exito"
+                className="inline-flex items-center gap-2 rounded-[4px] border border-[#10B981]/40 bg-[#10B981]/10 px-8 py-4 text-[15px] font-semibold text-[#10B981] no-underline transition-all duration-300 hover:border-[#10B981] hover:bg-[#10B981]/20"
+              >
+                {journeyCtaLabel} →
+              </Link>
+            </div>
           </div>
         </motion.div>
       </div>

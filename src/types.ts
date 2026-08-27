@@ -74,3 +74,26 @@ export interface Resource {
   activo: boolean;
   created_at: string;
 }
+
+export interface PortfolioStep {
+  titulo: string;
+  descripcion: string;
+}
+
+// Mapea 1 a 1 la tabla `portfolio_projects` de Supabase (ver
+// supabase/migrations/0002_portfolio.sql) — sección "Casos de Éxito".
+export interface PortfolioProject {
+  id: string;
+  slug: string;
+  cliente_nombre: string;
+  rubro: string;
+  imagen_portada_url: string | null;
+  problema: string;
+  solucion: string;
+  pasos: PortfolioStep[];
+  galeria_urls: string[];
+  insignia: boolean;
+  activo: boolean;
+  orden: number;
+  created_at: string;
+}
