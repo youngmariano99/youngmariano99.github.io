@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
 import { supabase } from "../lib/supabase";
 import { BackToHome } from "../components/shared/BackToHome";
 import { LaptopFrame, PhoneFrame } from "../components/portfolio/CaseDeviceMockups";
@@ -19,9 +18,6 @@ import {
   heroTitleHighlight,
   heroTitleLine1,
   insigniaTag,
-  wallEyebrow,
-  wallGhostLabel,
-  wallTitle,
 } from "../portfolioData";
 import type { PortfolioProject } from "../types";
 
@@ -404,105 +400,6 @@ function NodeOverlay({
 
 /* ------------------------------------------------------------------ */
 
-function WallCard({ project, onSelect }: { project: PortfolioProject; onSelect: (project: PortfolioProject) => void }) {
-  const hasDesktop = project.mostrar_desktop && !!project.imagen_portada_url;
-  const hasMobile = project.mostrar_mobile && !!project.imagen_mobile_url;
-  const hasAnyDevice = hasDesktop || hasMobile;
-  const accentColor = project.insignia ? "#e3b866" : "#10B981";
-
-  return (
-    <div
-      className={`group relative flex flex-col border border-white/10 bg-[#0d151b] transition-all duration-300 hover:-translate-y-1 ${
-        project.insignia ? "hover:border-[#e3b86680] sm:col-span-4" : "hover:border-emerald-500/40 sm:col-span-2"
-      }`}
-    >
-      <div
-        role={hasAnyDevice ? "button" : undefined}
-        tabIndex={hasAnyDevice ? 0 : undefined}
-        onClick={() => hasAnyDevice && onSelect(project)}
-        onKeyDown={(e) => {
-          if (hasAnyDevice && (e.key === "Enter" || e.key === " ")) onSelect(project);
-        }}
-        className={`relative flex items-center justify-center gap-5 border-b border-white/10 bg-black/25 px-6 py-9 ${
-          hasAnyDevice ? "cursor-pointer" : ""
-        }`}
-      >
-        {project.insignia && (
-          <span className="absolute right-3.5 top-3.5 z-[2] bg-[#e3b866] px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-wide text-[#1a1206]">
-            ✦ {insigniaTag}
-          </span>
-        )}
-        {hasAnyDevice ? (
-          <>
-            {hasDesktop && (
-              <LaptopFrame imageUrl={project.imagen_portada_url!} open label={`${project.slug}.nodexa.app`} />
-            )}
-            {hasMobile && <PhoneFrame imageUrl={project.imagen_mobile_url!} open label={project.cliente_nombre} />}
-          </>
-        ) : (
-          <div
-            className="h-[168px] w-full"
-            style={{
-              background: project.insignia
-                ? "linear-gradient(135deg, rgba(227,184,102,.28), rgba(16,185,129,.12) 55%, #0d151b 100%)"
-                : "linear-gradient(160deg, rgba(16,185,129,.22), #0d151b 75%)",
-            }}
-          />
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-3 px-6 py-6">
-        <span className="font-mono text-[10.5px] tracking-[0.1em] text-white/40">
-          {project.cliente_nombre.toUpperCase().slice(0, 3)}-{project.slug.slice(0, 3).toUpperCase()}
-        </span>
-        <h3 className={`font-display font-semibold text-white ${project.insignia ? "text-[23px]" : "text-[19px]"}`}>
-          {project.cliente_nombre}
-        </h3>
-        <span className="-mt-2 text-[12.5px] font-semibold" style={{ color: accentColor }}>
-          {project.rubro}
-        </span>
-        <p className="flex-1 text-[13.5px] leading-relaxed text-white/55">{project.problema}</p>
-        <Link
-          to={`/casos-de-exito/${project.slug}`}
-          className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-white/50 no-underline transition-colors hover:text-white"
-        >
-          {cardCta}
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function Wall({ projects, onSelect }: { projects: PortfolioProject[]; onSelect: (project: PortfolioProject) => void }) {
-  return (
-    <section className="relative px-6 py-24 md:px-10 lg:py-28">
-      <motion.div
-        initial="hidden"
-        whileInView="show"
-        viewport={viewportOnce}
-        variants={staggerContainer(0.08)}
-        className="mx-auto max-w-[1180px]"
-      >
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <span className="font-mono text-xs uppercase tracking-[0.16em] text-white/40">{wallEyebrow}</span>
-            <h2 className="mt-2 font-display text-[28px] font-semibold text-white md:text-[34px]">{wallTitle}</h2>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-6">
-          {projects.map((p) => (
-            <WallCard key={p.id} project={p} onSelect={onSelect} />
-          ))}
-          <div className="flex min-h-[168px] flex-col items-center justify-center gap-2 border border-dashed border-white/15 px-6 py-10 text-center text-white/35 sm:col-span-2">
-            <span className="text-2xl">+</span>
-            <span className="text-[12.5px]">{wallGhostLabel}</span>
-          </div>
-        </div>
-      </motion.div>
-    </section>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 /* Visor de dispositivos: pantalla completa, SIN fondo opaco (un tinte  */
 /* sutil + blur nomás, para que el cielo se siga sintiendo detrás) —    */
@@ -624,7 +521,6 @@ export default function CasosDeExito() {
     <main id="casos-de-exito-top" className="relative">
       <BackToHome />
       {!loading && <ConstellationHero projects={projects} onSelect={setViewerProject} />}
-      {!loading && projects.length > 0 && <Wall projects={projects} onSelect={setViewerProject} />}
       <DeviceViewerOverlay project={viewerProject} onClose={() => setViewerProject(null)} />
     </main>
   );

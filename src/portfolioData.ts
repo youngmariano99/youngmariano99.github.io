@@ -29,9 +29,6 @@ export const heroClickHint = "Tocá una estrella para verla en detalle";
 export const heroEmptyTitle = "El cielo todavía está despejado.";
 export const heroEmptySubtitle = "Acá van a brillar las próximas marcas que confíen en Nodexa.";
 
-export const wallEyebrow = "El muro";
-export const wallTitle = "Navegable, filtrable, listo para crecer";
-export const wallGhostLabel = "Tu próxima marca acá";
 export const insigniaTag = "Caso insignia";
 export const cardCta = "Ver el caso completo →";
 

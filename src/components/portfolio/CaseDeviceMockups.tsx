@@ -34,7 +34,11 @@ export function LaptopFrame({
   }, [open, target]);
 
   return (
-    <div className="w-full [perspective:1600px]" style={{ maxWidth: LAPTOP_MAX_WIDTH[size] }}>
+    // Ancho explícito (no width:100% + max-width) — dentro del visor grande
+    // el padre es un flex sin ancho propio (shrink-to-fit), así que
+    // "100%" se resolvía contra ESE ancho ambiguo y terminaba quedando
+    // chico en vez de crecer hasta el tope de 560px.
+    <div className="[perspective:1600px]" style={{ width: `min(${LAPTOP_MAX_WIDTH[size]}px, 88vw)` }}>
       <div className="[transform-style:preserve-3d]" style={{ transform: "rotateX(8deg)" }}>
         <motion.div
           style={{ rotateX: lid, transformOrigin: "50% 100%" }}
@@ -85,7 +89,7 @@ export function PhoneFrame({
       animate={{ opacity: open ? 1 : 0.35, scale: open ? 1 : 0.94, y: open ? 0 : 6 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className="relative flex-none overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#05070C] p-[3px] shadow-xl shadow-black/40"
-      style={{ width: PHONE_WIDTH[size], aspectRatio: "9 / 19.5" }}
+      style={{ width: `min(${PHONE_WIDTH[size]}px, 40vw)`, aspectRatio: "9 / 19.5" }}
     >
       <span className="absolute left-1/2 top-[5px] z-10 h-[3px] w-6 -translate-x-1/2 rounded-full bg-black/60" />
       <div className="relative h-full w-full overflow-hidden rounded-[13px] bg-gradient-to-br from-[#111A2C] via-[#0C1322] to-[#090E1A]">
