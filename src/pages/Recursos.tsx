@@ -11,7 +11,7 @@ import {
   Globe,
   Search,
 } from "lucide-react";
-import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
+import { fadeUp, staggerContainer } from "../lib/motion";
 import { supabase } from "../lib/supabase";
 import { BackToHome } from "../components/shared/BackToHome";
 import ResourceDownloadModal from "../components/ResourceDownloadModal";
@@ -251,10 +251,18 @@ export default function Recursos() {
           onType={setType}
         />
 
+        {/*
+          initial/animate (dispara al montar), NO whileInView: este bloque
+          cambia de contenido después de la carga (loading -> tarjetas), y
+          si el usuario ya estaba scrolleado cuando terminó de cargar, el
+          IntersectionObserver de whileInView podía no volver a disparar
+          nunca — las tarjetas quedaban en opacity:0 para siempre (se ven
+          "vacías" aunque el fetch haya funcionado perfecto). No es
+          contenido de scroll-reveal, es contenido que aparece según datos.
+        */}
         <motion.div
           initial="hidden"
-          whileInView="show"
-          viewport={viewportOnce}
+          animate="show"
           variants={staggerContainer(0.08)}
           className="mx-auto mt-10 grid max-w-[1100px] grid-cols-1 gap-5 pb-28 sm:grid-cols-2 lg:grid-cols-3"
         >

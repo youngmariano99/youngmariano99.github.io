@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
-import { fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
+import { fadeUp, staggerContainer } from "../lib/motion";
 import { useLeadModal } from "../lib/LeadModalContext";
 import { supabase } from "../lib/supabase";
 import { MagneticButton } from "../components/shared/MagneticButton";
@@ -129,10 +129,15 @@ export default function CasoDetalle() {
 
       {(project.mostrar_desktop || project.mostrar_mobile) && (
         <section className="px-6 md:px-10">
+          {/* animate, no whileInView — todo este bloque recién existe
+              después del fetch de `project`; si el usuario ya estaba
+              scrolleado cuando llegó el dato, el IntersectionObserver de
+              whileInView podía no disparar nunca y la sección quedaba
+              invisible aunque los datos estuvieran ahí (mismo bug que en
+              /recursos). */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={viewportOnce}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="mx-auto flex max-w-[980px] flex-wrap items-end justify-center gap-8"
           >
@@ -161,8 +166,7 @@ export default function CasoDetalle() {
       <section className="px-6 py-20 md:px-10 lg:py-28">
         <motion.div
           initial="hidden"
-          whileInView="show"
-          viewport={viewportOnce}
+          animate="show"
           variants={staggerContainer(0.1)}
           className="mx-auto flex max-w-[760px] flex-col gap-14"
         >
@@ -227,8 +231,7 @@ export default function CasoDetalle() {
       <section className="relative border-t border-white/10 px-6 pb-24 pt-20 text-center md:px-10">
         <motion.div
           initial="hidden"
-          whileInView="show"
-          viewport={viewportOnce}
+          animate="show"
           variants={staggerContainer(0.1)}
           className="mx-auto flex max-w-[560px] flex-col items-center gap-6"
         >
