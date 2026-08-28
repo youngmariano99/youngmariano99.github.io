@@ -50,11 +50,21 @@ export const bannerLines = [
 ];
 export const bannerCta = "Conocer NODEXA Core";
 
+// --- Tarjeta + modal de detalle de un recurso ---
+export const cardDetailCta = "Ver detalles →";
+export const detailStepsLabel = "Cómo usarlo";
+export const detailWhyFormEyebrow = "Antes de descargarlo";
+export const detailWhyFormLines = [
+  "Te vamos a pedir un par de datos breves — nombre, rubro y qué problema urgente querés resolver.",
+  "No es para venderte nada ni para llenarte de mails: nos sirve para entender mejor a los comercios que usan esto y mejorar lo que les ofrecemos.",
+];
+export const detailContinueCta = "Quiero descargarlo →";
+
 // --- Modal de descarga (gate del recurso) ---
 export const downloadModalTitle = "Descargá el recurso ahora mismo.";
 export const downloadModalSubtitleLines = [
   "Nada de pedirte el mail para llenarte la bandeja de spam.",
-  "Contanos muy por arriba de qué trata tu negocio y te liberamos la descarga al instante.",
+  "Contanos muy por arriba de qué trata tu negocio — nos ayuda a entender a quién le servimos y a mejorar lo que ofrecemos. A cambio, descarga inmediata.",
 ];
 export const downloadNameLabel = "Tu nombre (o el de tu local)";
 export const downloadNamePlaceholder = "Ej: Ferretería Los Hermanos / Martín";
@@ -83,7 +93,6 @@ export const dolorOtroLabel = "Otro";
 export const dolorOtroPlaceholder = "Contanos cuál";
 
 export const downloadSubmitLabel = "Liberar descarga";
-export const downloadReadyLabel = "Abrí tu recurso";
 
 // --- Banner específico dentro de /mini-modulos ---
 export const miniModulosBannerEyebrow = "¿Todavía no estás seguro de invertir?";

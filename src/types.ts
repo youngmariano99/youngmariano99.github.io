@@ -63,7 +63,15 @@ export interface CtaFormOption {
   points: number;
 }
 
-// Mapea 1 a 1 la tabla `resources` de Supabase (ver supabase/migrations/0001_init.sql).
+// Un paso genérico de "cómo se usa/cómo trabajamos" — mismo shape para
+// recursos y casos de éxito, se guarda como jsonb en ambas tablas.
+export interface Step {
+  titulo: string;
+  descripcion: string;
+}
+
+// Mapea 1 a 1 la tabla `resources` de Supabase (ver supabase/migrations/0001_init.sql
+// y 0004_resources_v2.sql).
 export interface Resource {
   id: string;
   titulo: string;
@@ -71,13 +79,11 @@ export interface Resource {
   tipo: "excel" | "web" | "pdf";
   dolor: "stock" | "caja" | "carga" | "rentabilidad";
   url_acceso: string;
+  imagen_principal_url: string | null;
+  galeria_urls: string[];
+  pasos: Step[];
   activo: boolean;
   created_at: string;
-}
-
-export interface PortfolioStep {
-  titulo: string;
-  descripcion: string;
 }
 
 // Mapea 1 a 1 la tabla `portfolio_projects` de Supabase (ver
@@ -94,7 +100,7 @@ export interface PortfolioProject {
   mostrar_mobile: boolean;
   problema: string;
   solucion: string;
-  pasos: PortfolioStep[];
+  pasos: Step[];
   galeria_urls: string[];
   insignia: boolean;
   activo: boolean;

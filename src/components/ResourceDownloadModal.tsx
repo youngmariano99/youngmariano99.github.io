@@ -13,13 +13,13 @@ import {
   downloadModalSubtitleLines,
   downloadNameLabel,
   downloadNamePlaceholder,
-  downloadReadyLabel,
   downloadSubmitLabel,
   rubroLabel,
   rubroOptions,
   rubroOtroLabel,
   rubroOtroPlaceholder,
   rubroOtroValue,
+  typeCtaLabels,
 } from "../recursosData";
 import { trackEvent } from "../lib/analytics";
 import { supabase } from "../lib/supabase";
@@ -130,7 +130,7 @@ export default function ResourceDownloadModal({ resource, onClose }: Props) {
                   rel="noopener"
                   className="inline-flex items-center gap-2 bg-[#10B981] px-5 py-3 text-sm font-semibold text-[#090B0B] no-underline"
                 >
-                  <span>{downloadReadyLabel}</span>
+                  <span>{resource ? typeCtaLabels[resource.tipo] : ""}</span>
                   <ArrowRight size={16} strokeWidth={2} />
                 </a>
               </div>

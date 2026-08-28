@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import type { PortfolioProject, PortfolioStep } from "../../types";
+import type { PortfolioProject, Step } from "../../types";
 
 function slugify(text: string) {
   return text
@@ -16,7 +16,7 @@ function slugify(text: string) {
 const STEP_LABELS = ["Cliente", "El problema", "Cómo trabajamos", "La solución", "Revisar y guardar"];
 const TOTAL_STEPS = STEP_LABELS.length;
 
-const EMPTY_STEP: PortfolioStep = { titulo: "", descripcion: "" };
+const EMPTY_STEP: Step = { titulo: "", descripcion: "" };
 const EMPTY_FORM = {
   cliente_nombre: "",
   rubro: "",
@@ -37,7 +37,7 @@ export default function GestionPortfolioTab() {
 
   const [wizardStep, setWizardStep] = useState(0);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [pasos, setPasos] = useState<PortfolioStep[]>([{ ...EMPTY_STEP }]);
+  const [pasos, setPasos] = useState<Step[]>([{ ...EMPTY_STEP }]);
   const [galeria, setGaleria] = useState<string[]>([]);
   const [uploadingPortada, setUploadingPortada] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);

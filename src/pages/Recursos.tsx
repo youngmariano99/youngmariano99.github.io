@@ -3,22 +3,17 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  Download,
-  FileSpreadsheet,
-  FileText,
-  Globe,
-  Search,
-} from "lucide-react";
+import { ArrowRight, FileSpreadsheet, FileText, Globe, Search } from "lucide-react";
 import { fadeUp, staggerContainer } from "../lib/motion";
 import { supabase } from "../lib/supabase";
 import { BackToHome } from "../components/shared/BackToHome";
 import ResourceDownloadModal from "../components/ResourceDownloadModal";
+import ResourceDetailModal from "../components/ResourceDetailModal";
 import {
   bannerCta,
   bannerLines,
   bannerTitle,
+  cardDetailCta,
   emptyStateText,
   painFilterLabel,
   painFilterOptions,
@@ -26,7 +21,6 @@ import {
   recursosHeroTitle,
   searchPlaceholder,
   typeBadgeLabels,
-  typeCtaLabels,
   typeFilterLabel,
   typeFilterOptions,
 } from "../recursosData";
@@ -141,32 +135,40 @@ function SearchAndFilters({
 
 function ResourceCard({ resource, onSelect }: { resource: Resource; onSelect: () => void }) {
   const TypeIcon = TYPE_ICONS[resource.tipo];
-  const CtaIcon = resource.tipo === "excel" ? Download : ArrowRight;
 
   return (
     <motion.div
       variants={fadeUp}
-      className="flex flex-col rounded-2xl border border-white/10 bg-black/50 p-6 shadow-md backdrop-blur-md transition-colors duration-300 hover:border-emerald-500/30"
+      className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-black/50 shadow-md backdrop-blur-md transition-colors duration-300 hover:border-emerald-500/30"
     >
-      <span
-        className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold"
-        style={{ background: "rgba(16,185,129,.12)", color: ACCENT }}
-      >
-        <TypeIcon />
-        {typeBadgeLabels[resource.tipo]}
-      </span>
-      <h3 className="mt-4 text-[17px] font-bold text-white">{resource.titulo}</h3>
-      <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-white/55">
-        • {resource.descripcion}
-      </p>
-      <button
-        type="button"
-        onClick={onSelect}
-        className="mt-5 inline-flex items-center gap-2 self-start border-none bg-transparent p-0 text-[13.5px] font-semibold text-[#10B981] transition-colors hover:text-white"
-      >
-        <CtaIcon size={15} strokeWidth={2} />
-        <span>{typeCtaLabels[resource.tipo]}</span>
-      </button>
+      {resource.imagen_principal_url && (
+        <div className="h-36 w-full flex-none overflow-hidden border-b border-white/10">
+          <img src={resource.imagen_principal_url} alt="" className="h-full w-full object-cover" />
+        </div>
+      )}
+      <div className="flex flex-1 flex-col p-6">
+        <span
+          className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold"
+          style={{ background: "rgba(16,185,129,.12)", color: ACCENT }}
+        >
+          <TypeIcon />
+          {typeBadgeLabels[resource.tipo]}
+        </span>
+        <h3 className="mt-4 text-[17px] font-bold text-white">{resource.titulo}</h3>
+        {/* line-clamp: el texto completo vive en el modal de detalle, acá
+            solo un adelanto — así una descripción larga nunca empuja el
+            tamaño de la tarjeta ni desalinea la grilla. */}
+        <p className="mt-2 line-clamp-3 flex-1 text-[13.5px] leading-relaxed text-white/55">
+          {resource.descripcion}
+        </p>
+        <button
+          type="button"
+          onClick={onSelect}
+          className="mt-5 inline-flex items-center gap-2 self-start border-none bg-transparent p-0 text-[13.5px] font-semibold text-[#10B981] transition-colors hover:text-white"
+        >
+          <span>{cardDetailCta}</span>
+        </button>
+      </div>
     </motion.div>
   );
 }
@@ -205,7 +207,10 @@ export default function Recursos() {
   const [search, setSearch] = useState("");
   const [pain, setPain] = useState("");
   const [type, setType] = useState("");
-  const [selected, setSelected] = useState<Resource | null>(null);
+  // Dos modales encadenados: detalle (info + por qué del form) -> descarga
+  // (el form en sí). Nunca los dos abiertos a la vez.
+  const [detailResource, setDetailResource] = useState<Resource | null>(null);
+  const [downloadResource, setDownloadResource] = useState<Resource | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -273,7 +278,7 @@ export default function Recursos() {
           ) : (
             filtered.map((resource, i) => (
               <Fragment key={resource.id}>
-                <ResourceCard resource={resource} onSelect={() => setSelected(resource)} />
+                <ResourceCard resource={resource} onSelect={() => setDetailResource(resource)} />
                 {i === 2 && <UpsellBanner key="banner" />}
               </Fragment>
             ))
@@ -282,7 +287,16 @@ export default function Recursos() {
         </motion.div>
       </section>
 
-      <ResourceDownloadModal resource={selected} onClose={() => setSelected(null)} />
+      <ResourceDetailModal
+        resource={detailResource}
+        onClose={() => setDetailResource(null)}
+        onContinue={() => {
+          const resource = detailResource;
+          setDetailResource(null);
+          setDownloadResource(resource);
+        }}
+      />
+      <ResourceDownloadModal resource={downloadResource} onClose={() => setDownloadResource(null)} />
     </main>
   );
 }

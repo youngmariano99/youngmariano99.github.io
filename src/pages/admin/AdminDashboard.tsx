@@ -5,7 +5,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
 import { ctaFormPainOptions, ctaFormUrgencyOptions, ctaFormVolumeOptions } from "../../data";
 import { dolorFormOptions, painFilterOptions, rubroOptions, typeFilterOptions } from "../../recursosData";
-import type { CtaFormOption, Resource } from "../../types";
+import type { CtaFormOption, Resource, Step } from "../../types";
 import type { FilterOption } from "../../recursosData";
 import GestionPortfolioTab from "./PortfolioTab";
 
@@ -427,19 +427,26 @@ function AnaliticasTab() {
 /* Tab: Gestión de Recursos                                             */
 /* ------------------------------------------------------------------ */
 
+const EMPTY_STEP: Step = { titulo: "", descripcion: "" };
 const EMPTY_RESOURCE_FORM = {
   titulo: "",
   descripcion: "",
   tipo: "excel" as Resource["tipo"],
   dolor: "stock" as Resource["dolor"],
   url_acceso: "",
+  imagen_principal_url: "",
 };
 
 function GestionRecursosTab() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_RESOURCE_FORM);
+  const [pasos, setPasos] = useState<Step[]>([{ ...EMPTY_STEP }]);
+  const [galeria, setGaleria] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadingImagen, setUploadingImagen] = useState(false);
+  const [uploadingGaleria, setUploadingGaleria] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -458,6 +465,32 @@ function GestionRecursosTab() {
 
   useEffect(load, []);
 
+  const resetForm = () => {
+    setEditingId(null);
+    setForm(EMPTY_RESOURCE_FORM);
+    setPasos([{ ...EMPTY_STEP }]);
+    setGaleria([]);
+    setFormError(null);
+  };
+
+  const startEdit = (resource: Resource) => {
+    setEditingId(resource.id);
+    setForm({
+      titulo: resource.titulo,
+      descripcion: resource.descripcion,
+      tipo: resource.tipo,
+      dolor: resource.dolor,
+      url_acceso: resource.url_acceso,
+      imagen_principal_url: resource.imagen_principal_url ?? "",
+    });
+    const resourcePasos = resource.pasos ?? [];
+    setPasos(resourcePasos.length > 0 ? resourcePasos : [{ ...EMPTY_STEP }]);
+    setGaleria(resource.galeria_urls ?? []);
+    setFormError(null);
+    setFormSuccess(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const toggleActivo = async (resource: Resource) => {
     const next = !resource.activo;
     setResources((prev) => prev.map((r) => (r.id === resource.id ? { ...r, activo: next } : r)));
@@ -472,47 +505,77 @@ function GestionRecursosTab() {
       console.error("No se pudo borrar el recurso:", error);
       return;
     }
+    if (editingId === resource.id) resetForm();
     setResources((prev) => prev.filter((r) => r.id !== resource.id));
   };
 
-  const handleFileUpload = async (file: File) => {
-    setUploading(true);
-    setFormError(null);
+  const uploadFile = async (file: File): Promise<string | null> => {
     const path = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("recursos").upload(path, file);
     if (error) {
       console.error("No se pudo subir el archivo:", error);
       setFormError(`No se subió el archivo: ${error.message}`);
-      setUploading(false);
-      return;
+      return null;
     }
     const { data } = supabase.storage.from("recursos").getPublicUrl(path);
-    setForm((prev) => ({ ...prev, url_acceso: data.publicUrl }));
+    return data.publicUrl;
+  };
+
+  const handleFileUpload = async (file: File) => {
+    setUploading(true);
+    setFormError(null);
+    const url = await uploadFile(file);
+    if (url) setForm((prev) => ({ ...prev, url_acceso: url }));
     setUploading(false);
+  };
+
+  const handleImagenUpload = async (file: File) => {
+    setUploadingImagen(true);
+    setFormError(null);
+    const url = await uploadFile(file);
+    if (url) setForm((prev) => ({ ...prev, imagen_principal_url: url }));
+    setUploadingImagen(false);
+  };
+
+  const handleGaleriaUpload = async (files: FileList) => {
+    setUploadingGaleria(true);
+    setFormError(null);
+    const urls: string[] = [];
+    for (const file of Array.from(files)) {
+      const url = await uploadFile(file);
+      if (url) urls.push(url);
+    }
+    setGaleria((prev) => [...prev, ...urls]);
+    setUploadingGaleria(false);
   };
 
   const isValid = form.titulo.trim() !== "" && form.descripcion.trim() !== "" && form.url_acceso.trim() !== "";
 
-  const handleCreate = async () => {
+  const handleSave = async () => {
     if (!isValid || saving) return;
     setSaving(true);
     setFormError(null);
     setFormSuccess(false);
-    const { error } = await supabase.from("resources").insert({
+    const payload = {
       titulo: form.titulo.trim(),
       descripcion: form.descripcion.trim(),
       tipo: form.tipo,
       dolor: form.dolor,
       url_acceso: form.url_acceso.trim(),
-      activo: true,
-    });
+      imagen_principal_url: form.imagen_principal_url.trim() || null,
+      galeria_urls: galeria,
+      pasos: pasos.filter((p) => p.titulo.trim() !== ""),
+    };
+    const { error } = editingId
+      ? await supabase.from("resources").update(payload).eq("id", editingId)
+      : await supabase.from("resources").insert({ ...payload, activo: true });
     setSaving(false);
     if (error) {
-      console.error("No se pudo crear el recurso:", error);
+      console.error("No se pudo guardar el recurso:", error);
       setFormError(`No se guardó: ${error.message}`);
       return;
     }
-    setForm(EMPTY_RESOURCE_FORM);
+    resetForm();
     setFormSuccess(true);
     load();
   };
@@ -522,9 +585,20 @@ function GestionRecursosTab() {
   return (
     <div className="flex flex-col gap-8">
       <div className="border border-white/10 bg-white/[0.02] p-6">
-        <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-wide text-white/60">
-          Nuevo recurso
-        </h3>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-white/60">
+            {editingId ? "Editar recurso" : "Nuevo recurso"}
+          </h3>
+          {editingId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="border-none bg-transparent p-0 text-[12px] font-semibold text-white/45 hover:text-white"
+            >
+              Cancelar edición
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <input
             type="text"
@@ -585,16 +659,136 @@ function GestionRecursosTab() {
             {uploading && <span className="ml-3 text-[12px] text-white/40">Subiendo...</span>}
           </div>
         </div>
+
+        {/* Imagen de portada + galería — vista previa del recurso */}
+        <div className="mt-5 grid grid-cols-1 gap-4 border border-white/10 bg-black/20 p-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-[12.5px] font-semibold text-white/80">
+              Imagen de portada
+            </label>
+            <p className="mb-2 text-[11.5px] text-white/40">
+              Se ve en la tarjeta de /recursos. Opcional, recomendada para dar una vista previa.
+            </p>
+            <input
+              type="file"
+              accept="image/*"
+              disabled={uploadingImagen}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImagenUpload(file);
+              }}
+              className="text-[13px] text-white/70"
+            />
+            {uploadingImagen && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
+            {form.imagen_principal_url && !uploadingImagen && (
+              <div className="mt-2 flex items-center gap-2">
+                <img src={form.imagen_principal_url} alt="" className="h-12 w-12 rounded object-cover" />
+                <span className="text-[12px] text-[#10B981]">✓ Cargada</span>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-1 block text-[12.5px] font-semibold text-white/80">
+              Galería adicional
+            </label>
+            <p className="mb-2 text-[11.5px] text-white/40">
+              Se ven en el detalle del recurso. Opcional, podés elegir varias imágenes.
+            </p>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={uploadingGaleria}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) handleGaleriaUpload(e.target.files);
+              }}
+              className="text-[13px] text-white/70"
+            />
+            {uploadingGaleria && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
+            {galeria.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {galeria.map((url, i) => (
+                  <div key={url} className="relative">
+                    <img src={url} alt="" className="h-12 w-12 rounded object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setGaleria((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full border-none bg-red-500 text-[10px] leading-none text-white"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Pasos a seguir para usar el recurso */}
+        <div className="mt-5">
+          <label className="mb-2 block text-[12.5px] font-semibold text-white/80">
+            Pasos a seguir para usarlo
+          </label>
+          <div className="flex flex-col gap-3">
+            {pasos.map((paso, i) => (
+              <div key={i} className="border border-white/10 bg-black/20 p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-mono text-[11px] text-white/40">Paso {i + 1}</span>
+                  {pasos.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setPasos((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="border-none bg-transparent p-0 text-[11px] font-semibold text-red-400 hover:text-red-300"
+                    >
+                      Quitar
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Título del paso (ej. Descargá la planilla)"
+                  value={paso.titulo}
+                  onChange={(e) =>
+                    setPasos((prev) => prev.map((p, idx) => (idx === i ? { ...p, titulo: e.target.value } : p)))
+                  }
+                  className="mb-2 w-full border border-white/15 bg-black/40 px-3 py-2.5 text-sm text-white placeholder:text-white/35 focus:border-[#10B981] focus:outline-none"
+                />
+                <textarea
+                  placeholder="Descripción del paso"
+                  value={paso.descripcion}
+                  onChange={(e) =>
+                    setPasos((prev) => prev.map((p, idx) => (idx === i ? { ...p, descripcion: e.target.value } : p)))
+                  }
+                  rows={2}
+                  className="w-full border border-white/15 bg-black/40 px-3 py-2.5 text-sm text-white placeholder:text-white/35 focus:border-[#10B981] focus:outline-none"
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setPasos((prev) => [...prev, { ...EMPTY_STEP }])}
+              className="border border-dashed border-white/20 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-white/50 hover:border-white/40 hover:text-white"
+            >
+              + Agregar paso
+            </button>
+          </div>
+        </div>
+
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <button
-            onClick={handleCreate}
+            onClick={handleSave}
             disabled={!isValid || saving}
             className="bg-[#10B981] px-5 py-2.5 text-sm font-semibold text-[#090B0B] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {saving ? "Guardando..." : "Crear recurso"}
+            {saving ? "Guardando..." : editingId ? "Guardar cambios" : "Crear recurso"}
           </button>
           {formError && <span className="text-[12.5px] text-red-400">{formError}</span>}
-          {formSuccess && <span className="text-[12.5px] text-[#10B981]">✓ Recurso creado y publicado.</span>}
+          {formSuccess && (
+            <span className="text-[12.5px] text-[#10B981]">
+              ✓ {editingId ? "Recurso actualizado." : "Recurso creado y publicado."}
+            </span>
+          )}
         </div>
       </div>
 
@@ -624,12 +818,20 @@ function GestionRecursosTab() {
                   />
                 </td>
                 <td className="px-4 py-3">
-                  <button
-                    onClick={() => deleteResource(r)}
-                    className="border-none bg-transparent p-0 text-[12px] font-semibold text-red-400 hover:text-red-300"
-                  >
-                    Borrar
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => startEdit(r)}
+                      className="border-none bg-transparent p-0 text-[12px] font-semibold text-[#10B981] hover:text-white"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => deleteResource(r)}
+                      className="border-none bg-transparent p-0 text-[12px] font-semibold text-red-400 hover:text-red-300"
+                    >
+                      Borrar
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
