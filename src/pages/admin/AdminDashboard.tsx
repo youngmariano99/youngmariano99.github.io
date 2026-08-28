@@ -441,6 +441,8 @@ function GestionRecursosTab() {
   const [form, setForm] = useState(EMPTY_RESOURCE_FORM);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState(false);
 
   const load = () => {
     supabase
@@ -475,10 +477,12 @@ function GestionRecursosTab() {
 
   const handleFileUpload = async (file: File) => {
     setUploading(true);
+    setFormError(null);
     const path = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("recursos").upload(path, file);
     if (error) {
       console.error("No se pudo subir el archivo:", error);
+      setFormError(`No se subió el archivo: ${error.message}`);
       setUploading(false);
       return;
     }
@@ -492,6 +496,8 @@ function GestionRecursosTab() {
   const handleCreate = async () => {
     if (!isValid || saving) return;
     setSaving(true);
+    setFormError(null);
+    setFormSuccess(false);
     const { error } = await supabase.from("resources").insert({
       titulo: form.titulo.trim(),
       descripcion: form.descripcion.trim(),
@@ -503,9 +509,11 @@ function GestionRecursosTab() {
     setSaving(false);
     if (error) {
       console.error("No se pudo crear el recurso:", error);
+      setFormError(`No se guardó: ${error.message}`);
       return;
     }
     setForm(EMPTY_RESOURCE_FORM);
+    setFormSuccess(true);
     load();
   };
 
@@ -577,13 +585,17 @@ function GestionRecursosTab() {
             {uploading && <span className="ml-3 text-[12px] text-white/40">Subiendo...</span>}
           </div>
         </div>
-        <button
-          onClick={handleCreate}
-          disabled={!isValid || saving}
-          className="mt-5 bg-[#10B981] px-5 py-2.5 text-sm font-semibold text-[#090B0B] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {saving ? "Guardando..." : "Crear recurso"}
-        </button>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleCreate}
+            disabled={!isValid || saving}
+            className="bg-[#10B981] px-5 py-2.5 text-sm font-semibold text-[#090B0B] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {saving ? "Guardando..." : "Crear recurso"}
+          </button>
+          {formError && <span className="text-[12.5px] text-red-400">{formError}</span>}
+          {formSuccess && <span className="text-[12.5px] text-[#10B981]">✓ Recurso creado y publicado.</span>}
+        </div>
       </div>
 
       <div className="overflow-x-auto border border-white/10">
