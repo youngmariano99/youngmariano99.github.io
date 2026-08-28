@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, FileSpreadsheet, FileText, Globe } from "lucide-react";
+import { ArrowRight, FileSpreadsheet, FileText, Globe, ZoomIn } from "lucide-react";
 import {
   detailContinueCta,
   detailStepsLabel,
@@ -10,6 +10,7 @@ import {
   detailWhyFormLines,
   typeBadgeLabels,
 } from "../recursosData";
+import ImageLightbox from "./ImageLightbox";
 import type { Resource } from "../types";
 
 interface Props {
@@ -26,6 +27,7 @@ const TYPE_ICONS: Record<Resource["tipo"], () => JSX.Element> = {
 
 export default function ResourceDetailModal({ resource, onClose, onContinue }: Props) {
   const [activeImage, setActiveImage] = useState(0);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const open = resource !== null;
 
   const images = resource
@@ -36,8 +38,9 @@ export default function ResourceDetailModal({ resource, onClose, onContinue }: P
   const TypeIcon = resource ? TYPE_ICONS[resource.tipo] : null;
 
   return (
-    <AnimatePresence>
-      {open && resource && (
+    <Fragment>
+      <AnimatePresence>
+        {open && resource && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -71,9 +74,20 @@ export default function ResourceDetailModal({ resource, onClose, onContinue }: P
             <div className="flex flex-col gap-6 overflow-y-auto p-7">
               {images.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <div className="overflow-hidden rounded-xl border border-white/10 bg-black/30">
+                  <button
+                    type="button"
+                    onClick={() => setLightboxSrc(images[activeImage])}
+                    aria-label="Ver imagen más grande"
+                    className="group relative overflow-hidden rounded-xl border border-white/10 bg-black/30"
+                  >
                     <img src={images[activeImage]} alt={resource.titulo} className="w-full object-cover" />
-                  </div>
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/40 group-hover:opacity-100">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-[11.5px] font-semibold text-white">
+                        <ZoomIn size={13} strokeWidth={2} />
+                        Ampliar
+                      </span>
+                    </span>
+                  </button>
                   {images.length > 1 && (
                     <div className="flex gap-2">
                       {images.map((url, i) => (
@@ -148,7 +162,9 @@ export default function ResourceDetailModal({ resource, onClose, onContinue }: P
             </div>
           </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+      <ImageLightbox src={lightboxSrc} alt={resource?.titulo} onClose={() => setLightboxSrc(null)} />
+    </Fragment>
   );
 }
