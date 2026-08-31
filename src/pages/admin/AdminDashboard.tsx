@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { sanitizeFilename } from "../../lib/sanitizeFilename";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
 import { ctaFormPainOptions, ctaFormUrgencyOptions, ctaFormVolumeOptions } from "../../data";
@@ -510,7 +511,7 @@ function GestionRecursosTab() {
   };
 
   const uploadFile = async (file: File): Promise<string | null> => {
-    const path = `${Date.now()}-${file.name}`;
+    const path = `${Date.now()}-${sanitizeFilename(file.name)}`;
     const { error } = await supabase.storage.from("recursos").upload(path, file);
     if (error) {
       console.error("No se pudo subir el archivo:", error);

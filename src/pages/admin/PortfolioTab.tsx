@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { sanitizeFilename } from "../../lib/sanitizeFilename";
 import { supabase } from "../../lib/supabase";
 import type { PortfolioProject, Step } from "../../types";
 
@@ -108,7 +109,7 @@ export default function GestionPortfolioTab() {
   };
 
   const uploadFile = async (file: File): Promise<string | null> => {
-    const path = `${Date.now()}-${file.name}`;
+    const path = `${Date.now()}-${sanitizeFilename(file.name)}`;
     const { error } = await supabase.storage.from("portfolio").upload(path, file);
     if (error) {
       console.error("No se pudo subir el archivo:", error);
