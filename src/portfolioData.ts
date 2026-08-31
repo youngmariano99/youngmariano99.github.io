@@ -24,8 +24,8 @@ export const heroSubtitleWithInsignia = (nombres: string[]) => {
 };
 export const heroSubtitleDefault =
   "Cada trabajo que hacemos se suma a este cielo. Con el tiempo, se convierte en una galaxia.";
-export const heroScrollCue = "Recorré el cielo";
 export const heroClickHint = "Tocá una estrella para verla en detalle";
+export const heroCtaLabel = "Quiero ser parte";
 export const heroEmptyTitle = "El cielo todavía está despejado.";
 export const heroEmptySubtitle = "Acá van a brillar las próximas marcas que confíen en Nodexa.";
 

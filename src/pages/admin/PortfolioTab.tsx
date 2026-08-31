@@ -31,10 +31,24 @@ const EMPTY_FORM = {
   insignia: false,
 };
 
+function ImageStatusBadge({ loaded }: { loaded: boolean }) {
+  return (
+    <span
+      className={`inline-flex w-fit items-center gap-1.5 text-[10.5px] font-semibold ${
+        loaded ? "text-[#10B981]" : "text-white/30"
+      }`}
+    >
+      <span className={`h-1.5 w-1.5 flex-none rounded-full ${loaded ? "bg-[#10B981]" : "bg-white/20"}`} />
+      {loaded ? "Imagen cargada" : "Sin imagen"}
+    </span>
+  );
+}
+
 export default function GestionPortfolioTab() {
   const [projects, setProjects] = useState<PortfolioProject[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [wizardStep, setWizardStep] = useState(0);
   const [form, setForm] = useState(EMPTY_FORM);
   const [pasos, setPasos] = useState<Step[]>([{ ...EMPTY_STEP }]);
@@ -43,6 +57,8 @@ export default function GestionPortfolioTab() {
   const [uploadingMobile, setUploadingMobile] = useState(false);
   const [uploadingGaleria, setUploadingGaleria] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState(false);
 
   const load = () => {
     supabase
@@ -60,10 +76,35 @@ export default function GestionPortfolioTab() {
   useEffect(load, []);
 
   const resetWizard = () => {
+    setEditingId(null);
     setWizardStep(0);
     setForm(EMPTY_FORM);
     setPasos([{ ...EMPTY_STEP }]);
     setGaleria([]);
+    setFormError(null);
+  };
+
+  const startEdit = (project: PortfolioProject) => {
+    setEditingId(project.id);
+    setWizardStep(0);
+    setForm({
+      cliente_nombre: project.cliente_nombre,
+      rubro: project.rubro,
+      slug: project.slug,
+      slugTouched: true,
+      imagen_portada_url: project.imagen_portada_url ?? "",
+      imagen_mobile_url: project.imagen_mobile_url ?? "",
+      mostrar_desktop: project.mostrar_desktop,
+      mostrar_mobile: project.mostrar_mobile,
+      problema: project.problema,
+      solucion: project.solucion,
+      insignia: project.insignia,
+    });
+    setPasos(project.pasos.length > 0 ? project.pasos : [{ ...EMPTY_STEP }]);
+    setGaleria(project.galeria_urls);
+    setFormError(null);
+    setFormSuccess(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const uploadFile = async (file: File): Promise<string | null> => {
@@ -71,6 +112,7 @@ export default function GestionPortfolioTab() {
     const { error } = await supabase.storage.from("portfolio").upload(path, file);
     if (error) {
       console.error("No se pudo subir el archivo:", error);
+      setFormError(`No se subió la imagen: ${error.message}`);
       return null;
     }
     const { data } = supabase.storage.from("portfolio").getPublicUrl(path);
@@ -79,6 +121,7 @@ export default function GestionPortfolioTab() {
 
   const handlePortadaUpload = async (file: File) => {
     setUploadingPortada(true);
+    setFormError(null);
     const url = await uploadFile(file);
     if (url) setForm((prev) => ({ ...prev, imagen_portada_url: url, mostrar_desktop: true }));
     setUploadingPortada(false);
@@ -86,6 +129,7 @@ export default function GestionPortfolioTab() {
 
   const handleMobileUpload = async (file: File) => {
     setUploadingMobile(true);
+    setFormError(null);
     const url = await uploadFile(file);
     if (url) setForm((prev) => ({ ...prev, imagen_mobile_url: url, mostrar_mobile: true }));
     setUploadingMobile(false);
@@ -93,6 +137,7 @@ export default function GestionPortfolioTab() {
 
   const handleGaleriaUpload = async (files: FileList) => {
     setUploadingGaleria(true);
+    setFormError(null);
     const urls: string[] = [];
     for (const file of Array.from(files)) {
       const url = await uploadFile(file);
@@ -112,7 +157,9 @@ export default function GestionPortfolioTab() {
   const handleSave = async () => {
     if (saving) return;
     setSaving(true);
-    const { error } = await supabase.from("portfolio_projects").insert({
+    setFormError(null);
+    setFormSuccess(false);
+    const payload = {
       slug: form.slug.trim(),
       cliente_nombre: form.cliente_nombre.trim(),
       rubro: form.rubro.trim(),
@@ -125,14 +172,18 @@ export default function GestionPortfolioTab() {
       pasos: pasos.filter((p) => p.titulo.trim() !== ""),
       galeria_urls: galeria,
       insignia: form.insignia,
-      activo: true,
-    });
+    };
+    const { error } = editingId
+      ? await supabase.from("portfolio_projects").update(payload).eq("id", editingId)
+      : await supabase.from("portfolio_projects").insert({ ...payload, activo: true });
     setSaving(false);
     if (error) {
       console.error("No se pudo guardar el caso:", error);
+      setFormError(`No se guardó: ${error.message}`);
       return;
     }
     resetWizard();
+    setFormSuccess(true);
     load();
   };
 
@@ -143,7 +194,10 @@ export default function GestionPortfolioTab() {
     const next = !project[field];
     setProjects((prev) => prev.map((p) => (p.id === project.id ? { ...p, [field]: next } : p)));
     const { error } = await supabase.from("portfolio_projects").update({ [field]: next }).eq("id", project.id);
-    if (error) console.error(`No se pudo actualizar ${field}:`, error);
+    if (error) {
+      console.error(`No se pudo actualizar ${field}:`, error);
+      setProjects((prev) => prev.map((p) => (p.id === project.id ? { ...p, [field]: project[field] } : p)));
+    }
   };
 
   const deleteProject = async (project: PortfolioProject) => {
@@ -153,15 +207,29 @@ export default function GestionPortfolioTab() {
       console.error("No se pudo borrar el caso:", error);
       return;
     }
+    if (editingId === project.id) resetWizard();
     setProjects((prev) => prev.filter((p) => p.id !== project.id));
   };
 
   return (
     <div className="flex flex-col gap-8">
-      {/* ---------------- Wizard de carga ---------------- */}
+      {/* ---------------- Wizard de carga / edición ---------------- */}
       <div className="border border-white/10 bg-white/[0.02] p-6">
-        <h3 className="mb-1 text-[13px] font-semibold uppercase tracking-wide text-white/60">Nuevo caso</h3>
-        <div className="mb-6 flex gap-1.5">
+        <div className="mb-1 flex items-center justify-between">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-white/60">
+            {editingId ? `Editar caso — ${form.cliente_nombre}` : "Nuevo caso"}
+          </h3>
+          {editingId && (
+            <button
+              type="button"
+              onClick={resetWizard}
+              className="border-none bg-transparent p-0 text-[12px] font-semibold text-white/45 hover:text-white"
+            >
+              Cancelar edición
+            </button>
+          )}
+        </div>
+        <div className="mb-6 mt-4 flex gap-1.5">
           {STEP_LABELS.map((label, i) => (
             <div key={label} className="flex-1">
               <div className={`h-1 rounded-full ${i <= wizardStep ? "bg-[#10B981]" : "bg-white/10"}`} />
@@ -223,7 +291,10 @@ export default function GestionPortfolioTab() {
                 />
                 {uploadingPortada && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
                 {form.imagen_portada_url && !uploadingPortada && (
-                  <span className="ml-2 text-[12px] text-[#10B981]">✓ Cargada</span>
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={form.imagen_portada_url} alt="" className="h-10 w-10 rounded object-cover" />
+                    <span className="text-[12px] text-[#10B981]">✓ Cargada</span>
+                  </div>
                 )}
                 <label className="mt-2 flex items-center gap-2 text-[12.5px] text-white/70">
                   <input
@@ -256,9 +327,15 @@ export default function GestionPortfolioTab() {
                 />
                 {uploadingMobile && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
                 {form.imagen_mobile_url && !uploadingMobile && (
-                  <span className="ml-2 text-[12px] text-[#10B981]">✓ Cargada</span>
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={form.imagen_mobile_url} alt="" className="h-10 w-10 rounded object-cover" />
+                    <span className="text-[12px] text-[#10B981]">✓ Cargada</span>
+                  </div>
                 )}
-                <label className="mt-2 flex items-center gap-2 text-[12.5px] text-white/70">
+                <label
+                  className="mt-2 flex items-center gap-2 text-[12.5px] text-white/70"
+                  title={!form.imagen_mobile_url ? "Subí una imagen de celular para poder activar esta opción" : undefined}
+                >
                   <input
                     type="checkbox"
                     checked={form.mostrar_mobile}
@@ -267,6 +344,9 @@ export default function GestionPortfolioTab() {
                     className="h-3.5 w-3.5 accent-[#10B981] disabled:opacity-30"
                   />
                   Mostrar vista mobile
+                  {!form.imagen_mobile_url && (
+                    <span className="text-[11px] text-white/35">(subí una imagen primero)</span>
+                  )}
                 </label>
               </div>
             </div>
@@ -354,7 +434,20 @@ export default function GestionPortfolioTab() {
               />
               {uploadingGaleria && <span className="ml-2 text-[12px] text-white/40">Subiendo...</span>}
               {galeria.length > 0 && (
-                <span className="ml-2 text-[12px] text-[#10B981]">✓ {galeria.length} imagen(es)</span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {galeria.map((url, i) => (
+                    <div key={url} className="relative">
+                      <img src={url} alt="" className="h-12 w-12 rounded object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setGaleria((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full border-none bg-red-500 text-[10px] leading-none text-white"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -378,17 +471,25 @@ export default function GestionPortfolioTab() {
               />
               Marcar como caso insignia (estrella grande/dorada en la constelación)
             </label>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="mt-1 bg-[#10B981] px-5 py-3 text-sm font-semibold text-[#090B0B] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {saving ? "Guardando..." : "Guardar caso"}
-            </button>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-[#10B981] px-5 py-3 text-sm font-semibold text-[#090B0B] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {saving ? "Guardando..." : editingId ? "Guardar cambios" : "Guardar caso"}
+              </button>
+              {formError && <span className="text-[12.5px] text-red-400">{formError}</span>}
+              {formSuccess && (
+                <span className="text-[12.5px] text-[#10B981]">
+                  ✓ {editingId ? "Caso actualizado." : "Caso creado y publicado."}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
-        <div className="mt-6 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
@@ -397,17 +498,38 @@ export default function GestionPortfolioTab() {
           >
             ← Volver
           </button>
-          {wizardStep < TOTAL_STEPS - 1 && (
-            <button
-              type="button"
-              onClick={() => setWizardStep((s) => Math.min(TOTAL_STEPS - 1, s + 1))}
-              disabled={!canAdvance}
-              className="bg-[#10B981] px-5 py-2.5 text-sm font-semibold text-[#090B0B] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Siguiente →
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* En edición, no hace falta recorrer los 5 pasos para guardar
+                un cambio chico (ej. corregir el nombre) — se puede guardar
+                desde cualquier paso. */}
+            {editingId && wizardStep < TOTAL_STEPS - 1 && (
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="border border-[#10B981]/50 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-[#10B981] transition-opacity hover:bg-[#10B981]/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {saving ? "Guardando..." : "Guardar cambios ya"}
+              </button>
+            )}
+            {wizardStep < TOTAL_STEPS - 1 && (
+              <button
+                type="button"
+                onClick={() => setWizardStep((s) => Math.min(TOTAL_STEPS - 1, s + 1))}
+                disabled={!canAdvance}
+                className="bg-[#10B981] px-5 py-2.5 text-sm font-semibold text-[#090B0B] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Siguiente →
+              </button>
+            )}
+          </div>
         </div>
+        {editingId && (formError || formSuccess) && wizardStep < TOTAL_STEPS - 1 && (
+          <div className="mt-3 text-right">
+            {formError && <span className="text-[12.5px] text-red-400">{formError}</span>}
+            {formSuccess && <span className="text-[12.5px] text-[#10B981]">✓ Caso actualizado.</span>}
+          </div>
+        )}
       </div>
 
       {/* ---------------- Lista de casos ---------------- */}
@@ -415,7 +537,7 @@ export default function GestionPortfolioTab() {
         <p className="text-sm text-white/40">Cargando...</p>
       ) : (
         <div className="overflow-x-auto border border-white/10">
-          <table className="w-full min-w-[880px] text-left text-[13px]">
+          <table className="w-full min-w-[920px] text-left text-[13px]">
             <thead>
               <tr className="border-b border-white/10 text-white/45">
                 <th className="px-4 py-3 font-semibold">Cliente</th>
@@ -449,30 +571,56 @@ export default function GestionPortfolioTab() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={p.mostrar_desktop}
-                      disabled={!p.imagen_portada_url}
-                      onChange={() => toggleField(p, "mostrar_desktop")}
-                      className="h-4 w-4 accent-[#10B981] disabled:opacity-30"
-                    />
+                    <div className="flex flex-col gap-1.5">
+                      <ImageStatusBadge loaded={!!p.imagen_portada_url} />
+                      <label
+                        className="flex items-center gap-1.5 text-[11.5px] text-white/50"
+                        title={!p.imagen_portada_url ? "Subí una imagen editando el caso" : undefined}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={p.mostrar_desktop}
+                          disabled={!p.imagen_portada_url}
+                          onChange={() => toggleField(p, "mostrar_desktop")}
+                          className="h-3.5 w-3.5 accent-[#10B981] disabled:opacity-30"
+                        />
+                        Mostrar
+                      </label>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={p.mostrar_mobile}
-                      disabled={!p.imagen_mobile_url}
-                      onChange={() => toggleField(p, "mostrar_mobile")}
-                      className="h-4 w-4 accent-[#10B981] disabled:opacity-30"
-                    />
+                    <div className="flex flex-col gap-1.5">
+                      <ImageStatusBadge loaded={!!p.imagen_mobile_url} />
+                      <label
+                        className="flex items-center gap-1.5 text-[11.5px] text-white/50"
+                        title={!p.imagen_mobile_url ? "Subí una imagen editando el caso" : undefined}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={p.mostrar_mobile}
+                          disabled={!p.imagen_mobile_url}
+                          onChange={() => toggleField(p, "mostrar_mobile")}
+                          className="h-3.5 w-3.5 accent-[#10B981] disabled:opacity-30"
+                        />
+                        Mostrar
+                      </label>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => deleteProject(p)}
-                      className="border-none bg-transparent p-0 text-[12px] font-semibold text-red-400 hover:text-red-300"
-                    >
-                      Borrar
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => startEdit(p)}
+                        className="border-none bg-transparent p-0 text-[12px] font-semibold text-[#10B981] hover:text-white"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => deleteProject(p)}
+                        className="border-none bg-transparent p-0 text-[12px] font-semibold text-red-400 hover:text-red-300"
+                      >
+                        Borrar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

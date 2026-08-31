@@ -3,16 +3,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useLeadModal } from "../lib/LeadModalContext";
 import { supabase } from "../lib/supabase";
 import { BackToHome } from "../components/shared/BackToHome";
+import { MagneticButton } from "../components/shared/MagneticButton";
 import { LaptopFrame, PhoneFrame } from "../components/portfolio/CaseDeviceMockups";
 import {
   cardCta,
   heroClickHint,
+  heroCtaLabel,
   heroEmptySubtitle,
   heroEmptyTitle,
   heroEyebrow,
-  heroScrollCue,
   heroSubtitleDefault,
   heroSubtitleWithInsignia,
   heroTitleHighlight,
@@ -98,9 +100,13 @@ function ConstellationHero({
   const skyRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRefs = useRef<Record<string, { hit: HTMLButtonElement | null; label: HTMLDivElement | null }>>({});
+  const { openLeadModal } = useLeadModal();
 
   const nodes = useMemo(() => computeNodes(projects), [projects]);
   const featuredNodes = nodes.filter((n) => n.isInsignia);
+  // La invitación a "tocá una estrella" solo hace falta una vez — mostrarla
+  // en cada insignia se leía como texto duplicado/superpuesto.
+  const firstInsigniaId = featuredNodes[0]?.project.id;
 
   useEffect(() => {
     const sky = skyRef.current;
@@ -271,6 +277,13 @@ function ConstellationHero({
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">{heroEyebrow}</span>
           <h1 className="mt-4 font-display text-[34px] font-semibold text-white sm:text-[44px]">{heroEmptyTitle}</h1>
           <p className="mx-auto mt-4 max-w-[42ch] text-[15px] text-white/55">{heroEmptySubtitle}</p>
+          <MagneticButton
+            onClick={() => openLeadModal("casos_exito_hero")}
+            className="mx-auto mt-7 inline-flex items-center gap-2 rounded-full bg-[#10B981] px-7 py-3.5 text-[14px] font-bold text-[#05080F] transition-colors duration-300 hover:bg-[#0EA672]"
+          >
+            <span>{heroCtaLabel}</span>
+            <span aria-hidden="true">→</span>
+          </MagneticButton>
         </div>
       </section>
     );
@@ -301,6 +314,13 @@ function ConstellationHero({
               ? heroSubtitleWithInsignia(featuredNodes.map((n) => n.project.cliente_nombre))
               : heroSubtitleDefault}
           </p>
+          <MagneticButton
+            onClick={() => openLeadModal("casos_exito_hero")}
+            className="mx-auto mt-7 inline-flex items-center gap-2 rounded-full bg-[#10B981] px-7 py-3.5 text-[14px] font-bold text-[#05080F] transition-colors duration-300 hover:bg-[#0EA672]"
+          >
+            <span>{heroCtaLabel}</span>
+            <span aria-hidden="true">→</span>
+          </MagneticButton>
         </motion.div>
       </div>
 
@@ -308,27 +328,12 @@ function ConstellationHero({
           de las estrellas relativas a ESTE bloque, no al viewport entero. */}
       <div ref={skyRef} className="relative h-[56vh] min-h-[420px] max-h-[640px] overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 60% at 50% 50%, transparent 45%, #05080a 96%), linear-gradient(to bottom, #05080a 0%, transparent 12%, transparent 85%, #05080a 100%)",
-          }}
-        />
-
-        <div className="pointer-events-none absolute bottom-[4%] left-1/2 z-[3] flex -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-white/35">
-          <span>{heroScrollCue}</span>
-          <span
-            className="h-6 w-px animate-pulse"
-            style={{ background: "linear-gradient(to bottom, rgba(16,185,129,.4), transparent)" }}
-          />
-        </div>
 
         {nodes.map((n) => (
           <NodeOverlay
             key={n.project.id}
             node={n}
+            showHint={n.project.id === firstInsigniaId}
             onSelect={onSelect}
             registerRefs={(refs) => {
               overlayRefs.current[n.project.id] = refs;
@@ -342,10 +347,12 @@ function ConstellationHero({
 
 function NodeOverlay({
   node,
+  showHint,
   onSelect,
   registerRefs,
 }: {
   node: Node;
+  showHint: boolean;
   onSelect: (project: PortfolioProject) => void;
   registerRefs: (refs: { hit: HTMLButtonElement | null; label: HTMLDivElement | null }) => void;
 }) {
@@ -385,7 +392,7 @@ function NodeOverlay({
         >
           {project.cliente_nombre}
         </div>
-        {isInsignia && (
+        {showHint && (
           <div
             className="mt-1 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.1em]"
             style={{ color: "#e3b866" }}
