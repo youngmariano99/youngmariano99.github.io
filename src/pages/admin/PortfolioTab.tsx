@@ -278,7 +278,9 @@ export default function GestionPortfolioTab() {
                 </label>
                 <p className="mb-2 text-[11.5px] text-white/40">
                   Recomendado: 2560×1600px (16:10) o similar, mínimo 1600px de ancho. Se recorta desde arriba, así
-                  que lo importante de la pantalla tiene que estar en la mitad superior.
+                  que lo importante de la pantalla tiene que estar en la mitad superior. También podés subir una
+                  captura de página completa (tipo la extensión GoFullPage) — si es bastante más alta que ancha, se
+                  recorre sola con un scroll automático en vez de mostrarse recortada.
                 </p>
                 <input
                   type="file"
@@ -314,7 +316,9 @@ export default function GestionPortfolioTab() {
                 </label>
                 <p className="mb-2 text-[11.5px] text-white/40">
                   Recomendado: 1170×2532px (proporción de iPhone, 9:19.5) o similar, vertical y angosta. Opcional —
-                  dejalo vacío si el proyecto no tiene versión mobile.
+                  dejalo vacío si el proyecto no tiene versión mobile. También podés subir una captura de página
+                  completa (tipo la extensión GoFullPage) — si es bastante más alta que una pantalla, se recorre
+                  sola con un scroll automático en vez de mostrarse recortada.
                 </p>
                 <input
                   type="file"
