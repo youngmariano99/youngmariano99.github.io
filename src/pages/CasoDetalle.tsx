@@ -7,6 +7,7 @@ import { fadeUp, staggerContainer } from "../lib/motion";
 import { useLeadModal } from "../lib/LeadModalContext";
 import { supabase } from "../lib/supabase";
 import { MagneticButton } from "../components/shared/MagneticButton";
+import { LaptopFrame, PhoneFrame } from "../components/portfolio/CaseDeviceMockups";
 import {
   detailClosingCta,
   detailClosingSubtitle,
@@ -139,25 +140,23 @@ export default function CasoDetalle() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto flex max-w-[980px] flex-wrap items-end justify-center gap-8"
+            className="mx-auto flex flex-wrap items-end justify-center gap-10"
           >
             {project.mostrar_desktop && project.imagen_portada_url && (
-              <div className="w-full max-w-[640px] overflow-hidden border border-white/10">
-                <img
-                  src={project.imagen_portada_url}
-                  alt={project.cliente_nombre}
-                  className="w-full object-cover object-top"
-                />
-              </div>
+              <LaptopFrame
+                size="lg"
+                imageUrl={project.imagen_portada_url}
+                open
+                label={`${project.slug}.nodexa.app`}
+              />
             )}
             {project.mostrar_mobile && project.imagen_mobile_url && (
-              <div className="w-[140px] flex-none overflow-hidden rounded-[18px] border border-white/10">
-                <img
-                  src={project.imagen_mobile_url}
-                  alt={`${project.cliente_nombre} — versión mobile`}
-                  className="w-full object-cover object-top"
-                />
-              </div>
+              <PhoneFrame 
+                size="lg" 
+                imageUrl={project.imagen_mobile_url} 
+                open 
+                label={project.cliente_nombre} 
+              />
             )}
           </motion.div>
         </section>
