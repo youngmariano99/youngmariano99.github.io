@@ -199,7 +199,7 @@ function PatitasTimelineAdmin() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${item.estado === 'completado' ? 'bg-[#16D39A]/20 text-[#16D39A]' : item.estado === 'actual' ? 'bg-blue-500/20 text-blue-400' : 'bg-white/10 text-white/50'}`}>{item.estado}</span>
-                <span className="text-white/50 text-xs">Orden: {item.orden} | {new Date(item.fecha).toLocaleDateString()}</span>
+                <span className="text-white/50 text-xs">Orden: {item.orden} | {new Date(item.fecha).toLocaleDateString("es-AR", { timeZone: "UTC" })}</span>
               </div>
               <p className="font-bold text-white text-sm">{item.titulo}</p>
             </div>

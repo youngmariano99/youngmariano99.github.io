@@ -75,7 +75,7 @@ export default function PatitasTimeline() {
               <span className={`text-xs font-bold uppercase tracking-wider mb-2 block ${
                 item.estado === "completado" ? "text-blue-600" : "text-[#A6AEAA]"
               }`}>
-                {new Date(item.fecha).toLocaleDateString("es-AR", { month: "long", year: "numeric" })}
+                {new Date(item.fecha).toLocaleDateString("es-AR", { month: "long", year: "numeric", timeZone: "UTC" })}
               </span>
               <h3 className="text-xl font-semibold mb-2">{item.titulo}</h3>
               <p className="text-[#A6AEAA] text-sm leading-relaxed">{item.descripcion}</p>
