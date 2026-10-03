@@ -9,6 +9,7 @@ import { dolorFormOptions, painFilterOptions, rubroOptions, typeFilterOptions } 
 import type { CtaFormOption, Resource, Step } from "../../types";
 import type { FilterOption } from "../../recursosData";
 import GestionPortfolioTab from "./PortfolioTab";
+import PatitasTab from "./PatitasTab";
 
 /* ------------------------------------------------------------------ */
 /* Tipos — mapean 1 a 1 las tablas de Supabase (ver 0001_init.sql)      */
@@ -303,9 +304,9 @@ function LeadsCtaTab() {
                 </td>
                 <td className="px-4 py-3 text-white">{l.nombre}</td>
                 <td className="px-4 py-3 text-white/70">{l.negocio}</td>
-                <td className="px-4 py-3 text-white/70">{labelFor(ctaFormPainOptions, l.dolor)}</td>
-                <td className="px-4 py-3 text-white/70">{labelFor(ctaFormVolumeOptions, l.volumen)}</td>
-                <td className="px-4 py-3 text-white/70">{labelFor(ctaFormUrgencyOptions, l.urgencia)}</td>
+                <td className="px-4 py-3 text-white/70">{l.dolor}</td>
+                <td className="px-4 py-3 text-white/70">{l.volumen}</td>
+                <td className="px-4 py-3 text-white/70">{l.urgencia}</td>
                 <td className="px-4 py-3 font-mono text-[11px] text-white/45">{l.source}</td>
                 <td className="px-4 py-3 text-white/45">{formatDate(l.created_at)}</td>
                 <td className="px-4 py-3">
@@ -852,7 +853,7 @@ function GestionRecursosTab() {
 
 /* ------------------------------------------------------------------ */
 
-type Tab = "cta-leads" | "recursos-leads" | "analiticas" | "gestion-recursos" | "gestion-portfolio";
+type Tab = "cta-leads" | "recursos-leads" | "analiticas" | "gestion-recursos" | "gestion-portfolio" | "patitas";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "cta-leads", label: "Leads de Contacto" },
@@ -860,6 +861,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "analiticas", label: "Analíticas" },
   { id: "gestion-recursos", label: "Gestión de Recursos" },
   { id: "gestion-portfolio", label: "Gestión de Portfolio" },
+  { id: "patitas", label: "Patitas en Alerta" },
 ];
 
 export default function AdminDashboard() {
@@ -903,6 +905,7 @@ export default function AdminDashboard() {
         {tab === "analiticas" && <AnaliticasTab />}
         {tab === "gestion-recursos" && <GestionRecursosTab />}
         {tab === "gestion-portfolio" && <GestionPortfolioTab />}
+        {tab === "patitas" && <PatitasTab />}
       </div>
     </div>
   );

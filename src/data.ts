@@ -17,11 +17,11 @@ export const whatsappHref = (message: string) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
 export const navItems: NavItem[] = [
-  { label: "El Viaje", href: "#viaje" },
-  { label: "Servicios", href: "#servicios" },
-  { label: "Recursos", href: "/recursos" },
-  { label: "Fundador", href: "#autoridad" },
-  { label: "Contacto", href: "#contacto" },
+  { label: "Soluciones", href: "#soluciones" },
+  { label: "Problemas", href: "#problemas" },
+  { label: "Proyectos", href: "#casos" },
+  { label: "Proceso", href: "#proceso" },
+  { label: "Nodexa", href: "#autoridad" },
 ];
 
 // --- SHOWCASE DE PROYECTOS ---

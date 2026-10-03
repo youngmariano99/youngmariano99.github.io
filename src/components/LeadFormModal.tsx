@@ -2,19 +2,10 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import {
-  ctaFormPainOptions,
-  ctaFormSubtitle,
-  ctaFormTitle,
-  ctaFormUrgencyOptions,
-  ctaFormVolumeOptions,
-  whatsappHref,
-} from "../data";
+import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
 import { trackEvent } from "../lib/analytics";
-import { computePriority } from "../lib/priority";
 import { supabase } from "../lib/supabase";
-import type { CtaFormOption } from "../types";
+import { whatsappHref } from "../data";
 
 interface Props {
   open: boolean;
@@ -22,176 +13,124 @@ interface Props {
   onClose: () => void;
 }
 
-const EMPTY = { nombre: "", negocio: "", dolor: "", volumen: "", urgencia: "" };
-type FormState = typeof EMPTY;
+const EMPTY_FORM = {
+  problemas: [] as string[],
+  solucionActual: "",
+  urgencia: "",
+  tipoNegocio: "",
+  tamano: "",
+  nombre: "",
+  empresa: "",
+  whatsapp: "",
+  email: "",
+  mensaje: ""
+};
+
+type FormState = typeof EMPTY_FORM;
 
 const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const;
-const STEP_LABELS = ["Vos", "Dolor", "Volumen", "Urgencia"];
-const TOTAL_STEPS = STEP_LABELS.length;
-
-function findOption(options: CtaFormOption[], value: string) {
-  return options.find((opt) => opt.value === value);
-}
-
-function buildMessage(form: FormState) {
-  const dolorOpt = findOption(ctaFormPainOptions, form.dolor)!;
-  const volumenOpt = findOption(ctaFormVolumeOptions, form.volumen)!;
-  const urgenciaOpt = findOption(ctaFormUrgencyOptions, form.urgencia)!;
-  const { score, label } = computePriority(dolorOpt.points + volumenOpt.points + urgenciaOpt.points);
-  const nombre = form.nombre.trim();
-  const negocio = form.negocio.trim();
-  const message = [
-    `Hola! Soy ${nombre} de ${negocio}.`,
-    "",
-    `Mi mayor problema: ${dolorOpt.label}`,
-    `Volumen de productos: ${volumenOpt.label}`,
-    `Urgencia: ${urgenciaOpt.label}`,
-  ].join("\n");
-  return { message, dolorOpt, volumenOpt, urgenciaOpt, score, label, nombre, negocio };
-}
-
-/* ------------------------------------------------------------------ */
-
-function ProgressBar({ step }: { step: number }) {
-  return (
-    <div className="flex flex-none gap-1.5 px-7 pt-5">
-      {STEP_LABELS.map((_, i) => (
-        <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
-          <motion.div
-            className="h-full rounded-full bg-[#10B981]"
-            initial={false}
-            animate={{ width: i <= step ? "100%" : "0%" }}
-            transition={{ duration: 0.35, ease: PREMIUM_EASE }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function OptionChip({
-  option,
-  selected,
-  onSelect,
-}: {
-  option: CtaFormOption;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <motion.button
-      type="button"
-      onClick={onSelect}
-      whileTap={{ scale: 0.98 }}
-      className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-5 py-4 text-left text-[14px] font-medium leading-snug transition-colors ${
-        selected
-          ? "border-[#10B981] bg-[#10B981]/[0.12] text-white"
-          : "border-white/10 bg-white/[0.03] text-white/80 hover:border-white/25 hover:bg-white/[0.06]"
-      }`}
-    >
-      <span>{option.label}</span>
-      <span
-        className={`flex h-6 w-6 flex-none items-center justify-center rounded-full border transition-colors ${
-          selected ? "border-[#10B981] bg-[#10B981] text-[#05080F]" : "border-white/20 text-transparent"
-        }`}
-      >
-        <Check size={13} strokeWidth={3} />
-      </span>
-    </motion.button>
-  );
-}
-
-function StepShell({
-  stepKey,
-  eyebrow,
-  title,
-  children,
-}: {
-  stepKey: number;
-  eyebrow: string;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <motion.div
-      key={stepKey}
-      initial={{ opacity: 0, x: 24 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -24 }}
-      transition={{ duration: 0.25, ease: PREMIUM_EASE }}
-      className="flex flex-col gap-5"
-    >
-      <div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#10B981]">{eyebrow}</span>
-        <h3 className="mt-1.5 text-[19px] font-bold leading-snug tracking-tight text-white">{title}</h3>
-      </div>
-      {children}
-    </motion.div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 
 export default function LeadFormModal({ open, source, onClose }: Props) {
-  const [form, setForm] = useState<FormState>(EMPTY);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setForm(EMPTY);
-      setStep(0);
+      setForm(EMPTY_FORM);
+      setStep(1);
       setSubmitting(false);
-      trackEvent("modal_open", source);
+      setSubmitted(false);
+      trackEvent("form_started", source);
     }
   }, [open, source]);
 
   const handleClose = () => {
     if (submitting) return;
+    if (!submitted && step > 1) {
+      trackEvent("form_abandoned", source);
+    }
     onClose();
   };
 
-  const doSubmit = async (finalForm: FormState) => {
+  const advance = () => {
+    trackEvent("form_step_completed", `step_${step}`);
+    setStep(s => s + 1);
+  };
+
+  const computeScore = (f: FormState) => {
+    let score = 0;
+    if (f.problemas.length > 0 && !f.problemas.includes("Otro")) score += 20;
+    if (f.urgencia === "Necesito resolverlo cuanto antes") score += 25;
+    if (["6-15", "16-50", "50+"].includes(f.tamano)) score += 15;
+    if (["Papel", "Una persona lo hace manualmente"].includes(f.solucionActual)) score += 15;
+    if (f.urgencia === "Necesito resolverlo cuanto antes") score += 10;
+    if (f.whatsapp.trim().length > 5) score += 10;
+    return score;
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 61) return "Alta";
+    if (score >= 31) return "Media";
+    return "Baja";
+  };
+
+  const doSubmit = async () => {
     setSubmitting(true);
-    const { message, dolorOpt, volumenOpt, urgenciaOpt, score, label, nombre, negocio } = buildMessage(finalForm);
+    const score = computeScore(form);
+    const label = getScoreLabel(score);
+
+    const message = `Hola! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
+      `Problemas: ${form.problemas.join(", ")}\n` +
+      `Solución actual: ${form.solucionActual}\n` +
+      `Urgencia: ${form.urgencia}\n` +
+      `Negocio: ${form.tipoNegocio} (${form.tamano} personas)\n` +
+      (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
 
     try {
       const { error } = await supabase.from("cta_leads").insert({
-        nombre,
-        negocio,
-        dolor: dolorOpt.value,
-        volumen: volumenOpt.value,
-        urgencia: urgenciaOpt.value,
+        nombre: form.nombre,
+        negocio: form.empresa,
+        dolor: form.problemas.join(", "),
+        volumen: form.tamano,
+        urgencia: form.urgencia,
         prioridad_score: score,
         prioridad_label: label,
         source,
         whatsapp_message: message,
+        email: form.email,
+        telefono: form.whatsapp
       });
       if (error) console.error("No se pudo guardar el lead:", error);
     } catch (err) {
       console.error("No se pudo guardar el lead:", err);
     }
 
-    trackEvent("form_submit", source);
-    window.open(whatsappHref(message), "_blank");
+    trackEvent("generate_lead", source);
+    if (score >= 61) trackEvent("qualify_lead", source);
+    
     setSubmitting(false);
-    onClose();
+    setSubmitted(true);
   };
 
-  // Seleccionar una opción avanza solo — nada de tildar y después buscar
-  // un botón "Siguiente" aparte. En el último paso, en vez de avanzar,
-  // ya envía directo (un tap menos).
-  const selectAndAdvance = (field: "dolor" | "volumen" | "urgencia", value: string) => {
-    const nextForm = { ...form, [field]: value };
-    setForm(nextForm);
-    if (field === "urgencia") {
-      setTimeout(() => doSubmit(nextForm), 180);
-    } else {
-      setTimeout(() => setStep((s) => s + 1), 180);
+  const toggleProblema = (val: string) => {
+    setForm(prev => {
+      const probs = prev.problemas.includes(val) 
+        ? prev.problemas.filter(p => p !== val)
+        : [...prev.problemas, val];
+      
+      trackEvent("problem_selected", val);
+      return { ...prev, problemas: probs };
+    });
+  };
+
+  const selectSingle = (field: keyof FormState, val: string, autoAdvance = true) => {
+    setForm(prev => ({ ...prev, [field]: val }));
+    if (autoAdvance) {
+      setTimeout(advance, 250);
     }
   };
-
-  const step0Valid = form.nombre.trim() !== "" && form.negocio.trim() !== "";
 
   return (
     <AnimatePresence>
@@ -202,7 +141,7 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           onClick={handleClose}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#090B0B]/80 p-4 md:p-6 backdrop-blur-sm"
         >
           <motion.div
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -210,132 +149,264 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.25, ease: PREMIUM_EASE }}
             onClick={(e) => e.stopPropagation()}
-            className="flex max-h-[88vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#0A192F] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]"
+            className="flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111615] shadow-2xl"
           >
-            <div className="flex flex-none items-center justify-between px-7 pt-6">
-              <span className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                Paso {step + 1} de {TOTAL_STEPS}
-              </span>
+            {/* Header */}
+            <div className="flex flex-none items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
+              {!submitted ? (
+                <div className="flex flex-col gap-1 w-full pr-8">
+                  <span className="text-[12px] font-bold uppercase tracking-wider text-[#16D39A]">
+                    Paso {step} de 5
+                  </span>
+                  {/* Progress Bar */}
+                  <div className="h-1 w-full bg-white/5 rounded-full mt-2 overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-[#16D39A]" 
+                      initial={false}
+                      animate={{ width: `${(step / 5) * 100}%` }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <span className="text-[14px] font-bold uppercase tracking-wider text-[#16D39A]">
+                  ¡Listo!
+                </span>
+              )}
+              
               <button
                 onClick={handleClose}
-                aria-label="Cerrar"
-                className="flex h-8 w-8 items-center justify-center rounded-full border-none bg-white/5 text-lg leading-none text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                className="absolute top-6 right-6 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
               >
-                &times;
+                <X size={18} />
               </button>
             </div>
 
-            <ProgressBar step={step} />
-
-            <div className="flex-1 overflow-y-auto px-7 pb-7 pt-6">
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
               <AnimatePresence mode="wait">
-                {step === 0 && (
-                  <StepShell stepKey={0} eyebrow="Antes de escribirnos" title={ctaFormTitle}>
-                    <p className="-mt-2 text-[13.5px] leading-relaxed text-white/55">{ctaFormSubtitle}</p>
-                    <div className="flex flex-col gap-4">
-                      <div>
-                        <label className="mb-1.5 block text-[12.5px] font-semibold text-white/70">
-                          Nombre completo
-                        </label>
-                        <input
-                          type="text"
-                          autoFocus
-                          value={form.nombre}
-                          onChange={(e) => setForm((prev) => ({ ...prev, nombre: e.target.value }))}
-                          placeholder="Ej: Martín Gómez"
-                          className="w-full rounded-xl border border-white/15 bg-[#05080F] px-4 py-3.5 text-sm text-white placeholder:text-white/35 focus:border-[#10B981] focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1.5 block text-[12.5px] font-semibold text-white/70">
-                          Nombre de tu negocio
-                        </label>
-                        <input
-                          type="text"
-                          value={form.negocio}
-                          onChange={(e) => setForm((prev) => ({ ...prev, negocio: e.target.value }))}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && step0Valid) setStep(1);
-                          }}
-                          placeholder="Ej: Ferretería Los Hermanos"
-                          className="w-full rounded-xl border border-white/15 bg-[#05080F] px-4 py-3.5 text-sm text-white placeholder:text-white/35 focus:border-[#10B981] focus:outline-none"
-                        />
-                      </div>
+                
+                {/* STEP 1 */}
+                {step === 1 && !submitted && (
+                  <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Qué problema querés resolver?</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Podés seleccionar más de uno.</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {["Stock", "Ventas", "Administración", "Clientes", "Turnos", "Procesos manuales", "Página web", "Automatización", "Información / reportes", "Otro"].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => toggleProblema(opt)}
+                          className={`flex items-center justify-between px-4 py-3 rounded-xl border text-[14px] font-medium transition-colors ${
+                            form.problemas.includes(opt)
+                              ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
+                              : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                          }`}
+                        >
+                          {opt}
+                          {form.problemas.includes(opt) && <Check size={16} className="text-[#16D39A]" />}
+                        </button>
+                      ))}
                     </div>
+                    
                     <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      disabled={!step0Valid}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#10B981] px-4 py-3.5 text-sm font-semibold text-[#05080F] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={form.problemas.length === 0}
+                      onClick={advance}
+                      className="mt-8 flex items-center justify-center w-full h-[48px] rounded-lg bg-[#16D39A] text-[#090B0B] font-bold disabled:opacity-40 transition-opacity"
                     >
-                      <span>Continuar</span>
-                      <ArrowRight size={16} strokeWidth={2.25} />
+                      Continuar →
                     </button>
-                  </StepShell>
+                  </motion.div>
                 )}
 
-                {step === 1 && (
-                  <StepShell
-                    stepKey={1}
-                    eyebrow="1 de 3"
-                    title="¿Cuál es el mayor dolor de cabeza que tenés hoy?"
-                  >
-                    <div className="flex flex-col gap-2.5">
-                      {ctaFormPainOptions.map((opt) => (
-                        <OptionChip
-                          key={opt.value}
-                          option={opt}
-                          selected={form.dolor === opt.value}
-                          onSelect={() => selectAndAdvance("dolor", opt.value)}
-                        />
+                {/* STEP 2 */}
+                {step === 2 && !submitted && (
+                  <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Cómo resolvés esto actualmente?</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">No necesitás saber de tecnología. Queremos entender cómo trabajás hoy.</p>
+                    
+                    <div className="flex flex-col gap-3">
+                      {["Excel / planillas", "Papel", "WhatsApp", "Otro sistema", "Una persona lo hace manualmente", "No tenemos una solución", "Otro"].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => selectSingle("solucionActual", opt)}
+                          className={`flex items-center justify-between px-5 py-4 rounded-xl border text-left text-[14px] font-medium transition-colors ${
+                            form.solucionActual === opt
+                              ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
+                              : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                          }`}
+                        >
+                          {opt}
+                          {form.solucionActual === opt && <Check size={16} className="text-[#16D39A]" />}
+                        </button>
                       ))}
                     </div>
-                  </StepShell>
+                  </motion.div>
                 )}
 
-                {step === 2 && (
-                  <StepShell stepKey={2} eyebrow="2 de 3" title="¿Qué volumen de productos manejás?">
-                    <div className="flex flex-col gap-2.5">
-                      {ctaFormVolumeOptions.map((opt) => (
-                        <OptionChip
-                          key={opt.value}
-                          option={opt}
-                          selected={form.volumen === opt.value}
-                          onSelect={() => selectAndAdvance("volumen", opt.value)}
-                        />
+                {/* STEP 3 */}
+                {step === 3 && !submitted && (
+                  <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Qué tan importante es solucionarlo?</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Esto nos ayuda a entender qué tipo de solución podría tener sentido.</p>
+                    
+                    <div className="flex flex-col gap-3">
+                      {["Necesito resolverlo cuanto antes", "Me gustaría resolverlo durante los próximos meses", "Estoy investigando opciones"].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => selectSingle("urgencia", opt)}
+                          className={`flex items-center justify-between px-5 py-4 rounded-xl border text-left text-[14px] font-medium transition-colors ${
+                            form.urgencia === opt
+                              ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
+                              : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                          }`}
+                        >
+                          {opt}
+                          {form.urgencia === opt && <Check size={16} className="text-[#16D39A]" />}
+                        </button>
                       ))}
                     </div>
-                  </StepShell>
+                  </motion.div>
                 )}
 
-                {step === 3 && (
-                  <StepShell stepKey={3} eyebrow="3 de 3" title="¿Para cuándo necesitás tener esto ordenado?">
-                    <div className="flex flex-col gap-2.5">
-                      {ctaFormUrgencyOptions.map((opt) => (
-                        <OptionChip
-                          key={opt.value}
-                          option={opt}
-                          selected={form.urgencia === opt.value}
-                          onSelect={() => selectAndAdvance("urgencia", opt.value)}
-                        />
-                      ))}
+                {/* STEP 4 */}
+                {step === 4 && !submitted && (
+                  <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-6">Sobre tu negocio</h3>
+                    
+                    <div className="flex flex-col gap-5">
+                      <div>
+                        <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-2">¿Qué tipo de negocio tenés?</label>
+                        <select 
+                          value={form.tipoNegocio}
+                          onChange={(e) => setForm(f => ({ ...f, tipoNegocio: e.target.value }))}
+                          className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none"
+                        >
+                          <option value="" disabled>Seleccioná una opción</option>
+                          <option value="Comercio">Comercio</option>
+                          <option value="Empresa de servicios">Empresa de servicios</option>
+                          <option value="Industria">Industria</option>
+                          <option value="Profesional">Profesional</option>
+                          <option value="Emprendimiento">Emprendimiento</option>
+                          <option value="Otro">Otro</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-2">Cantidad aproximada de personas</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {["1-5", "6-15", "16-50", "50+"].map(opt => (
+                            <button
+                              key={opt}
+                              onClick={() => setForm(f => ({ ...f, tamano: opt }))}
+                              className={`flex items-center justify-center px-4 py-3 rounded-lg border text-[14px] font-medium transition-colors ${
+                                form.tamano === opt
+                                  ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
+                                  : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    {submitting && <p className="text-center text-[13px] text-white/40">Enviando...</p>}
-                  </StepShell>
+
+                    <button
+                      disabled={!form.tipoNegocio || !form.tamano}
+                      onClick={advance}
+                      className="mt-8 flex items-center justify-center w-full h-[48px] rounded-lg bg-[#16D39A] text-[#090B0B] font-bold disabled:opacity-40 transition-opacity"
+                    >
+                      Continuar →
+                    </button>
+                  </motion.div>
                 )}
+
+                {/* STEP 5 */}
+                {step === 5 && !submitted && (
+                  <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">Ahora sí: tus datos</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Para enviarte una propuesta justa y contactarte.</p>
+                    
+                    <div className="flex flex-col gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-1">Nombre *</label>
+                          <input type="text" value={form.nombre} onChange={e => setForm(f => ({...f, nombre: e.target.value}))} className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-1">Empresa *</label>
+                          <input type="text" value={form.empresa} onChange={e => setForm(f => ({...f, empresa: e.target.value}))} className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-1">WhatsApp *</label>
+                          <input type="tel" value={form.whatsapp} onChange={e => setForm(f => ({...f, whatsapp: e.target.value}))} className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-1">Email</label>
+                          <input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-1">¿Querés agregar algo más? (Opcional)</label>
+                        <textarea value={form.mensaje} onChange={e => setForm(f => ({...f, mensaje: e.target.value}))} className="w-full rounded-lg border border-white/10 bg-[#0D1110]/40 p-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none min-h-[80px] resize-none" />
+                      </div>
+                    </div>
+
+                    <button
+                      disabled={!form.nombre || !form.empresa || !form.whatsapp || submitting}
+                      onClick={doSubmit}
+                      className="mt-8 flex items-center justify-center w-full h-[48px] rounded-lg bg-[#16D39A] text-[#090B0B] font-bold disabled:opacity-40 transition-opacity"
+                    >
+                      {submitting ? "Enviando..." : "Enviar mis datos"}
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* SUCCESS */}
+                {submitted && (
+                  <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center py-8">
+                    <div className="w-16 h-16 rounded-full bg-[#16D39A]/10 flex items-center justify-center text-[#16D39A] mb-6">
+                      <Check size={32} strokeWidth={2.5} />
+                    </div>
+                    <h3 className="text-[28px] font-bold text-[#F3F5F4] mb-3">¡Gracias!</h3>
+                    <p className="text-[15px] text-[#A6AEAA] max-w-[340px] leading-relaxed mb-8">
+                      Ya tenemos una idea mucho más clara de lo que necesitás. Revisamos tu situación y nos ponemos en contacto.
+                    </p>
+                    
+                    <button
+                      onClick={() => {
+                        const message = `Hola! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
+                        `Quiero charlar sobre mi negocio. Ya completé el formulario en la web.`;
+                        window.open(whatsappHref(message), "_blank");
+                        trackEvent("whatsapp_click", source);
+                        onClose();
+                      }}
+                      className="inline-flex items-center justify-center h-[52px] px-8 rounded-lg bg-[#16D39A] text-[#090B0B] font-bold hover:bg-[#12b382] transition-colors"
+                    >
+                      Continuar por WhatsApp →
+                    </button>
+                  </motion.div>
+                )}
+
               </AnimatePresence>
+            </div>
 
-              {step > 0 && !submitting && (
+            {/* Footer nav */}
+            {step > 1 && !submitted && (
+              <div className="px-6 pb-6 pt-2">
                 <button
                   type="button"
-                  onClick={() => setStep((s) => s - 1)}
-                  className="mt-5 inline-flex items-center gap-1.5 border-none bg-transparent p-0 text-[13px] font-semibold text-white/45 transition-colors hover:text-white"
+                  onClick={() => setStep(s => s - 1)}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#A6AEAA] hover:text-[#F3F5F4] transition-colors"
                 >
-                  <ArrowLeft size={14} strokeWidth={2.25} />
+                  <ArrowLeft size={14} />
                   <span>Volver</span>
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-
 import SmoothScrollProvider, { useLenis } from "./lib/SmoothScroll";
 import { LeadModalProvider } from "./lib/LeadModalContext";
 import NeuralCanvas from "./components/NeuralCanvas";
-import FullscreenMenu from "./components/FullscreenMenu";
 import { RequireAuth } from "./components/admin/RequireAuth";
 import Home from "./pages/Home";
 import MiniModulos from "./pages/MiniModulos";
@@ -13,6 +12,7 @@ import NodexaCustom from "./pages/NodexaCustom";
 import Recursos from "./pages/Recursos";
 import CasosDeExito from "./pages/CasosDeExito";
 import CasoDetalle from "./pages/CasoDetalle";
+import PatitasLanding from "./pages/PatitasLanding";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -34,6 +34,8 @@ function ScrollToTopOnNavigate() {
   return null;
 }
 
+import Header from "./components/Header";
+
 // Shell del sitio PÚBLICO: fondo de estrellas, menú, smooth scroll, modal
 // de leads — todo lo que comparten Home/MiniModulos/NodexaCustom/Recursos.
 // /admin vive completamente afuera de esto (ver AdminLayout): es una
@@ -45,7 +47,7 @@ function PublicLayout() {
       <LeadModalProvider>
         <div className="relative min-h-screen font-sans text-white antialiased">
           <NeuralCanvas />
-          <FullscreenMenu />
+          <Header />
           <ScrollToTopOnNavigate />
           <Outlet />
         </div>
@@ -54,7 +56,14 @@ function PublicLayout() {
   );
 }
 
+import { captureUTMs, trackEvent } from "./lib/analytics";
+
 export default function NodexaLanding() {
+  useEffect(() => {
+    captureUTMs();
+    trackEvent("page_view", window.location.pathname);
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -65,6 +74,7 @@ export default function NodexaLanding() {
           <Route path="/recursos" element={<Recursos />} />
           <Route path="/casos-de-exito" element={<CasosDeExito />} />
           <Route path="/casos-de-exito/:slug" element={<CasoDetalle />} />
+          <Route path="/patitas-en-alerta" element={<PatitasLanding />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>

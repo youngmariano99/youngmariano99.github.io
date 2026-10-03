@@ -24,10 +24,8 @@ export type ServiceIcon = "network" | "flow" | "terminal";
 export interface Service {
   index: string;
   title: string;
-  /** Nombre técnico entre paréntesis junto al título (ej. "Sistemas a medida") */
   subtitle?: string;
   description: string;
-  /** Si está presente, el CTA navega a esta ruta interna en vez de abrir WhatsApp */
   route?: string;
   ctaLabel?: string;
 }
@@ -59,19 +57,14 @@ export interface NetworkLine {
 export interface CtaFormOption {
   value: string;
   label: string;
-  /** Puntos que aporta esta opción al cálculo de prioridad del lead */
   points: number;
 }
 
-// Un paso genérico de "cómo se usa/cómo trabajamos" — mismo shape para
-// recursos y casos de éxito, se guarda como jsonb en ambas tablas.
 export interface Step {
   titulo: string;
   descripcion: string;
 }
 
-// Mapea 1 a 1 la tabla `resources` de Supabase (ver supabase/migrations/0001_init.sql
-// y 0004_resources_v2.sql).
 export interface Resource {
   id: string;
   titulo: string;
@@ -86,9 +79,6 @@ export interface Resource {
   created_at: string;
 }
 
-// Mapea 1 a 1 la tabla `portfolio_projects` de Supabase (ver
-// supabase/migrations/0002_portfolio.sql y 0003_portfolio_devices.sql) —
-// sección "Casos de Éxito". imagen_portada_url = captura de escritorio.
 export interface PortfolioProject {
   id: string;
   slug: string;
@@ -106,4 +96,42 @@ export interface PortfolioProject {
   activo: boolean;
   orden: number;
   created_at: string;
+}
+
+export interface PatitasLead {
+  id: string;
+  created_at: string;
+  rol: string;
+  nombre: string;
+  experiencia_general: string;
+  pregunta_especifica: string | null;
+  contacto_email: string | null;
+  contacto_whatsapp: string | null;
+  contacto_redes: string | null;
+}
+
+export interface PatitasTimeline {
+  id: string;
+  created_at: string;
+  titulo: string;
+  descripcion: string;
+  fecha: string;
+  estado: "completado" | "actual" | "pendiente";
+  orden: number;
+}
+
+export interface PatitasImage {
+  id: string;
+  created_at: string;
+  desktop_url: string;
+  mobile_url: string;
+  orden: number;
+  activo: boolean;
+}
+
+export interface PatitasConfig {
+  id: number;
+  whatsapp_number: string | null;
+  launch_date: string | null;
+  updated_at: string;
 }

@@ -61,6 +61,8 @@ function useAutoScrollReveal(threshold: number) {
   return { containerRef, imgRef, scrollPct, onLoad: measure };
 }
 
+import { AnimatePresence } from "framer-motion";
+
 function ScreenImage({
   imageUrl,
   alt,
@@ -74,16 +76,24 @@ function ScreenImage({
   const isLong = scrollPct !== null;
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden">
-      <motion.img
-        ref={imgRef}
-        src={imageUrl}
-        alt={alt}
-        onLoad={onLoad}
-        className={isLong ? "absolute left-0 top-0 w-full" : "absolute inset-0 h-full w-full object-cover object-top"}
-        animate={isLong ? { y: ["0%", "0%", `-${scrollPct}%`, `-${scrollPct}%`, "0%"] } : { y: 0 }}
-        transition={isLong ? SCROLL_TRANSITION : undefined}
-      />
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-[#05070C]">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={imageUrl}
+          ref={imgRef}
+          src={imageUrl}
+          alt={alt}
+          onLoad={onLoad}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, y: isLong ? ["0%", "0%", `-${scrollPct}%`, `-${scrollPct}%`, "0%"] : 0 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            opacity: { duration: 0.5, ease: "easeInOut" },
+            y: isLong ? SCROLL_TRANSITION : undefined,
+          }}
+          className={isLong ? "absolute left-0 top-0 w-full" : "absolute inset-0 h-full w-full object-cover object-top"}
+        />
+      </AnimatePresence>
     </div>
   );
 }
