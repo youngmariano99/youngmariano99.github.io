@@ -30,6 +30,8 @@ interface CtaLead {
   id: string;
   nombre: string;
   negocio: string;
+  rubro?: string;
+  rubro_otro?: string;
   dolor: string;
   volumen: string;
   urgencia: string;
@@ -38,6 +40,8 @@ interface CtaLead {
   source: string;
   whatsapp_message: string;
   contactado: boolean;
+  email?: string;
+  telefono?: string;
   created_at: string;
 }
 
@@ -283,7 +287,9 @@ function LeadsCtaTab() {
             <tr className="border-b border-white/10 text-white/45">
               <th className="px-4 py-3 font-semibold">Prioridad</th>
               <th className="px-4 py-3 font-semibold">Nombre</th>
+              <th className="px-4 py-3 font-semibold">Contacto</th>
               <th className="px-4 py-3 font-semibold">Negocio</th>
+              <th className="px-4 py-3 font-semibold">Rubro</th>
               <th className="px-4 py-3 font-semibold">Dolor</th>
               <th className="px-4 py-3 font-semibold">Volumen</th>
               <th className="px-4 py-3 font-semibold">Urgencia</th>
@@ -303,7 +309,12 @@ function LeadsCtaTab() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-white">{l.nombre}</td>
+                <td className="px-4 py-3 text-white/70 text-xs">
+                  {l.email && <div>✉️ {l.email}</div>}
+                  {l.telefono && <div>📱 {l.telefono}</div>}
+                </td>
                 <td className="px-4 py-3 text-white/70">{l.negocio}</td>
+                <td className="px-4 py-3 text-white/70">{l.rubro === "Otro" ? l.rubro_otro : l.rubro}</td>
                 <td className="px-4 py-3 text-white/70">{l.dolor}</td>
                 <td className="px-4 py-3 text-white/70">{l.volumen}</td>
                 <td className="px-4 py-3 text-white/70">{l.urgencia}</td>

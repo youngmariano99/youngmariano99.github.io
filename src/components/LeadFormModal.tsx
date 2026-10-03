@@ -17,7 +17,8 @@ const EMPTY_FORM = {
   problemas: [] as string[],
   solucionActual: "",
   urgencia: "",
-  tipoNegocio: "",
+  rubro: "",
+  rubroOtro: "",
   tamano: "",
   nombre: "",
   empresa: "",
@@ -35,6 +36,20 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
+  const [rubrosOpciones, setRubrosOpciones] = useState<string[]>([
+    "Gastronomía", "Comercio minorista", "Servicios profesionales", "Salud", "Educación", "Tecnología", "Industria", "Logística"
+  ]);
+
+  useEffect(() => {
+    supabase.from("cta_leads").select("rubro_otro").not("rubro_otro", "is", null).then(({ data }) => {
+      if (data && data.length > 0) {
+        const extra = data.map(d => d.rubro_otro?.trim() || "").filter(Boolean);
+        const normalized = extra.map(r => r.charAt(0).toUpperCase() + r.slice(1).toLowerCase());
+        setRubrosOpciones(prev => Array.from(new Set([...prev, ...normalized])).sort());
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -42,13 +57,14 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
       setStep(1);
       setSubmitting(false);
       setSubmitted(false);
+      setSubmitError(false);
       trackEvent("form_started", source);
     }
   }, [open, source]);
 
   const handleClose = () => {
     if (submitting) return;
-    if (!submitted && step > 1) {
+    if (!submitted && !submitError && step > 1) {
       trackEvent("form_abandoned", source);
     }
     onClose();
@@ -78,6 +94,7 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
 
   const doSubmit = async () => {
     setSubmitting(true);
+    setSubmitError(false);
     const score = computeScore(form);
     const label = getScoreLabel(score);
 
@@ -85,7 +102,7 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
       `Problemas: ${form.problemas.join(", ")}\n` +
       `Solución actual: ${form.solucionActual}\n` +
       `Urgencia: ${form.urgencia}\n` +
-      `Negocio: ${form.tipoNegocio} (${form.tamano} personas)\n` +
+      `Negocio: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro} (${form.tamano} personas)\n` +
       (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
 
     try {
@@ -100,11 +117,21 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
         source,
         whatsapp_message: message,
         email: form.email,
-        telefono: form.whatsapp
+        telefono: form.whatsapp,
+        rubro: form.rubro,
+        rubro_otro: form.rubro === "Otro" ? form.rubroOtro : null
       });
-      if (error) console.error("No se pudo guardar el lead:", error);
+      if (error) {
+        console.error("No se pudo guardar el lead:", error);
+        setSubmitError(true);
+        setSubmitting(false);
+        return;
+      }
     } catch (err) {
       console.error("No se pudo guardar el lead:", err);
+      setSubmitError(true);
+      setSubmitting(false);
+      return;
     }
 
     trackEvent("generate_lead", source);
@@ -276,20 +303,33 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
                     
                     <div className="flex flex-col gap-5">
                       <div>
-                        <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-2">¿Qué tipo de negocio tenés?</label>
+                        <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-2">¿En qué rubro estás?</label>
                         <select 
-                          value={form.tipoNegocio}
-                          onChange={(e) => setForm(f => ({ ...f, tipoNegocio: e.target.value }))}
-                          className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none"
+                          value={form.rubro}
+                          onChange={(e) => setForm(f => ({ ...f, rubro: e.target.value }))}
+                          className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none mb-3"
                         >
-                          <option value="" disabled>Seleccioná una opción</option>
-                          <option value="Comercio">Comercio</option>
-                          <option value="Empresa de servicios">Empresa de servicios</option>
-                          <option value="Industria">Industria</option>
-                          <option value="Profesional">Profesional</option>
-                          <option value="Emprendimiento">Emprendimiento</option>
-                          <option value="Otro">Otro</option>
+                          <option value="" disabled>Seleccioná tu rubro</option>
+                          {rubrosOpciones.map(r => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                          <option value="Otro">Otro (Especificar)</option>
                         </select>
+                        
+                        <AnimatePresence>
+                          {form.rubro === "Otro" && (
+                            <motion.input
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 48 }}
+                              exit={{ opacity: 0, height: 0 }}
+                              type="text"
+                              placeholder="Escribí tu rubro..."
+                              value={form.rubroOtro}
+                              onChange={(e) => setForm(f => ({ ...f, rubroOtro: e.target.value }))}
+                              className="w-full rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none"
+                            />
+                          )}
+                        </AnimatePresence>
                       </div>
 
                       <div>
@@ -313,7 +353,7 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
                     </div>
 
                     <button
-                      disabled={!form.tipoNegocio || !form.tamano}
+                      disabled={!form.rubro || (form.rubro === "Otro" && !form.rubroOtro) || !form.tamano}
                       onClick={advance}
                       className="mt-8 flex items-center justify-center w-full h-[48px] rounded-lg bg-[#16D39A] text-[#090B0B] font-bold disabled:opacity-40 transition-opacity"
                     >
@@ -366,7 +406,7 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
                 )}
 
                 {/* SUCCESS */}
-                {submitted && (
+                {submitted && !submitError && (
                   <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center py-8">
                     <div className="w-16 h-16 rounded-full bg-[#16D39A]/10 flex items-center justify-center text-[#16D39A] mb-6">
                       <Check size={32} strokeWidth={2.5} />
@@ -391,11 +431,41 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
                   </motion.div>
                 )}
 
+                {/* ERROR */}
+                {submitError && (
+                  <motion.div key="error" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center py-8">
+                    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-6">
+                      <X size={32} strokeWidth={2.5} />
+                    </div>
+                    <h3 className="text-[28px] font-bold text-[#F3F5F4] mb-3">Ocurrió un error</h3>
+                    <p className="text-[15px] text-[#A6AEAA] max-w-[340px] leading-relaxed mb-8">
+                      No pudimos guardar tus datos de forma automática. ¡Pero no pierdas lo que completaste! Tocá el botón para enviarnos todo por WhatsApp.
+                    </p>
+                    
+                    <button
+                      onClick={() => {
+                        const message = `Hola! Tuve un error en la web pero acá están mis datos:\n\nSoy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
+                        `Problemas: ${form.problemas.join(", ")}\n` +
+                        `Solución actual: ${form.solucionActual}\n` +
+                        `Urgencia: ${form.urgencia}\n` +
+                        `Negocio: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro} (${form.tamano} personas)\n` +
+                        (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
+                        window.open(whatsappHref(message), "_blank");
+                        trackEvent("whatsapp_click_fallback", source);
+                        onClose();
+                      }}
+                      className="inline-flex items-center justify-center h-[52px] px-8 rounded-lg bg-[#25D366] text-[#090B0B] font-bold hover:bg-[#1da851] transition-colors"
+                    >
+                      Enviar datos por WhatsApp →
+                    </button>
+                  </motion.div>
+                )}
+
               </AnimatePresence>
             </div>
 
             {/* Footer nav */}
-            {step > 1 && !submitted && (
+            {step > 1 && !submitted && !submitError && (
               <div className="px-6 pb-6 pt-2">
                 <button
                   type="button"
