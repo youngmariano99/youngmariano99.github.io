@@ -34,7 +34,7 @@ const getSpecificQuestion = (role: string) => {
 
 export default function PatitasFormPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0); // 0 = Seleccionar Rol
+  const [step, setStep] = useState(1); // 1 = Seleccionar Rol
   const [role, setRole] = useState("");
   const [nombre, setNombre] = useState("");
   const [experiencia, setExperiencia] = useState("");
