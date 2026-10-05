@@ -16,7 +16,8 @@ export type AnalyticsEventType =
   | "whatsapp_click"
   | "modal_open"
   | "form_submit"
-  | "cta_click";
+  | "cta_click"
+  | "whatsapp_click_fallback";
 
 export function trackEvent(eventType: AnalyticsEventType, source: string) {
   // Guardamos en Supabase

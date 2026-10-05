@@ -53,7 +53,6 @@ export default function LeadFormPage() {
   const handleClose = () => {
     navigate("/");
   };
-  };
 
   const advance = () => {
     trackEvent("form_step_completed", `step_${step}`);
@@ -404,7 +403,7 @@ export default function LeadFormPage() {
                         `Quiero charlar sobre mi negocio. Ya completé el formulario en la web.`;
                         window.open(whatsappHref(message), "_blank");
                         trackEvent("whatsapp_click", source);
-                        onClose();
+                        handleClose();
                       }}
                       className="inline-flex items-center justify-center h-[52px] px-8 rounded-lg bg-[#16D39A] text-[#090B0B] font-bold hover:bg-[#12b382] transition-colors"
                     >
@@ -434,7 +433,7 @@ export default function LeadFormPage() {
                         (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
                         window.open(whatsappHref(message), "_blank");
                         trackEvent("whatsapp_click_fallback", source);
-                        onClose();
+                        handleClose();
                       }}
                       className="inline-flex items-center justify-center h-[52px] px-8 rounded-lg bg-[#25D366] text-[#090B0B] font-bold hover:bg-[#1da851] transition-colors"
                     >
