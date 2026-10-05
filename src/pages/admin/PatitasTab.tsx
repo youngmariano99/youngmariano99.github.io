@@ -218,6 +218,8 @@ function PatitasImagesAdmin() {
   const [items, setItems] = useState<PatitasImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingDesktop, setUploadingDesktop] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
   
   const [form, setForm] = useState<Partial<PatitasImage>>({ desktop_url: "", mobile_url: "", orden: 0, activo: true });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -232,6 +234,37 @@ function PatitasImagesAdmin() {
   useEffect(() => {
     fetchItems();
   }, []);
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const sanitizeFilename = (name: string) => name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const path = `patitas/${Date.now()}-${sanitizeFilename(file.name)}`;
+    const { error } = await supabase.storage.from("recursos").upload(path, file);
+    if (error) {
+      console.error("No se pudo subir la imagen:", error);
+      alert(`Error al subir: ${error.message}`);
+      return null;
+    }
+    const { data } = supabase.storage.from("recursos").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleUploadDesktop = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingDesktop(true);
+    const url = await uploadFile(file);
+    if (url) setForm((prev) => ({ ...prev, desktop_url: url }));
+    setUploadingDesktop(false);
+  };
+
+  const handleUploadMobile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingMobile(true);
+    const url = await uploadFile(file);
+    if (url) setForm((prev) => ({ ...prev, mobile_url: url }));
+    setUploadingMobile(false);
+  };
 
   const save = async () => {
     setSaving(true);
@@ -259,17 +292,46 @@ function PatitasImagesAdmin() {
     <div className="flex flex-col gap-8">
       <div className="bg-white/5 p-4 rounded-lg border border-white/10 space-y-4 max-w-xl">
         <h4 className="font-bold text-white mb-2">{editingId ? "Editar Imagen" : "Nueva Imagen"}</h4>
-        <input type="text" placeholder="URL Desktop (/animales/... o url completa)" value={form.desktop_url} onChange={e => setForm({...form, desktop_url: e.target.value})} className="w-full bg-[#111615] border border-white/10 rounded p-2 text-white text-sm" />
-        <input type="text" placeholder="URL Mobile (/animales/... o url completa)" value={form.mobile_url} onChange={e => setForm({...form, mobile_url: e.target.value})} className="w-full bg-[#111615] border border-white/10 rounded p-2 text-white text-sm" />
-        <div className="flex gap-4 items-center">
+        
+        {/* Desktop Image */}
+        <div className="space-y-2">
+          <label className="text-[13px] text-white/70 font-semibold">URL o Archivo para Desktop (Laptop)</label>
+          <div className="flex gap-2 items-center">
+            <input type="text" placeholder="URL Desktop" value={form.desktop_url} onChange={e => setForm({...form, desktop_url: e.target.value})} className="flex-1 bg-[#111615] border border-white/10 rounded p-2 text-white text-sm" />
+            <div className="relative overflow-hidden inline-block shrink-0">
+              <button disabled={uploadingDesktop} className="bg-white/10 hover:bg-white/20 text-white text-[13px] px-3 py-2 rounded cursor-pointer disabled:opacity-50">
+                {uploadingDesktop ? "Subiendo..." : "Subir foto"}
+              </button>
+              <input type="file" accept="image/*" onChange={handleUploadDesktop} disabled={uploadingDesktop} className="absolute inset-0 opacity-0 cursor-pointer" />
+            </div>
+          </div>
+          {form.desktop_url && <img src={form.desktop_url} alt="Desktop Preview" className="h-16 rounded object-cover mt-2" />}
+        </div>
+
+        {/* Mobile Image */}
+        <div className="space-y-2">
+          <label className="text-[13px] text-white/70 font-semibold">URL o Archivo para Mobile (Celular)</label>
+          <div className="flex gap-2 items-center">
+            <input type="text" placeholder="URL Mobile" value={form.mobile_url} onChange={e => setForm({...form, mobile_url: e.target.value})} className="flex-1 bg-[#111615] border border-white/10 rounded p-2 text-white text-sm" />
+            <div className="relative overflow-hidden inline-block shrink-0">
+              <button disabled={uploadingMobile} className="bg-white/10 hover:bg-white/20 text-white text-[13px] px-3 py-2 rounded cursor-pointer disabled:opacity-50">
+                {uploadingMobile ? "Subiendo..." : "Subir foto"}
+              </button>
+              <input type="file" accept="image/*" onChange={handleUploadMobile} disabled={uploadingMobile} className="absolute inset-0 opacity-0 cursor-pointer" />
+            </div>
+          </div>
+          {form.mobile_url && <img src={form.mobile_url} alt="Mobile Preview" className="h-16 rounded object-cover mt-2" />}
+        </div>
+
+        <div className="flex gap-4 items-center pt-2">
           <input type="number" placeholder="Orden" value={form.orden} onChange={e => setForm({...form, orden: Number(e.target.value)})} className="bg-[#111615] border border-white/10 rounded p-2 text-white text-sm w-20" />
           <label className="flex items-center gap-2 text-white/70 text-sm cursor-pointer">
             <input type="checkbox" checked={form.activo} onChange={e => setForm({...form, activo: e.target.checked})} className="w-4 h-4 accent-[#16D39A]" />
             Activo
           </label>
         </div>
-        <div className="flex gap-2">
-          <button onClick={save} disabled={saving || !form.desktop_url || !form.mobile_url} className="bg-[#16D39A] text-black px-4 py-2 rounded font-bold text-sm hover:bg-[#12b382] disabled:opacity-50">Guardar</button>
+        <div className="flex gap-2 pt-2">
+          <button onClick={save} disabled={saving || !form.desktop_url || !form.mobile_url || uploadingDesktop || uploadingMobile} className="bg-[#16D39A] text-black px-4 py-2 rounded font-bold text-sm hover:bg-[#12b382] disabled:opacity-50">Guardar</button>
           {editingId && <button onClick={() => { setEditingId(null); setForm({ desktop_url: "", mobile_url: "", orden: 0, activo: true }); }} className="bg-white/10 text-white px-4 py-2 rounded text-sm hover:bg-white/20">Cancelar</button>}
         </div>
       </div>

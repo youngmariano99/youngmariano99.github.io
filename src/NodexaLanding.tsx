@@ -58,6 +58,9 @@ function PublicLayout() {
 
 import { captureUTMs, trackEvent } from "./lib/analytics";
 
+import LeadFormPage from "./pages/LeadFormPage";
+import PatitasFormPage from "./pages/PatitasFormPage";
+
 export default function NodexaLanding() {
   useEffect(() => {
     captureUTMs();
@@ -76,6 +79,9 @@ export default function NodexaLanding() {
           <Route path="/casos-de-exito/:slug" element={<CasoDetalle />} />
           <Route path="/patitas-en-alerta" element={<PatitasLanding />} />
         </Route>
+
+        <Route path="/contacto" element={<LeadFormPage />} />
+        <Route path="/patitas-en-alerta/unirme" element={<PatitasFormPage />} />
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="login" element={<AdminLogin />} />
