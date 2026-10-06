@@ -39,6 +39,7 @@ export default function PatitasFormPage() {
   const [nombre, setNombre] = useState("");
   const [experiencia, setExperiencia] = useState("");
   const [preguntaEspecifica, setPreguntaEspecifica] = useState("");
+  const [mensajeDirecto, setMensajeDirecto] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [redes, setRedes] = useState("");
@@ -54,10 +55,14 @@ export default function PatitasFormPage() {
     setIsSubmitting(true);
     setError("");
 
+    const fullExperiencia = mensajeDirecto 
+      ? `${experiencia}\n\n[Mensaje Directo a Mariano]:\n${mensajeDirecto}` 
+      : experiencia;
+
     const { error: sbError } = await supabase.from("patitas_leads").insert({
       rol: role,
       nombre,
-      experiencia_general: experiencia,
+      experiencia_general: fullExperiencia,
       pregunta_especifica: preguntaEspecifica || null,
       contacto_email: email || null,
       contacto_whatsapp: whatsapp || null,
@@ -111,7 +116,7 @@ export default function PatitasFormPage() {
                     onClick={() => setRole(r.id)}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       role === r.id
-                        ? "bg-blue-50 border-blue-600 text-blue-600"
+                        ? "bg-emerald-50 border-emerald-600 text-emerald-600"
                         : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
@@ -123,7 +128,7 @@ export default function PatitasFormPage() {
               <div className="pt-4 flex justify-end">
                 <button
                   onClick={() => setStep(2)}
-                  className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-blue-700 transition-colors"
+                  className="bg-emerald-600 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-emerald-700 transition-colors"
                 >
                   Siguiente →
                 </button>
@@ -142,7 +147,7 @@ export default function PatitasFormPage() {
                     type="text"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-emerald-600"
                     placeholder="Ej: Juan Pérez / ONG Rescate"
                   />
                 </div>
@@ -154,20 +159,20 @@ export default function PatitasFormPage() {
                   <textarea
                     value={experiencia}
                     onChange={(e) => setExperiencia(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-blue-600 min-h-[100px]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-emerald-600 min-h-[100px]"
                     placeholder="Tus observaciones, problemas que ves, etc."
                   />
                 </div>
 
                 {specificQ && (
                   <div>
-                    <label className="block text-sm font-medium text-blue-600 mb-1">
+                    <label className="block text-sm font-medium text-emerald-600 mb-1">
                       {specificQ}
                     </label>
                     <textarea
                       value={preguntaEspecifica}
                       onChange={(e) => setPreguntaEspecifica(e.target.value)}
-                      className="w-full bg-blue-600/5 border border-blue-600/20 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-blue-600 min-h-[80px]"
+                      className="w-full bg-emerald-600/5 border border-emerald-600/20 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-emerald-600 min-h-[80px]"
                     />
                   </div>
                 )}
@@ -183,7 +188,7 @@ export default function PatitasFormPage() {
                 <button
                   onClick={() => setStep(3)}
                   disabled={!nombre || !experiencia}
-                  className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="bg-emerald-600 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
                 >
                   Siguiente →
                 </button>
@@ -203,7 +208,7 @@ export default function PatitasFormPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-emerald-600"
                   />
                 </div>
                 <div>
@@ -212,7 +217,7 @@ export default function PatitasFormPage() {
                     type="tel"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-emerald-600"
                   />
                 </div>
                 <div>
@@ -221,7 +226,16 @@ export default function PatitasFormPage() {
                     type="text"
                     value={redes}
                     onChange={(e) => setRedes(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">¿Algún mensaje directo para el creador? (Opcional)</label>
+                  <textarea
+                    value={mensajeDirecto}
+                    onChange={(e) => setMensajeDirecto(e.target.value)}
+                    placeholder="Contame qué te parece la idea, si tenés dudas, etc."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:outline-none focus:border-emerald-600 min-h-[80px]"
                   />
                 </div>
               </div>
@@ -238,7 +252,7 @@ export default function PatitasFormPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="bg-emerald-600 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
                 >
                   {isSubmitting ? "Enviando..." : "Finalizar y Sumarme"}
                 </button>
@@ -248,19 +262,30 @@ export default function PatitasFormPage() {
 
           {step === 4 && (
             <div className="text-center py-10 space-y-4">
-              <div className="flex justify-center text-blue-600 mb-6">
+              <div className="flex justify-center text-emerald-600 mb-6">
                 <CheckCircle2 size={64} />
               </div>
               <h3 className="text-3xl font-bold text-slate-900">¡Gracias por sumarte!</h3>
               <p className="text-slate-600 max-w-sm mx-auto">
                 Tus datos fueron guardados. Te vamos a contactar muy pronto para que seas de los primeros en probar la red de Patitas en Alerta.
               </p>
-              <button
-                onClick={handleClose}
-                className="mt-8 bg-blue-50 text-blue-700 px-8 py-3 rounded-full font-semibold hover:bg-blue-100 transition-colors"
-              >
-                Volver al sitio
-              </button>
+              
+              <div className="flex flex-col gap-3 mt-8">
+                <a
+                  href={`https://wa.me/5491124044160?text=${encodeURIComponent(`Hola Mariano! Recién me anoté en la lista de espera de Patitas en Alerta como ${role.toUpperCase()} y quería hablar con vos.`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-[#25D366] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#1da851] transition-colors inline-flex items-center justify-center gap-2"
+                >
+                  Hablar con Mariano por WhatsApp
+                </a>
+                <button
+                  onClick={handleClose}
+                  className="bg-emerald-50 text-emerald-700 px-8 py-3 rounded-full font-semibold hover:bg-emerald-100 transition-colors"
+                >
+                  Volver al sitio
+                </button>
+              </div>
             </div>
           )}
 
