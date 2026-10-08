@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
 import { trackEvent } from "../lib/analytics";
@@ -14,12 +14,12 @@ interface Props {
 }
 
 const EMPTY_FORM = {
-  problemas: [] as string[],
-  solucionActual: "",
-  urgencia: "",
   rubro: "",
   rubroOtro: "",
-  tamano: "",
+  problemaPrincipal: "",
+  problemaOtro: "",
+  modalidadVenta: "",
+  tipoProcesos: "",
   nombre: "",
   empresa: "",
   whatsapp: "",
@@ -37,19 +37,25 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState(false);
-  const [rubrosOpciones, setRubrosOpciones] = useState<string[]>([
-    "Gastronomía", "Comercio minorista", "Servicios profesionales", "Salud", "Educación", "Tecnología", "Industria", "Logística"
-  ]);
 
-  useEffect(() => {
-    supabase.from("cta_leads").select("rubro_otro").not("rubro_otro", "is", null).then(({ data }) => {
-      if (data && data.length > 0) {
-        const extra = data.map(d => d.rubro_otro?.trim() || "").filter(Boolean);
-        const normalized = extra.map(r => r.charAt(0).toUpperCase() + r.slice(1).toLowerCase());
-        setRubrosOpciones(prev => Array.from(new Set([...prev, ...normalized])).sort());
-      }
-    });
-  }, []);
+  // Opciones de rubro predefinidas
+  const rubrosOpciones = [
+    "Gastronomía y Casas de Comida",
+    "Indumentaria, Calzado y Boutiques",
+    "Kioscos, Minimarkets y Almacenes",
+    "Ferreterías, Pinturerías y Repuestos",
+    "Tecnología y Electrónica",
+    "Venta a granel / Dietéticas",
+    "Otro"
+  ];
+
+  const problemasOpciones = [
+    "Pierdo mucho tiempo anotando cosas a mano o en planillas (ventas, stock, recetas).",
+    "Me consultan todo el tiempo por mis productos/precios y pierdo ventas por no responder rápido.",
+    "Me cuesta llevar el control claro de quién me debe plata (fiados o cuentas corrientes).",
+    "Cada vez que aumentan los proveedores, tardo horas en actualizar los precios.",
+    "Otro"
+  ];
 
   useEffect(() => {
     if (open) {
@@ -75,88 +81,80 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
     setStep(s => s + 1);
   };
 
-  const computeScore = (f: FormState) => {
-    let score = 0;
-    if (f.problemas.length > 0 && !f.problemas.includes("Otro")) score += 20;
-    if (f.urgencia === "Necesito resolverlo cuanto antes") score += 25;
-    if (["6-15", "16-50", "50+"].includes(f.tamano)) score += 15;
-    if (["Papel", "Una persona lo hace manualmente"].includes(f.solucionActual)) score += 15;
-    if (f.urgencia === "Necesito resolverlo cuanto antes") score += 10;
-    if (f.whatsapp.trim().length > 5) score += 10;
-    return score;
-  };
+  const computePack = (f: FormState) => {
+    if (f.tipoProcesos.includes("procesos muy propios y formas de trabajar únicas")) {
+      return "Nodexa Custom (A medida)";
+    }
+    if (f.rubro === "Otro" || f.problemaPrincipal === "Otro") {
+      return "Evaluar en reunión (Todavía no encontramos el servicio ideal)";
+    }
+    
+    // Matcheo basico modular
+    let base = "Nodexa Core";
+    let extra = "";
+    
+    if (f.rubro.includes("Gastronomía")) extra = " + Producción Gastronómica";
+    if (f.rubro.includes("Indumentaria")) extra = " + Matrices (Talle/Color)";
+    if (f.rubro.includes("Kioscos") || f.rubro.includes("Ferreterías")) extra = " + Cuentas Corrientes";
+    
+    if (f.modalidadVenta.includes("WhatsApp/Redes Sociales")) extra += " + Catálogo Web Nivel 2";
+    if (f.modalidadVenta.includes("Mitad en el local, mitad online")) extra += " + Catálogo Web Nivel 3";
 
-  const getScoreLabel = (score: number) => {
-    if (score >= 61) return "Alta";
-    if (score >= 31) return "Media";
-    return "Baja";
+    return `Sugerido: Pack Modular (${base}${extra})`;
   };
 
   const doSubmit = async () => {
     setSubmitting(true);
     setSubmitError(false);
-    const score = computeScore(form);
-    const label = getScoreLabel(score);
-
-    const message = `Hola! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
-      `Problemas: ${form.problemas.join(", ")}\n` +
-      `Solución actual: ${form.solucionActual}\n` +
-      `Urgencia: ${form.urgencia}\n` +
-      `Negocio: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro} (${form.tamano} personas)\n` +
-      (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
-
-    try {
-      const { error } = await supabase.from("cta_leads").insert({
-        nombre: form.nombre,
-        negocio: form.empresa,
-        dolor: form.problemas.join(", "),
-        volumen: form.tamano,
-        urgencia: form.urgencia,
-        prioridad_score: score,
-        prioridad_label: label,
-        source,
-        whatsapp_message: message,
-        email: form.email,
-        telefono: form.whatsapp,
-        rubro: form.rubro,
-        rubro_otro: form.rubro === "Otro" ? form.rubroOtro : null
-      });
-      if (error) {
-        console.error("No se pudo guardar el lead:", error);
-        setSubmitError(true);
-        setSubmitting(false);
-        return;
-      }
-    } catch (err) {
-      console.error("No se pudo guardar el lead:", err);
-      setSubmitError(true);
-      setSubmitting(false);
-      return;
-    }
-
-    trackEvent("generate_lead", source);
-    if (score >= 61) trackEvent("qualify_lead", source);
     
-    setSubmitting(false);
-    setSubmitted(true);
-  };
+    const pack = computePack(form);
+    const problemStr = form.problemaPrincipal === "Otro" ? form.problemaOtro.trim() : form.problemaPrincipal;
 
-  const toggleProblema = (val: string) => {
-    setForm(prev => {
-      const probs = prev.problemas.includes(val) 
-        ? prev.problemas.filter(p => p !== val)
-        : [...prev.problemas, val];
-      
-      trackEvent("problem_selected", val);
-      return { ...prev, problemas: probs };
-    });
-  };
+    const message = `Hola Mariano! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.
 
-  const selectSingle = (field: keyof FormState, val: string, autoAdvance = true) => {
-    setForm(prev => ({ ...prev, [field]: val }));
-    if (autoAdvance) {
-      setTimeout(advance, 250);
+` +
+      `Rubro: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro}
+` +
+      `Dolor: ${problemStr}
+` +
+      `Venta: ${form.modalidadVenta}
+` +
+      `Procesos: ${form.tipoProcesos}
+` +
+      (form.mensaje ? `
+Mensaje adicional:
+${form.mensaje}` : "");
+
+    const payload = {
+      nombre: form.nombre.trim(),
+      negocio: form.empresa.trim(),
+      dolor: problemStr,
+      volumen: "No especificado",
+      urgencia: "No especificado",
+      prioridad_score: 50,
+      prioridad_label: "Media",
+      source: source,
+      whatsapp_message: message,
+      contactado: false,
+      telefono: form.whatsapp.trim(),
+      email: form.email.trim() || null,
+      rubro: form.rubro,
+      rubro_otro: form.rubroOtro,
+      modalidad_venta: form.modalidadVenta,
+      tipo_procesos: form.tipoProcesos,
+      pack_sugerido: pack
+    };
+
+    const { error } = await supabase.from("cta_leads").insert([payload]);
+
+    if (error) {
+      console.error("Error insertando lead:", error);
+      setSubmitError(true);
+    } else {
+      trackEvent("form_submit", source);
+      setSubmitted(true);
     }
+    setSubmitting(false);
   };
 
   return (
@@ -166,207 +164,202 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          onClick={handleClose}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#090B0B]/80 p-4 md:p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#090B0B]/80 px-4 backdrop-blur-sm overflow-y-auto py-10"
         >
+          <div className="absolute inset-0" onClick={handleClose} />
+          
           <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: PREMIUM_EASE }}
-            onClick={(e) => e.stopPropagation()}
-            className="flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111615] shadow-2xl"
+            initial={{ scale: 0.95, opacity: 0, y: 10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 10 }}
+            transition={{ duration: 0.4, ease: PREMIUM_EASE }}
+            className="relative w-full max-w-[600px] bg-[#111615] rounded-2xl border border-white/10 shadow-2xl overflow-hidden my-auto"
           >
-            {/* Header */}
-            <div className="flex flex-none items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
-              {!submitted ? (
-                <div className="flex flex-col gap-1 w-full pr-8">
-                  <span className="text-[12px] font-bold uppercase tracking-wider text-[#16D39A]">
-                    Paso {step} de 5
-                  </span>
-                  {/* Progress Bar */}
-                  <div className="h-1 w-full bg-white/5 rounded-full mt-2 overflow-hidden">
-                    <motion.div 
-                      className="h-full bg-[#16D39A]" 
-                      initial={false}
-                      animate={{ width: `${(step / 5) * 100}%` }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <span className="text-[14px] font-bold uppercase tracking-wider text-[#16D39A]">
-                  ¡Listo!
-                </span>
-              )}
-              
-              <button
-                onClick={handleClose}
-                className="absolute top-6 right-6 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
+            {/* Header decorativo */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#16D39A]/20 via-[#16D39A] to-[#16D39A]/20" />
+            
+            <button
+              onClick={handleClose}
+              className="absolute top-4 right-4 p-2 text-[#A6AEAA] hover:text-[#F3F5F4] transition-colors rounded-full hover:bg-white/5"
+            >
+              <X size={20} />
+            </button>
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+            {/* Progress bar */}
+            {!submitted && !submitError && (
+              <div className="px-8 pt-8 pb-4">
+                <div className="flex gap-2 mb-2">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors duration-500 ${s <= step ? "bg-[#16D39A]" : "bg-white/10"}`} />
+                  ))}
+                </div>
+                <p className="text-[12px] font-semibold tracking-wider text-[#A6AEAA] uppercase">
+                  Paso {step} de 5
+                </p>
+              </div>
+            )}
+
+            <div className="px-8 pb-8 pt-2">
               <AnimatePresence mode="wait">
                 
-                {/* STEP 1 */}
-                {step === 1 && !submitted && (
+                {/* STEP 1: Rubro */}
+                {step === 1 && (
                   <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
-                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Qué problema querés resolver?</h3>
-                    <p className="text-[14px] text-[#A6AEAA] mb-6">Podés seleccionar más de uno.</p>
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿A qué rubro pertenece tu negocio?</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Nos ayuda a entender qué tipo de clientes y stock manejás.</p>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {["Stock", "Ventas", "Administración", "Clientes", "Turnos", "Procesos manuales", "Página web", "Automatización", "Información / reportes", "Otro"].map(opt => (
+                    <div className="flex flex-col gap-3">
+                      {rubrosOpciones.map(r => (
                         <button
-                          key={opt}
-                          onClick={() => toggleProblema(opt)}
-                          className={`flex items-center justify-between px-4 py-3 rounded-xl border text-[14px] font-medium transition-colors ${
-                            form.problemas.includes(opt)
-                              ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
-                              : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                          key={r}
+                          onClick={() => setForm(f => ({ ...f, rubro: r }))}
+                          className={`text-left px-5 py-4 rounded-xl border transition-all ${
+                            form.rubro === r 
+                              ? "bg-[#16D39A]/10 border-[#16D39A] text-[#16D39A]" 
+                              : "bg-[#0D1110]/40 border-white/5 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
                           }`}
                         >
-                          {opt}
-                          {form.problemas.includes(opt) && <Check size={16} className="text-[#16D39A]" />}
+                          <span className="text-[14px] font-semibold">{r}</span>
                         </button>
                       ))}
                     </div>
                     
+                    {form.rubro === "Otro" && (
+                      <motion.input
+                        initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                        type="text" placeholder="¿Cuál es tu rubro?"
+                        value={form.rubroOtro} onChange={e => setForm(f => ({...f, rubroOtro: e.target.value}))}
+                        className="mt-4 w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none"
+                      />
+                    )}
+
                     <button
-                      disabled={form.problemas.length === 0}
+                      disabled={!form.rubro || (form.rubro === "Otro" && !form.rubroOtro.trim())}
                       onClick={advance}
-                      className="mt-8 flex items-center justify-center w-full h-[48px] rounded-lg bg-[#16D39A] text-[#090B0B] font-bold disabled:opacity-40 transition-opacity"
+                      className="mt-8 flex items-center justify-center gap-2 w-full h-[48px] rounded-lg bg-white/5 hover:bg-white/10 text-[#F3F5F4] font-semibold disabled:opacity-30 transition-colors"
                     >
-                      Continuar →
+                      Continuar <ArrowRight size={16} />
                     </button>
                   </motion.div>
                 )}
 
-                {/* STEP 2 */}
-                {step === 2 && !submitted && (
+                {/* STEP 2: Dolor */}
+                {step === 2 && (
                   <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
-                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Cómo resolvés esto actualmente?</h3>
-                    <p className="text-[14px] text-[#A6AEAA] mb-6">No necesitás saber de tecnología. Queremos entender cómo trabajás hoy.</p>
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Cuál es el problema que más te frena hoy?</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Elegí la situación con la que más te identifiques.</p>
                     
                     <div className="flex flex-col gap-3">
-                      {["Excel / planillas", "Papel", "WhatsApp", "Otro sistema", "Una persona lo hace manualmente", "No tenemos una solución", "Otro"].map(opt => (
+                      {problemasOpciones.map(p => (
                         <button
-                          key={opt}
-                          onClick={() => selectSingle("solucionActual", opt)}
-                          className={`flex items-center justify-between px-5 py-4 rounded-xl border text-left text-[14px] font-medium transition-colors ${
-                            form.solucionActual === opt
-                              ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
-                              : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                          key={p}
+                          onClick={() => setForm(f => ({ ...f, problemaPrincipal: p }))}
+                          className={`text-left px-5 py-4 rounded-xl border transition-all ${
+                            form.problemaPrincipal === p
+                              ? "bg-[#16D39A]/10 border-[#16D39A] text-[#16D39A]" 
+                              : "bg-[#0D1110]/40 border-white/5 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
                           }`}
                         >
-                          {opt}
-                          {form.solucionActual === opt && <Check size={16} className="text-[#16D39A]" />}
+                          <span className="text-[14px] font-medium leading-snug">{p}</span>
                         </button>
                       ))}
                     </div>
-                  </motion.div>
-                )}
 
-                {/* STEP 3 */}
-                {step === 3 && !submitted && (
-                  <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
-                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Qué tan importante es solucionarlo?</h3>
-                    <p className="text-[14px] text-[#A6AEAA] mb-6">Esto nos ayuda a entender qué tipo de solución podría tener sentido.</p>
-                    
-                    <div className="flex flex-col gap-3">
-                      {["Necesito resolverlo cuanto antes", "Me gustaría resolverlo durante los próximos meses", "Estoy investigando opciones"].map(opt => (
-                        <button
-                          key={opt}
-                          onClick={() => selectSingle("urgencia", opt)}
-                          className={`flex items-center justify-between px-5 py-4 rounded-xl border text-left text-[14px] font-medium transition-colors ${
-                            form.urgencia === opt
-                              ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
-                              : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
-                          }`}
-                        >
-                          {opt}
-                          {form.urgencia === opt && <Check size={16} className="text-[#16D39A]" />}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* STEP 4 */}
-                {step === 4 && !submitted && (
-                  <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
-                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-6">Sobre tu negocio</h3>
-                    
-                    <div className="flex flex-col gap-5">
-                      <div>
-                        <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-2">¿En qué rubro estás?</label>
-                        <select 
-                          value={form.rubro}
-                          onChange={(e) => setForm(f => ({ ...f, rubro: e.target.value }))}
-                          className="w-full h-[48px] rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none mb-3"
-                        >
-                          <option value="" disabled>Seleccioná tu rubro</option>
-                          {rubrosOpciones.map(r => (
-                            <option key={r} value={r}>{r}</option>
-                          ))}
-                          <option value="Otro">Otro (Especificar)</option>
-                        </select>
-                        
-                        <AnimatePresence>
-                          {form.rubro === "Otro" && (
-                            <motion.input
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 48 }}
-                              exit={{ opacity: 0, height: 0 }}
-                              type="text"
-                              placeholder="Escribí tu rubro..."
-                              value={form.rubroOtro}
-                              onChange={(e) => setForm(f => ({ ...f, rubroOtro: e.target.value }))}
-                              className="w-full rounded-lg border border-white/10 bg-[#0D1110]/40 px-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none"
-                            />
-                          )}
-                        </AnimatePresence>
-                      </div>
-
-                      <div>
-                        <label className="block text-[13px] font-semibold text-[#A6AEAA] mb-2">Cantidad aproximada de personas</label>
-                        <div className="grid grid-cols-2 gap-3">
-                          {["1-5", "6-15", "16-50", "50+"].map(opt => (
-                            <button
-                              key={opt}
-                              onClick={() => setForm(f => ({ ...f, tamano: opt }))}
-                              className={`flex items-center justify-center px-4 py-3 rounded-lg border text-[14px] font-medium transition-colors ${
-                                form.tamano === opt
-                                  ? "border-[#16D39A] bg-[#16D39A]/10 text-[#F3F5F4]"
-                                  : "border-white/10 bg-[#0D1110]/40 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    {form.problemaPrincipal === "Otro" && (
+                      <motion.textarea
+                        initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                        placeholder="Contanos brevemente qué te está costando más..."
+                        value={form.problemaOtro} onChange={e => setForm(f => ({...f, problemaOtro: e.target.value}))}
+                        className="mt-4 w-full min-h-[80px] rounded-lg border border-white/10 bg-[#0D1110]/40 p-4 text-[14px] text-[#F3F5F4] focus:border-[#16D39A] outline-none resize-none"
+                      />
+                    )}
 
                     <button
-                      disabled={!form.rubro || (form.rubro === "Otro" && !form.rubroOtro) || !form.tamano}
+                      disabled={!form.problemaPrincipal || (form.problemaPrincipal === "Otro" && !form.problemaOtro.trim())}
                       onClick={advance}
-                      className="mt-8 flex items-center justify-center w-full h-[48px] rounded-lg bg-[#16D39A] text-[#090B0B] font-bold disabled:opacity-40 transition-opacity"
+                      className="mt-8 flex items-center justify-center gap-2 w-full h-[48px] rounded-lg bg-white/5 hover:bg-white/10 text-[#F3F5F4] font-semibold disabled:opacity-30 transition-colors"
                     >
-                      Continuar →
+                      Continuar <ArrowRight size={16} />
                     </button>
                   </motion.div>
                 )}
 
-                {/* STEP 5 */}
+                {/* STEP 3: Modalidad de Venta */}
+                {step === 3 && (
+                  <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Cómo te compran tus clientes habitualmente?</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Esto nos dice si necesitás conectarte con el mundo digital o solo mostrador.</p>
+                    
+                    <div className="flex flex-col gap-3">
+                      {[
+                        "100% presencial en mi local.",
+                        "Me piden por WhatsApp/Redes Sociales y preparamos el pedido.",
+                        "Mitad en el local, mitad online."
+                      ].map(m => (
+                        <button
+                          key={m}
+                          onClick={() => setForm(f => ({ ...f, modalidadVenta: m }))}
+                          className={`text-left px-5 py-4 rounded-xl border transition-all ${
+                            form.modalidadVenta === m
+                              ? "bg-[#16D39A]/10 border-[#16D39A] text-[#16D39A]" 
+                              : "bg-[#0D1110]/40 border-white/5 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                          }`}
+                        >
+                          <span className="text-[14px] font-semibold">{m}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      disabled={!form.modalidadVenta}
+                      onClick={advance}
+                      className="mt-8 flex items-center justify-center gap-2 w-full h-[48px] rounded-lg bg-white/5 hover:bg-white/10 text-[#F3F5F4] font-semibold disabled:opacity-30 transition-colors"
+                    >
+                      Continuar <ArrowRight size={16} />
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* STEP 4: Tipo de Procesos */}
+                {step === 4 && (
+                  <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
+                    <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">¿Tu negocio funciona parecido al resto de los locales de tu rubro?</h3>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Esta pregunta es clave para saber si necesitás una herramienta estándar o algo muy a medida.</p>
+                    
+                    <div className="flex flex-col gap-3">
+                      {[
+                        "Sí, compramos, vendemos y llevamos stock de forma tradicional.",
+                        "No, tenemos procesos muy propios y formas de trabajar únicas que ningún sistema estándar logra cubrir."
+                      ].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => setForm(f => ({ ...f, tipoProcesos: t }))}
+                          className={`text-left px-5 py-4 rounded-xl border transition-all ${
+                            form.tipoProcesos === t
+                              ? "bg-[#16D39A]/10 border-[#16D39A] text-[#16D39A]" 
+                              : "bg-[#0D1110]/40 border-white/5 text-[#A6AEAA] hover:border-white/20 hover:text-[#F3F5F4]"
+                          }`}
+                        >
+                          <span className="text-[14px] font-medium leading-relaxed">{t}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      disabled={!form.tipoProcesos}
+                      onClick={advance}
+                      className="mt-8 flex items-center justify-center gap-2 w-full h-[48px] rounded-lg bg-white/5 hover:bg-white/10 text-[#F3F5F4] font-semibold disabled:opacity-30 transition-colors"
+                    >
+                      Continuar <ArrowRight size={16} />
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* STEP 5: Datos */}
                 {step === 5 && !submitted && (
                   <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col">
                     <h3 className="text-[24px] font-bold text-[#F3F5F4] mb-2">Ahora sí: tus datos</h3>
-                    <p className="text-[14px] text-[#A6AEAA] mb-6">Para enviarte una propuesta justa y contactarte.</p>
+                    <p className="text-[14px] text-[#A6AEAA] mb-6">Para enviarte un diagnóstico justo y contactarte.</p>
                     
                     <div className="flex flex-col gap-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -411,22 +404,24 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
                     <div className="w-16 h-16 rounded-full bg-[#16D39A]/10 flex items-center justify-center text-[#16D39A] mb-6">
                       <Check size={32} strokeWidth={2.5} />
                     </div>
-                    <h3 className="text-[28px] font-bold text-[#F3F5F4] mb-3">¡Gracias!</h3>
+                    <h3 className="text-[28px] font-bold text-[#F3F5F4] mb-3">¡Diagnóstico Listo! 🚀</h3>
                     <p className="text-[15px] text-[#A6AEAA] max-w-[340px] leading-relaxed mb-8">
-                      Ya tenemos una idea mucho más clara de lo que necesitás. Revisamos tu situación y nos ponemos en contacto.
+                      Hemos detectado áreas donde la automatización puede ahorrarte mucho tiempo. Revisamos tu perfil y hablemos para mostrarte cómo.
                     </p>
                     
                     <button
                       onClick={() => {
-                        const message = `Hola! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
-                        `Quiero charlar sobre mi negocio. Ya completé el formulario en la web.`;
+                        const message = `Hola Mariano! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.
+
+` +
+                        `Recién completé el diagnóstico en la web. Me gustaría charlar sobre mi negocio.`;
                         window.open(whatsappHref(message), "_blank");
                         trackEvent("whatsapp_click", source);
                         onClose();
                       }}
                       className="inline-flex items-center justify-center h-[52px] px-8 rounded-lg bg-[#16D39A] text-[#090B0B] font-bold hover:bg-[#12b382] transition-colors"
                     >
-                      Continuar por WhatsApp →
+                      Hablar con Mariano →
                     </button>
                   </motion.div>
                 )}
@@ -439,17 +434,27 @@ export default function LeadFormModal({ open, source, onClose }: Props) {
                     </div>
                     <h3 className="text-[28px] font-bold text-[#F3F5F4] mb-3">Ocurrió un error</h3>
                     <p className="text-[15px] text-[#A6AEAA] max-w-[340px] leading-relaxed mb-8">
-                      No pudimos guardar tus datos de forma automática. ¡Pero no pierdas lo que completaste! Tocá el botón para enviarnos todo por WhatsApp.
+                      No pudimos guardar el diagnóstico de forma automática. ¡Pero no pierdas lo que completaste! Tocá el botón para mandarme todo por WhatsApp.
                     </p>
                     
                     <button
                       onClick={() => {
-                        const message = `Hola! Tuve un error en la web pero acá están mis datos:\n\nSoy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
-                        `Problemas: ${form.problemas.join(", ")}\n` +
-                        `Solución actual: ${form.solucionActual}\n` +
-                        `Urgencia: ${form.urgencia}\n` +
-                        `Negocio: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro} (${form.tamano} personas)\n` +
-                        (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
+                        const message = `Hola Mariano! Tuve un error en la web pero acá están mis datos:
+
+Soy ${form.nombre.trim()} de ${form.empresa.trim()}.
+
+` +
+                        `Rubro: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro}
+` +
+                        `Dolor: ${form.problemaPrincipal === "Otro" ? form.problemaOtro : form.problemaPrincipal}
+` +
+                        `Venta: ${form.modalidadVenta}
+` +
+                        `Procesos: ${form.tipoProcesos}
+` +
+                        (form.mensaje ? `
+Mensaje adicional:
+${form.mensaje}` : "");
                         window.open(whatsappHref(message), "_blank");
                         trackEvent("whatsapp_click_fallback", source);
                         onClose();

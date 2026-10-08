@@ -43,6 +43,9 @@ interface CtaLead {
   email?: string;
   telefono?: string;
   created_at: string;
+  modalidad_venta?: string;
+  tipo_procesos?: string;
+  pack_sugerido?: string;
 }
 
 interface AnalyticsEvent {
@@ -291,8 +294,8 @@ function LeadsCtaTab() {
               <th className="px-4 py-3 font-semibold">Negocio</th>
               <th className="px-4 py-3 font-semibold">Rubro</th>
               <th className="px-4 py-3 font-semibold">Dolor</th>
-              <th className="px-4 py-3 font-semibold">Volumen</th>
-              <th className="px-4 py-3 font-semibold">Urgencia</th>
+              <th className="px-4 py-3 font-semibold">Pack Sugerido</th>
+              <th className="px-4 py-3 font-semibold">Venta / Procesos</th>
               <th className="px-4 py-3 font-semibold">Origen</th>
               <th className="px-4 py-3 font-semibold">Fecha</th>
               <th className="px-4 py-3 font-semibold">Contactado</th>
@@ -316,8 +319,13 @@ function LeadsCtaTab() {
                 <td className="px-4 py-3 text-white/70">{l.negocio}</td>
                 <td className="px-4 py-3 text-white/70">{l.rubro === "Otro" ? l.rubro_otro : l.rubro}</td>
                 <td className="px-4 py-3 text-white/70">{l.dolor}</td>
-                <td className="px-4 py-3 text-white/70">{l.volumen}</td>
-                <td className="px-4 py-3 text-white/70">{l.urgencia}</td>
+                <td className="px-4 py-3 text-[#16D39A] font-semibold text-xs">{l.pack_sugerido || "N/A"}</td>
+                <td className="px-4 py-3 text-white/70">
+                  <div className="text-[11px] leading-tight">
+                    <span className="block text-white/50">Venta:</span> {l.modalidad_venta || "N/A"}<br/>
+                    <span className="block mt-1 text-white/50">Procesos:</span> {l.tipo_procesos || "N/A"}
+                  </div>
+                </td>
                 <td className="px-4 py-3 font-mono text-[11px] text-white/45">{l.source}</td>
                 <td className="px-4 py-3 text-white/45">{formatDate(l.created_at)}</td>
                 <td className="px-4 py-3">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import PatitasHeroCarousel from "../components/PatitasHeroCarousel";
 import PatitasTimeline from "../components/PatitasTimeline";
-import PatitasAbout from "../components/PatitasAbout";
+import PatitasProjectCarousel from "../components/PatitasProjectCarousel";
 import PatitasFormModal from "../components/PatitasFormModal";
 import { supabase } from "../lib/supabase";
 import { Link } from "react-router-dom";
@@ -82,7 +82,7 @@ export default function PatitasLanding() {
         </div>
       </section>
 
-      <PatitasAbout />
+      <PatitasProjectCarousel />
 
       {/* 2. Contexto */}
       <section className="py-24 px-6 bg-slate-50 relative z-10">

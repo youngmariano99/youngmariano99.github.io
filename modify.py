@@ -1,4 +1,6 @@
-"use client";
+import os
+
+content = """"use client";
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -7,7 +9,11 @@ import { trackEvent } from "../lib/analytics";
 import { supabase } from "../lib/supabase";
 import { whatsappHref } from "../data";
 
-
+interface Props {
+  open: boolean;
+  source: string;
+  onClose: () => void;
+}
 
 const EMPTY_FORM = {
   rubro: "",
@@ -27,13 +33,7 @@ type FormState = typeof EMPTY_FORM;
 
 const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const;
 
-import { useNavigate } from "react-router-dom";
-export default function LeadFormPage() {
-  const open = true;
-  const source = "page_contacto";
-  const navigate = useNavigate();
-  const onClose = () => navigate("/");
-
+export default function LeadFormModal({ open, source, onClose }: Props) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -112,20 +112,12 @@ export default function LeadFormPage() {
     const pack = computePack(form);
     const problemStr = form.problemaPrincipal === "Otro" ? form.problemaOtro.trim() : form.problemaPrincipal;
 
-    const message = `Hola Mariano! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.
-
-` +
-      `Rubro: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro}
-` +
-      `Dolor: ${problemStr}
-` +
-      `Venta: ${form.modalidadVenta}
-` +
-      `Procesos: ${form.tipoProcesos}
-` +
-      (form.mensaje ? `
-Mensaje adicional:
-${form.mensaje}` : "");
+    const message = `Hola Mariano! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
+      `Rubro: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro}\n` +
+      `Dolor: ${problemStr}\n` +
+      `Venta: ${form.modalidadVenta}\n` +
+      `Procesos: ${form.tipoProcesos}\n` +
+      (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
 
     const payload = {
       nombre: form.nombre.trim(),
@@ -153,7 +145,7 @@ ${form.mensaje}` : "");
       console.error("Error insertando lead:", error);
       setSubmitError(true);
     } else {
-      trackEvent("form_submit", source);
+      trackEvent("form_completed", source);
       setSubmitted(true);
     }
     setSubmitting(false);
@@ -166,8 +158,9 @@ ${form.mensaje}` : "");
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="min-h-screen flex items-center justify-center bg-[#090B0B] px-4 py-10"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#090B0B]/80 px-4 backdrop-blur-sm overflow-y-auto py-10"
         >
+          <div className="absolute inset-0" onClick={handleClose} />
           
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -412,9 +405,7 @@ ${form.mensaje}` : "");
                     
                     <button
                       onClick={() => {
-                        const message = `Hola Mariano! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.
-
-` +
+                        const message = `Hola Mariano! Soy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
                         `Recién completé el diagnóstico en la web. Me gustaría charlar sobre mi negocio.`;
                         window.open(whatsappHref(message), "_blank");
                         trackEvent("whatsapp_click", source);
@@ -440,22 +431,12 @@ ${form.mensaje}` : "");
                     
                     <button
                       onClick={() => {
-                        const message = `Hola Mariano! Tuve un error en la web pero acá están mis datos:
-
-Soy ${form.nombre.trim()} de ${form.empresa.trim()}.
-
-` +
-                        `Rubro: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro}
-` +
-                        `Dolor: ${form.problemaPrincipal === "Otro" ? form.problemaOtro : form.problemaPrincipal}
-` +
-                        `Venta: ${form.modalidadVenta}
-` +
-                        `Procesos: ${form.tipoProcesos}
-` +
-                        (form.mensaje ? `
-Mensaje adicional:
-${form.mensaje}` : "");
+                        const message = `Hola Mariano! Tuve un error en la web pero acá están mis datos:\n\nSoy ${form.nombre.trim()} de ${form.empresa.trim()}.\n\n` +
+                        `Rubro: ${form.rubro === "Otro" ? form.rubroOtro : form.rubro}\n` +
+                        `Dolor: ${form.problemaPrincipal === "Otro" ? form.problemaOtro : form.problemaPrincipal}\n` +
+                        `Venta: ${form.modalidadVenta}\n` +
+                        `Procesos: ${form.tipoProcesos}\n` +
+                        (form.mensaje ? `\nMensaje adicional:\n${form.mensaje}` : "");
                         window.open(whatsappHref(message), "_blank");
                         trackEvent("whatsapp_click_fallback", source);
                         onClose();
@@ -489,3 +470,29 @@ ${form.mensaje}` : "");
     </AnimatePresence>
   );
 }
+"""
+
+with open("src/components/LeadFormModal.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+
+with open("src/pages/LeadFormPage.tsx", "w", encoding="utf-8") as f:
+    # Similar content for the page version (no modal wrapper)
+    page_content = content.replace("export default function LeadFormModal({ open, source, onClose }: Props) {", 
+    """import { useNavigate } from "react-router-dom";
+export default function LeadFormPage() {
+  const open = true;
+  const source = "page_contacto";
+  const navigate = useNavigate();
+  const onClose = () => navigate("/");
+""")
+    page_content = page_content.replace("""interface Props {
+  open: boolean;
+  source: string;
+  onClose: () => void;
+}""", "")
+    page_content = page_content.replace("""className="fixed inset-0 z-50 flex items-center justify-center bg-[#090B0B]/80 px-4 backdrop-blur-sm overflow-y-auto py-10"
+        >
+          <div className="absolute inset-0" onClick={handleClose} />""", """className="min-h-screen flex items-center justify-center bg-[#090B0B] px-4 py-10"
+        >""")
+    f.write(page_content)
+
