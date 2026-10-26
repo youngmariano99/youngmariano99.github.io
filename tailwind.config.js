@@ -7,6 +7,7 @@ export default {
         sans: ["Inter", "sans-serif"],
         // Solo para Casos de Éxito (constelación) — el resto del sitio sigue en Inter.
         display: ["Fraunces", "Georgia", "serif"],
+        mono: ["'JetBrains Mono'", "monospace"],
       },
     },
   },

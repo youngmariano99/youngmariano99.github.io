@@ -67,13 +67,15 @@ function ScreenImage({
   imageUrl,
   alt,
   threshold,
+  staticView = false,
 }: {
   imageUrl: string;
   alt: string;
   threshold: number;
+  staticView?: boolean;
 }) {
   const { containerRef, imgRef, scrollPct, onLoad } = useAutoScrollReveal(threshold);
-  const isLong = scrollPct !== null;
+  const isLong = !staticView && scrollPct !== null;
 
   return (
     <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-[#05070C]">
@@ -114,11 +116,13 @@ export function LaptopFrame({
   open,
   label,
   size = "sm",
+  staticView = false,
 }: {
   imageUrl: string;
   open: boolean;
   label: string;
   size?: "sm" | "lg";
+  staticView?: boolean;
 }) {
   const target = useMotionValue(open ? 0 : -78);
   const lid = useSpring(target, { stiffness: 120, damping: 20 });
@@ -153,7 +157,7 @@ export function LaptopFrame({
                 <span className="ml-2 truncate text-[9px] font-medium tracking-wide text-white/40">{label}</span>
               </div>
               <div className="relative flex-1 overflow-hidden">
-                <ScreenImage imageUrl={imageUrl} alt="" threshold={LONG_IMAGE_RATIO.laptop} />
+                <ScreenImage imageUrl={imageUrl} alt="" threshold={LONG_IMAGE_RATIO.laptop} staticView={staticView} />
               </div>
             </div>
             <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.09]" />

@@ -60,6 +60,7 @@ import { captureUTMs, trackEvent } from "./lib/analytics";
 
 import LeadFormPage from "./pages/LeadFormPage";
 import PatitasFormPage from "./pages/PatitasFormPage";
+import Portfolio from "./pages/Portfolio";
 
 export default function NodexaLanding() {
   useEffect(() => {
@@ -80,6 +81,7 @@ export default function NodexaLanding() {
           <Route path="/patitas-en-alerta" element={<PatitasLanding />} />
         </Route>
 
+        <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/contacto" element={<LeadFormPage />} />
         <Route path="/patitas-en-alerta/unirme" element={<PatitasFormPage />} />
 

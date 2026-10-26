@@ -17,7 +17,9 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-6 text-[13px] text-[#A6AEAA]">
-            <span>&copy; {currentYear} Nodexa. Todos los derechos reservados.</span>
+            <Link to="/portfolio" className="hover:text-[#16D39A] transition-colors">
+              Portfolio Técnico
+            </Link>
             <Link to="/privacidad" className="hover:text-[#16D39A] transition-colors">
               Aviso de Privacidad
             </Link>
