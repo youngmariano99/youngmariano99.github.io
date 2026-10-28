@@ -10,6 +10,7 @@ import type { CtaFormOption, Resource, Step } from "../../types";
 import type { FilterOption } from "../../recursosData";
 import GestionPortfolioTab from "./PortfolioTab";
 import PatitasTab from "./PatitasTab";
+import PortfolioCvTab from "./PortfolioCvTab";
 
 /* ------------------------------------------------------------------ */
 /* Tipos — mapean 1 a 1 las tablas de Supabase (ver 0001_init.sql)      */
@@ -872,7 +873,7 @@ function GestionRecursosTab() {
 
 /* ------------------------------------------------------------------ */
 
-type Tab = "cta-leads" | "recursos-leads" | "analiticas" | "gestion-recursos" | "gestion-portfolio" | "patitas";
+type Tab = "cta-leads" | "recursos-leads" | "analiticas" | "gestion-recursos" | "gestion-portfolio" | "patitas" | "portfolio-cv";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "cta-leads", label: "Leads de Contacto" },
@@ -881,6 +882,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "gestion-recursos", label: "Gestión de Recursos" },
   { id: "gestion-portfolio", label: "Gestión de Portfolio" },
   { id: "patitas", label: "Patitas en Alerta" },
+  { id: "portfolio-cv", label: "Portfolio & CV (Reclutadores)" },
 ];
 
 export default function AdminDashboard() {
@@ -925,6 +927,7 @@ export default function AdminDashboard() {
         {tab === "gestion-recursos" && <GestionRecursosTab />}
         {tab === "gestion-portfolio" && <GestionPortfolioTab />}
         {tab === "patitas" && <PatitasTab />}
+        {tab === "portfolio-cv" && <PortfolioCvTab />}
       </div>
     </div>
   );
