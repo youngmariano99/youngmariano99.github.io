@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FileDown,
+  Printer,
   ExternalLink,
   Mail,
   Phone,
@@ -51,7 +52,7 @@ export default function Portfolio() {
       {/* =================================================================== */}
       {/* VISTA IMPRESA ATS (1 Columna A4 - Oculta en pantalla, visible al imprimir) */}
       {/* =================================================================== */}
-      <div className="hidden print:block w-full bg-white print-container-target">
+      <div id="cv-print-area" className="hidden print:block w-full bg-white text-gray-950">
         <AtsResumePrintView data={data} isPreview={false} />
       </div>
 
@@ -98,14 +99,26 @@ export default function Portfolio() {
                 </a>
               </div>
 
-              {/* Botón Descargar CV (Disparador de Print ATS) */}
-              <button
-                type="button"
-                onClick={handlePrintPdf}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#16D39A] text-black text-xs font-semibold hover:bg-[#13be8a] transition-all shadow-sm"
+              {/* Botón Descargar CV (PDF Directo de 1 página A4) */}
+              <a
+                href="/cv-mariano-young.pdf"
+                download="CV-Mariano-Young-ATS.pdf"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16D39A] text-black text-xs font-semibold hover:bg-[#13be8a] transition-all shadow-sm"
+                title="Descargar archivo PDF directo (1 página A4)"
               >
                 <FileDown className="w-3.5 h-3.5" />
                 <span>Descargar CV (PDF)</span>
+              </a>
+
+              {/* Botón Imprimir / Guardar ATS (A4) */}
+              <button
+                type="button"
+                onClick={handlePrintPdf}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-medium transition-all"
+                title="Imprimir o guardar en PDF con formato ATS 1 página A4"
+              >
+                <Printer className="w-3.5 h-3.5 text-[#16D39A]" />
+                <span className="hidden sm:inline">Imprimir ATS</span>
               </button>
             </nav>
           </div>
@@ -140,13 +153,24 @@ export default function Portfolio() {
 
             {/* Barra de Acciones Rápidas */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
+              <a
+                href="/cv-mariano-young.pdf"
+                download="CV-Mariano-Young-ATS.pdf"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#16D39A] text-black font-semibold text-sm hover:bg-[#13be8a] transition-all shadow-sm"
+                title="Descargar archivo PDF oficial (1 página A4)"
+              >
+                <FileDown className="w-4 h-4" />
+                <span>Descargar CV (PDF Directo)</span>
+              </a>
+
               <button
                 type="button"
                 onClick={handlePrintPdf}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#16D39A] text-black font-semibold text-sm hover:bg-[#13be8a] transition-all shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 text-sm font-medium transition-all"
+                title="Abre la vista de impresión configurada para Guardar como PDF en 1 página A4"
               >
-                <FileDown className="w-4 h-4" />
-                <span>Descargar CV (PDF)</span>
+                <Printer className="w-4 h-4 text-[#16D39A]" />
+                <span>Imprimir / Guardar ATS (A4)</span>
               </button>
 
               <a
@@ -502,12 +526,20 @@ export default function Portfolio() {
                     Sitio Principal
                   </Link>
                   <span>&bull;</span>
+                  <a
+                    href="/cv-mariano-young.pdf"
+                    download="CV-Mariano-Young-ATS.pdf"
+                    className="hover:text-[#16D39A] transition-colors"
+                  >
+                    Descargar CV (PDF)
+                  </a>
+                  <span>&bull;</span>
                   <button
                     type="button"
                     onClick={handlePrintPdf}
                     className="hover:text-[#16D39A] transition-colors"
                   >
-                    Descargar CV (PDF)
+                    Imprimir ATS (A4)
                   </button>
                 </div>
               </div>

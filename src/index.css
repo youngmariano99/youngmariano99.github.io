@@ -11,14 +11,30 @@ body {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 14mm 10mm 14mm;
+    margin: 8mm 12mm 8mm 12mm;
   }
-  html, body {
+  html,
+  body,
+  #root {
     background-color: #ffffff !important;
-    color: #111827 !important;
     background-image: none !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-}
 
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .print\:block {
+    display: block !important;
+    visibility: visible !important;
+  }
+}

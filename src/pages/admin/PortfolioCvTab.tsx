@@ -202,7 +202,13 @@ export default function PortfolioCvTab() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
+      {/* VISTA IMPRESA ATS (Oculta en pantalla, visible al imprimir desde el Admin) */}
+      <div id="cv-print-area-admin" className="hidden print:block w-full bg-white text-gray-950">
+        <AtsResumePrintView data={form} isPreview={false} />
+      </div>
+
+      <div className="print:hidden flex flex-col gap-6">
       {/* =================================================================== */}
       {/* BARRA SUPERIOR DE ACCIÓN Y ESTADO                                   */}
       {/* =================================================================== */}
@@ -1207,5 +1213,6 @@ export default function PortfolioCvTab() {
         </div>
       </div>
     </div>
+    </>
   );
 }
