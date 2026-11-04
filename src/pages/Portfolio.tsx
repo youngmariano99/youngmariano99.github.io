@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FileDown,
+  FileCode,
   Printer,
   ExternalLink,
   Mail,
@@ -22,7 +23,7 @@ import {
 import { LaptopFrame } from "../components/portfolio/CaseDeviceMockups";
 import AtsResumePrintView from "../components/portfolio/AtsResumePrintView";
 import { usePortfolioCvData } from "../lib/usePortfolioCvData";
-import { getActiveSummary } from "../lib/portfolioCvData";
+import { getActiveSummary, downloadJsonResume } from "../lib/portfolioCvData";
 
 export default function Portfolio() {
   const { data } = usePortfolioCvData();
@@ -41,6 +42,10 @@ export default function Portfolio() {
 
   const handlePrintPdf = () => {
     window.print();
+  };
+
+  const handleDownloadJson = () => {
+    downloadJsonResume(data);
   };
 
   const activeSummary = getActiveSummary(data.resumen);
@@ -110,6 +115,17 @@ export default function Portfolio() {
                 <span>Descargar CV (PDF)</span>
               </a>
 
+              {/* Botón Descargar CV en formato estándar JSON Resume */}
+              <button
+                type="button"
+                onClick={handleDownloadJson}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-medium transition-all"
+                title="Descargar versión estándar JSON Resume para ATS y software de reclutamiento"
+              >
+                <FileCode className="w-3.5 h-3.5 text-[#16D39A]" />
+                <span className="hidden md:inline font-mono">CV .JSON</span>
+              </button>
+
               {/* Botón Imprimir / Guardar ATS (A4) */}
               <button
                 type="button"
@@ -171,6 +187,16 @@ export default function Portfolio() {
               >
                 <Printer className="w-4 h-4 text-[#16D39A]" />
                 <span>Imprimir / Guardar ATS (A4)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDownloadJson}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 text-sm font-medium transition-all group"
+                title="Descargar en formato oficial JSON Resume (Schema v1.0.0 estándar para software ATS, parsers y scrapers de IA)"
+              >
+                <FileCode className="w-4 h-4 text-[#16D39A] group-hover:scale-105 transition-transform" />
+                <span className="font-mono text-xs">Descargar CV (.JSON ATS)</span>
               </button>
 
               <a
@@ -533,6 +559,14 @@ export default function Portfolio() {
                   >
                     Descargar CV (PDF)
                   </a>
+                  <span>&bull;</span>
+                  <button
+                    type="button"
+                    onClick={handleDownloadJson}
+                    className="hover:text-[#16D39A] transition-colors"
+                  >
+                    Descargar CV (.JSON ATS)
+                  </button>
                   <span>&bull;</span>
                   <button
                     type="button"

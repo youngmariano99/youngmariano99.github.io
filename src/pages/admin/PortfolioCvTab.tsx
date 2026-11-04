@@ -16,6 +16,7 @@ import {
   Check,
   RotateCcw,
   Printer,
+  FileCode,
   Globe,
   Database,
   ExternalLink,
@@ -25,6 +26,7 @@ import {
   DEFAULT_PORTFOLIO_CV_DATA,
   getActiveSummary,
   SummaryVariantKey,
+  downloadJsonResume,
 } from "../../lib/portfolioCvData";
 import { usePortfolioCvData } from "../../lib/usePortfolioCvData";
 import AtsResumePrintView from "../../components/portfolio/AtsResumePrintView";
@@ -249,6 +251,16 @@ export default function PortfolioCvTab() {
           >
             <Printer className="w-3.5 h-3.5 text-[#16D39A]" />
             <span>Probar Descarga PDF</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => downloadJsonResume(form)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded text-xs font-semibold text-zinc-200 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors"
+            title="Exportar archivo .json estandarizado bajo la especificación internacional JSON Resume (Schema v1.0.0)"
+          >
+            <FileCode className="w-3.5 h-3.5 text-[#16D39A]" />
+            <span>Exportar JSON ATS</span>
           </button>
 
           <button

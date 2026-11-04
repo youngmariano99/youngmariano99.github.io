@@ -1,0 +1,206 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+  "basics": {
+    "name": "Mariano Young",
+    "label": "Técnico en Programación (UTN) & Estudiante Avanzado de Lic. en Administración",
+    "email": "marianoyoung.dev@gmail.com",
+    "phone": "+54 9 2923 511691",
+    "url": "https://nodexalanding.vercel.app/portfolio",
+    "summary": "Técnico Universitario en Programación (UTN) y estudiante avanzado de Licenciatura en Administración de Empresas (Siglo 21). Especializado en el análisis de procesos comerciales, parametrización de sistemas y modelado relacional en SQL. Cuento con experiencia práctica en la implementación de soluciones de gestión modulares en producción, bases de datos y soporte técnico a usuarios, integrando lógica de negocio con resolución de incidentes (APIs, logs).",
+    "location": {
+      "address": "",
+      "postalCode": "B7530",
+      "city": "Coronel Pringles",
+      "countryCode": "AR",
+      "region": "Buenos Aires"
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "mariano-young-016a0b23b",
+        "url": "https://www.linkedin.com/in/mariano-young-016a0b23b"
+      },
+      {
+        "network": "Web",
+        "username": "Nodexa Portfolio",
+        "url": "https://nodexalanding.vercel.app/portfolio"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "Nodexa Software",
+      "position": "Desarrollador de Software e Implementador de Sistemas",
+      "location": "Coronel Pringles, Buenos Aires",
+      "startDate": "Jul 2026",
+      "endDate": "Presente",
+      "summary": "Desarrollador de Software e Implementador de Sistemas en Nodexa Software (Coronel Pringles, Buenos Aires).",
+      "highlights": [
+        "Diseño e Implementación de Sistema de Gestión (Nodexa Core): Desarrollé un sistema modular para comercios y gastronomía sobre PostgreSQL, estructurando el registro transaccional de entradas y salidas de caja (bajo lógica de partida doble) para asegurar la trazabilidad del 100% de las operaciones y evitar descuadres.",
+        "Control de Inventario y Costos por Receta: Implementé el módulo de control de stock automatizado mediante desglose de recetas e insumos, descontando transaccionalmente las materias primas al despachar comandas desde tableros Kanban.",
+        "Automatización e Integración con IA: Construí flujos de extracción de datos de productos mediante fotografías utilizando modelos de visión artificial e integración con APIs REST para agilizar la carga y actualización de listas de precios.",
+        "Gestión Municipal (Patitas en Alerta): Modelé la arquitectura relacional (SQL) para una plataforma de zoonosis, canalizando reportes geolocalizados hacia tableros analíticos y mapas de calor para optimizar la asignación de turnos y recursos públicos."
+      ]
+    },
+    {
+      "name": "Appy Studios",
+      "position": "Analista Técnico-Funcional & Soporte L2 (Freelance)",
+      "location": "Coronel Pringles, Buenos Aires",
+      "startDate": "Jul 2025",
+      "endDate": "Jul 2026",
+      "summary": "Analista Técnico-Funcional & Soporte L2 (Freelance) en Appy Studios (Coronel Pringles, Buenos Aires).",
+      "highlights": [
+        "Implementación de Sistemas POS: Parametricé y desplegué sistemas de Punto de Venta (POS) y control de stock para comercios locales (leñeras, jugueterías, pinturerías), asegurando la sincronización de inventarios y la conciliación diaria de cajas.",
+        "Análisis y Documentación: Elaboré especificaciones funcionales y diagramas de flujo para estandarizar procesos de compras y cobranzas, centralizando la operativa física y digital de los clientes.",
+        "Soporte Operativo: Brindé soporte de nivel 2 resolviendo incidencias, diagnosticando errores en bases de datos relacionales y aplicando correcciones sobre plataformas de e-commerce y catálogos web."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidad Siglo 21",
+      "area": "Licenciatura en Administración de Empresas",
+      "studyType": "Licenciatura Universitaria",
+      "startDate": "Mar 2023",
+      "endDate": "Presente",
+      "score": "Cursando último año (4to año)",
+      "courses": []
+    },
+    {
+      "institution": "Universidad Tecnológica Nacional (UTN)",
+      "area": "Técnico Universitario en Programación",
+      "studyType": "Tecnicatura Universitaria",
+      "startDate": "",
+      "endDate": "2026",
+      "score": "Graduado",
+      "courses": []
+    },
+    {
+      "institution": "Escuela de Educación Secundaria Técnica N°1",
+      "area": "Técnico Electromecánico",
+      "studyType": "Educación Técnica Secundaria",
+      "startDate": "2012",
+      "endDate": "2018",
+      "score": "Graduado",
+      "courses": []
+    }
+  ],
+  "skills": [
+    {
+      "name": "Bases de Datos & Datos",
+      "level": "Avanzado / Profesional",
+      "keywords": [
+        "PostgreSQL",
+        "SQL (Consultas SELECT, JOINs, Agregaciones, Vistas, Modelado Relacional DER)",
+        "Hojas de Cálculo (Excel / Google Sheets)"
+      ]
+    },
+    {
+      "name": "Sistemas & Procesos de Negocio",
+      "level": "Avanzado / Profesional",
+      "keywords": [
+        "Relevamiento Funcional",
+        "Sistemas POS y Gestión Comercial (ERP)",
+        "Control de Stock y Recetas",
+        "Conciliación de Caja",
+        "Diagramación de Flujos",
+        "Lógica Contable (Partida Doble)"
+      ]
+    },
+    {
+      "name": "Desarrollo & Integraciones",
+      "level": "Avanzado / Profesional",
+      "keywords": [
+        "Lógica Backend",
+        "Consumo de APIs REST (JSON)",
+        "Integración de APIs de IA",
+        "JavaScript / TypeScript",
+        "Python (Básico / Scripting)",
+        "Git"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Nodexa Core (Implementación real: \"May Delicias\")",
+      "description": "Sistema de gestión comercial y operativo para local gastronómico en producción diaria.",
+      "highlights": [
+        "Problema: Descontrol operativo en hora pico: comandas en papel extraviadas, stock de materias primas sin descontar y arqueos de caja con diferencias al cierre de turno.",
+        "Arquitectura: Modelo relacional en PostgreSQL con transacciones atómicas para asegurar consistencia.",
+        "Partida Doble: Asientos automáticos que garantizan la trazabilidad total entre ventas, caja y stock.",
+        "Recetas & Despiece: Descuento dinámico de gramos e insumos por cada plato despachado en la comanda.",
+        "Tablero Kanban: Sincronización en tiempo real entre toma de pedidos en mostrador y cocina.",
+        "Impacto: Reducción del 90% en extravío de pedidos, stock de materias primas conciliado al gramo y arqueos de caja exactos sin horas extras de cuadre."
+      ],
+      "keywords": [
+        "PostgreSQL",
+        "Next.js",
+        "Tailwind CSS",
+        "Prisma ORM",
+        "Supabase",
+        "Partida Doble",
+        "WebSockets"
+      ],
+      "roles": [
+        "Desarrollador / Arquitecto Técnico"
+      ],
+      "entity": "Nodexa Software",
+      "type": "application"
+    },
+    {
+      "name": "Patitas en Alerta (Zoonosis Municipal)",
+      "description": "Plataforma cívica y municipal de trazabilidad y gestión animal adoptada por el Municipio de Coronel Pringles.",
+      "highlights": [
+        "Problema: Falta de registro centralizado de animales comunitarios, saturación de llamadas en zoonosis y reportes de mascotas perdidas dispersos en redes sociales sin trazabilidad.",
+        "Arquitectura: Arquitectura relacional normalizada vinculando ciudadanos, animales reportados y expedientes municipales.",
+        "Modelado Geoespacial: Consultas SQL con coordenadas para agrupar reportes por cuadrícula urbana.",
+        "Gestión de Estados: Máquina de estados para turnos de castración y adopción con control de duplicados.",
+        "Impacto: Centralización del 100% de reportes locales, optimización en turnos de castración y reducción drástica de tiempos de respuesta operativa municipal."
+      ],
+      "keywords": [
+        "PostgreSQL",
+        "React",
+        "Tailwind CSS",
+        "GeoJSON",
+        "Supabase",
+        "REST APIs",
+        "Mapas de Calor"
+      ],
+      "roles": [
+        "Desarrollador / Arquitecto Técnico"
+      ],
+      "entity": "Nodexa Software",
+      "type": "application"
+    },
+    {
+      "name": "E-Commerce & Gestión Local (Leñera \"Chingolitos\")",
+      "description": "Catálogo web sincronizado con control de inventario físico y cálculo logístico para comercio local.",
+      "highlights": [
+        "Problema: Ventas desfasadas del inventario real en depósito, consultas repetitivas de precios por WhatsApp y cálculo manual de fletes según zona de entrega.",
+        "Arquitectura: Base relacional para control de stock físico unificado con catálogo digital público.",
+        "Algoritmo de Flete: Cálculo dinámico de costos de envío basado en zonas y peso estimado de carga.",
+        "Gestión de Disponibilidad: Bloqueo automático de ítems agotados para evitar ventas sin entrega.",
+        "Impacto: Automatización del 60% de pedidos rutinarios y eliminación de quiebres de stock en depósito."
+      ],
+      "keywords": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS",
+        "PostgreSQL",
+        "WhatsApp API",
+        "Control de Stock"
+      ],
+      "roles": [
+        "Desarrollador / Arquitecto Técnico"
+      ],
+      "entity": "Nodexa Software",
+      "type": "application"
+    }
+  ],
+  "meta": {
+    "canonical": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+    "version": "v1.0.0",
+    "lastModified": "2026-11-03T19:54:00.000Z",
+    "generator": "Nodexa ATS Engine"
+  }
+}

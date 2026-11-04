@@ -493,3 +493,119 @@ export function resetPortfolioCvData(): PortfolioCvData {
   savePortfolioCvData(DEFAULT_PORTFOLIO_CV_DATA);
   return DEFAULT_PORTFOLIO_CV_DATA;
 }
+
+/**
+ * Genera el currículum estructurado bajo el estándar oficial global "JSON Resume"
+ * (https://jsonresume.org/schema / Schema v1.0.0).
+ * Este es el formato universal utilizado por parsers ATS modernos, sistemas de
+ * reclutamiento automatizado, herramientas de IA y plataformas como OpenResume / Reactive Resume.
+ */
+export function generateJsonResume(data: PortfolioCvData) {
+  const activeSummary = getActiveSummary(data.resumen);
+
+  return {
+    $schema: "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+    basics: {
+      name: data.contacto.nombre,
+      label: data.contacto.rolWeb,
+      email: data.contacto.email,
+      phone: data.contacto.telefono,
+      url: data.contacto.web.startsWith("http") ? data.contacto.web : `https://${data.contacto.web}`,
+      summary: activeSummary,
+      location: {
+        address: "",
+        postalCode: "B7530",
+        city: "Coronel Pringles",
+        countryCode: "AR",
+        region: "Buenos Aires",
+      },
+      profiles: [
+        {
+          network: "LinkedIn",
+          username: "mariano-young-016a0b23b",
+          url: data.contacto.linkedin,
+        },
+        {
+          network: "Web",
+          username: "Nodexa Portfolio",
+          url: data.contacto.web.startsWith("http") ? data.contacto.web : `https://${data.contacto.web}`,
+        },
+      ],
+    },
+    work: data.experiencias
+      .filter((exp) => exp.visible)
+      .map((exp) => {
+        const bullets = exp.bullets.filter((b) => b.visible);
+        return {
+          name: exp.empresa,
+          position: exp.rol,
+          location: exp.ubicacion,
+          startDate: exp.periodo.split("–")[0]?.trim() || exp.periodo,
+          endDate: exp.periodo.split("–")[1]?.trim() || "Presente",
+          summary: `${exp.rol} en ${exp.empresa} (${exp.ubicacion}).`,
+          highlights: bullets.map((b) => `${b.subtitulo}: ${b.descripcion}`),
+        };
+      }),
+    education: data.educacion
+      .filter((edu) => edu.visible)
+      .map((edu) => ({
+        institution: edu.institucion,
+        area: edu.titulo,
+        studyType: edu.titulo.includes("Licenciatura")
+          ? "Licenciatura Universitaria"
+          : edu.titulo.includes("Técnico Universitario")
+          ? "Tecnicatura Universitaria"
+          : "Educación Técnica Secundaria",
+        startDate: edu.periodo.includes("–") ? edu.periodo.split("–")[0]?.trim() : "",
+        endDate: edu.periodo.includes("–") ? edu.periodo.split("–")[1]?.trim() : edu.periodo,
+        score: edu.estado,
+        courses: [],
+      })),
+    skills: data.habilidades
+      .filter((sk) => sk.visible)
+      .map((sk) => ({
+        name: sk.nombre,
+        level: "Avanzado / Profesional",
+        keywords: sk.habilidades,
+      })),
+    projects: data.casosEstudio
+      .filter((c) => c.activo)
+      .map((c) => ({
+        name: c.titulo,
+        description: c.subtitulo,
+        highlights: [
+          `Problema: ${c.problema}`,
+          `Arquitectura: ${c.arquitectura.intro}`,
+          ...c.arquitectura.items.map((i) => `${i.label}: ${i.text}`),
+          `Impacto: ${c.impacto}`,
+        ],
+        keywords: c.stack,
+        roles: ["Desarrollador / Arquitecto Técnico"],
+        entity: "Nodexa Software",
+        type: "application",
+      })),
+    meta: {
+      canonical: "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+      version: "v1.0.0",
+      lastModified: new Date().toISOString(),
+      generator: "Nodexa ATS Engine",
+    },
+  };
+}
+
+/**
+ * Dispara la descarga directa de un archivo .json con el currículum estandarizado para ATS / IA.
+ */
+export function downloadJsonResume(data: PortfolioCvData, filename = "CV-Mariano-Young-ATS.json"): void {
+  if (typeof window === "undefined") return;
+  const jsonContent = JSON.stringify(generateJsonResume(data), null, 2);
+  const blob = new Blob([jsonContent], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
