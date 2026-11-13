@@ -20,6 +20,14 @@ import {
   Globe,
   Database,
   ExternalLink,
+  Upload,
+  Download,
+  Copy,
+  Bot,
+  X,
+  CircleAlert,
+  FileUp,
+  Info,
 } from "lucide-react";
 import {
   PortfolioCvData,
@@ -27,6 +35,10 @@ import {
   getActiveSummary,
   SummaryVariantKey,
   downloadJsonResume,
+  downloadRawJson,
+  validateAndCleanPortfolioCvData,
+  AI_PORTFOLIO_CV_TEMPLATE,
+  getAiMasterPrompt,
 } from "../../lib/portfolioCvData";
 import { usePortfolioCvData } from "../../lib/usePortfolioCvData";
 import AtsResumePrintView from "../../components/portfolio/AtsResumePrintView";
@@ -39,6 +51,65 @@ export default function PortfolioCvTab() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [newSkillInputs, setNewSkillInputs] = useState<Record<string, string>>({});
   const [newStackInputs, setNewStackInputs] = useState<Record<string, string>>({});
+
+  // Estados para el Modal / Gestor de Integración JSON & IA
+  const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
+  const [jsonModalTab, setJsonModalTab] = useState<"import" | "export-current" | "template-ai">("import");
+  const [jsonInputText, setJsonInputText] = useState("");
+  const [importValidation, setImportValidation] = useState<{
+    success: boolean;
+    data?: PortfolioCvData;
+    error?: string;
+  } | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+  const [importApplied, setImportApplied] = useState(false);
+
+  const handleCopyText = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopyFeedback(label);
+    setTimeout(() => setCopyFeedback(null), 2500);
+  };
+
+  const handleJsonInputChange = (val: string) => {
+    setJsonInputText(val);
+    setImportApplied(false);
+    if (!val.trim()) {
+      setImportValidation(null);
+      return;
+    }
+    const result = validateAndCleanPortfolioCvData(val);
+    setImportValidation(result);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target?.result as string;
+      if (content) {
+        handleJsonInputChange(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const handleApplyImport = () => {
+    if (!importValidation || !importValidation.success || !importValidation.data) {
+      return;
+    }
+    setForm(JSON.parse(JSON.stringify(importValidation.data)));
+    setImportApplied(true);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2500);
+    setTimeout(() => {
+      setIsJsonModalOpen(false);
+      setImportApplied(false);
+      setJsonInputText("");
+      setImportValidation(null);
+    }, 900);
+  };
 
   // Sincronizar form si data externa cambia
   const handleSave = () => {
@@ -232,41 +303,75 @@ export default function PortfolioCvTab() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleReset}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 transition-colors"
             title="Restablece los datos a los valores oficiales por defecto"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Restablecer Defecto</span>
+            <span className="hidden sm:inline">Defecto</span>
           </button>
 
           <button
             type="button"
             onClick={handlePrintPdf}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded text-xs font-semibold text-zinc-200 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-200 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors"
             title="Probar la generación e impresión del PDF ATS"
           >
             <Printer className="w-3.5 h-3.5 text-[#16D39A]" />
-            <span>Probar Descarga PDF</span>
+            <span>Imprimir PDF</span>
+          </button>
+
+          <div className="h-5 w-px bg-zinc-800 mx-1 hidden sm:block" />
+
+          {/* Botones de Integración JSON & IA */}
+          <button
+            type="button"
+            onClick={() => {
+              setJsonModalTab("import");
+              setIsJsonModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-zinc-200 hover:text-white bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700 hover:border-[#16D39A]/60 transition-all"
+            title="Importar un archivo o texto JSON para actualizar todo el CV de una vez"
+          >
+            <Upload className="w-3.5 h-3.5 text-[#16D39A]" />
+            <span>Importar JSON</span>
           </button>
 
           <button
             type="button"
-            onClick={() => downloadJsonResume(form)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded text-xs font-semibold text-zinc-200 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors"
-            title="Exportar archivo .json estandarizado bajo la especificación internacional JSON Resume (Schema v1.0.0)"
+            onClick={() => {
+              setJsonModalTab("export-current");
+              setIsJsonModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-zinc-200 hover:text-white bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700 hover:border-[#16D39A]/60 transition-all"
+            title="Exportar la estructura actual del CV para pasarle a una IA"
           >
-            <FileCode className="w-3.5 h-3.5 text-[#16D39A]" />
-            <span>Exportar JSON ATS</span>
+            <Download className="w-3.5 h-3.5 text-[#16D39A]" />
+            <span>Exportar Actual</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setJsonModalTab("template-ai");
+              setIsJsonModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-[#16D39A] hover:text-black hover:bg-[#16D39A] bg-[#16D39A]/10 border border-[#16D39A]/40 transition-all"
+            title="Ver la plantilla documentada y el prompt maestro para la IA"
+          >
+            <Bot className="w-3.5 h-3.5" />
+            <span>Plantilla &amp; IA</span>
+          </button>
+
+          <div className="h-5 w-px bg-zinc-800 mx-1 hidden sm:block" />
 
           <button
             type="button"
             onClick={handleSave}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded text-xs font-bold text-black bg-[#16D39A] hover:bg-[#13be8a] transition-all shadow-md"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded text-xs font-bold text-black bg-[#16D39A] hover:bg-[#13be8a] transition-all shadow-md"
           >
             {saveSuccess ? (
               <>
@@ -1225,6 +1330,380 @@ export default function PortfolioCvTab() {
         </div>
       </div>
     </div>
+
+    {/* =================================================================== */}
+    {/* MODAL / PANEL DE ASISTENTE JSON & IA                                */}
+    {/* =================================================================== */}
+    {isJsonModalOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+        <div className="w-full max-w-4xl max-h-[90vh] bg-[#0c0e12] border border-zinc-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-zinc-200">
+          {/* Header Modal */}
+          <div className="flex items-center justify-between border-b border-zinc-800 p-4 sm:px-6 bg-zinc-950/70">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-[#16D39A]/10 border border-[#16D39A]/30 flex items-center justify-center text-[#16D39A]">
+                <Bot className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  Centro de Integración JSON &amp; Asistente IA
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-[#16D39A] border border-zinc-700">
+                    v1.0 ATS
+                  </span>
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Importá cambios masivos o exportá plantillas y prompts para que una IA optimice tu perfil.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsJsonModalOpen(false)}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              title="Cerrar ventana"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Pestañas del Modal */}
+          <div className="flex items-center border-b border-zinc-800 bg-zinc-950/40 px-4 sm:px-6 gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setJsonModalTab("import")}
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+                jsonModalTab === "import"
+                  ? "border-[#16D39A] text-[#16D39A] bg-[#16D39A]/5"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              <span>1. Importar JSON al CV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setJsonModalTab("export-current")}
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+                jsonModalTab === "export-current"
+                  ? "border-[#16D39A] text-[#16D39A] bg-[#16D39A]/5"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              <span>2. Exportar Estructura Actual</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setJsonModalTab("template-ai")}
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+                jsonModalTab === "template-ai"
+                  ? "border-[#16D39A] text-[#16D39A] bg-[#16D39A]/5"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Bot className="w-4 h-4" />
+              <span>3. Plantilla &amp; Prompt para IA</span>
+            </button>
+          </div>
+
+          {/* Cuerpo del Modal */}
+          <div className="p-4 sm:p-6 overflow-y-auto space-y-4 max-h-[calc(90vh-140px)]">
+            {/* ============================================================= */}
+            {/* TAB 1: IMPORTAR JSON                                          */}
+            {/* ============================================================= */}
+            {jsonModalTab === "import" && (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <FileUp className="w-4 h-4 text-[#16D39A]" />
+                      Cargar archivo .json desde tu equipo
+                    </span>
+                    <p className="text-[11px] text-zinc-400">
+                      Seleccioná un archivo JSON guardado o generado por ChatGPT, Claude o DeepSeek.
+                    </p>
+                  </div>
+                  <label className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold cursor-pointer border border-zinc-700 transition-colors shrink-0">
+                    <input
+                      type="file"
+                      accept=".json,application/json"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Upload className="w-3.5 h-3.5 text-[#16D39A]" />
+                    <span>Seleccionar Archivo</span>
+                  </label>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-zinc-300">
+                      O pegar el código JSON en texto plano:
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const text = await navigator.clipboard.readText();
+                            handleJsonInputChange(text);
+                          } catch {
+                            alert("No se pudo acceder al portapapeles. Pegá el contenido manualmente con Ctrl+V.");
+                          }
+                        }}
+                        className="text-[11px] text-[#16D39A] hover:underline flex items-center gap-1 font-mono"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Pegar portapapeles
+                      </button>
+                      {jsonInputText && (
+                        <button
+                          type="button"
+                          onClick={() => handleJsonInputChange("")}
+                          className="text-[11px] text-zinc-500 hover:text-zinc-300"
+                        >
+                          Limpiar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <textarea
+                    rows={10}
+                    value={jsonInputText}
+                    onChange={(e) => handleJsonInputChange(e.target.value)}
+                    placeholder='Pegá aquí tu JSON completo (ej. { "contacto": { ... }, "experiencias": [ ... ] })...'
+                    className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3.5 font-mono text-xs text-zinc-300 focus:outline-none focus:border-[#16D39A] resize-y"
+                  />
+                </div>
+
+                {/* Estado de Validación */}
+                {importValidation && (
+                  <div>
+                    {importValidation.success && importValidation.data ? (
+                      <div className="p-3.5 rounded-xl bg-[#16D39A]/10 border border-[#16D39A]/30 flex items-start gap-2.5 text-xs text-[#16D39A]">
+                        <Check className="w-4 h-4 mt-0.5 shrink-0" />
+                        <div className="space-y-0.5">
+                          <span className="font-bold">Estructura JSON válida y lista para importar.</span>
+                          <p className="text-[11px] text-zinc-300">
+                            Detectado: <strong>{importValidation.data.experiencias?.length || 0}</strong> experiencias laborales,{" "}
+                            <strong>{importValidation.data.habilidades?.length || 0}</strong> categorías de habilidades y{" "}
+                            <strong>{importValidation.data.casosEstudio?.length || 0}</strong> casos de estudio.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-800/80 flex items-start gap-2.5 text-xs text-red-300">
+                        <CircleAlert className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+                        <div>
+                          <span className="font-bold">Error de formato:</span>
+                          <p className="text-[11px] text-red-200 mt-0.5">{importValidation.error}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80">
+                  <span className="text-[11px] text-zinc-500 font-mono">
+                    * Al cargar, los datos reemplazarán el editor actual. Deberás presionar "Guardar Cambios" para confirmar.
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsJsonModalOpen(false)}
+                      className="px-4 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!importValidation?.success}
+                      onClick={handleApplyImport}
+                      className={`inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all shadow-md ${
+                        importValidation?.success
+                          ? "bg-[#16D39A] hover:bg-[#13be8a] text-black cursor-pointer"
+                          : "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700/50"
+                      }`}
+                    >
+                      {importApplied ? (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>¡Cargado al Editor!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          <span>Cargar este JSON al Editor</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================= */}
+            {/* TAB 2: EXPORTAR ESTRUCTURA ACTUAL                             */}
+            {/* ============================================================= */}
+            {jsonModalTab === "export-current" && (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Info className="w-4 h-4 text-[#16D39A]" />
+                    Estructura real activa del CV
+                  </span>
+                  <p className="text-xs text-zinc-400">
+                    Este es el estado exacto de tu perfil tal cual está configurado en este momento. Podés copiarlo o descargarlo para pasárselo a una IA y pedirle ajustes puntuales (por ejemplo: <em>"Adaptá este CV para una postulación a Consultor Funcional ERP Odoo"</em>).
+                  </p>
+                </div>
+
+                {/* Barra de Acciones de Exportación */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(JSON.stringify(form, null, 2), "json-actual")}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700 text-xs font-semibold transition-colors"
+                    >
+                      {copyFeedback === "json-actual" ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-[#16D39A]" />
+                          <span className="text-[#16D39A]">¡JSON Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar JSON</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => downloadRawJson(form, "cv-mariano-young-actual.json")}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700 text-xs font-semibold transition-colors"
+                      title="Descargar archivo .json listo"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#16D39A]" />
+                      <span>Descargar .json</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText(getAiMasterPrompt(form), "prompt-actual")}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#16D39A] hover:bg-[#13be8a] text-black text-xs font-bold transition-all shadow-sm"
+                    title="Copia las instrucciones de redacción + tu CV actual ya insertado"
+                  >
+                    {copyFeedback === "prompt-actual" ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>¡Prompt + CV Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Bot className="w-3.5 h-3.5" />
+                        <span>Copiar Prompt Completo con este CV para IA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <pre className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 font-mono text-xs text-zinc-300 max-h-96 overflow-auto selection:bg-[#16D39A] selection:text-black">
+                    {JSON.stringify(form, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================= */}
+            {/* TAB 3: PLANTILLA & PROMPT PARA IA                             */}
+            {/* ============================================================= */}
+            {jsonModalTab === "template-ai" && (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-[#16D39A]" />
+                    Plantilla Oficial y Guía para Modelos de Lenguaje (IA)
+                  </span>
+                  <p className="text-xs text-zinc-400">
+                    Copiá este prompt maestro y pegalo directamente en ChatGPT, Claude, Gemini o DeepSeek. Le explica a la IA cada campo del sistema y le exige devolver únicamente el JSON válido para que no invente estructuras incompatibles.
+                  </p>
+                </div>
+
+                {/* Tarjetas de Reglas Clave */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                  <div className="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-1">
+                    <span className="font-mono text-[10px] text-[#16D39A] uppercase font-bold block">
+                      Viñetas Laborales
+                    </span>
+                    <p className="text-[11px] text-zinc-300">
+                      Cada viñeta debe tener <code className="text-white">subtitulo</code> (se imprime en negrita) y <code className="text-white">descripcion</code> técnica cuantificable.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-1">
+                    <span className="font-mono text-[10px] text-[#16D39A] uppercase font-bold block">
+                      Límite A4 ATS
+                    </span>
+                    <p className="text-[11px] text-zinc-300">
+                      Para que no desborde a una 2da página, la IA debe limitarse a 2-3 empresas y 3-4 viñetas por empresa.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-1">
+                    <span className="font-mono text-[10px] text-[#16D39A] uppercase font-bold block">
+                      Variantes de Resumen
+                    </span>
+                    <p className="text-[11px] text-zinc-300">
+                      Permite a la IA redactar 3 enfoques (<code className="text-white">varianteA</code>, <code className="text-white">varianteB</code>, <code className="text-white">custom</code>) conmutables en 1 clic.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Acciones de la Plantilla */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => downloadRawJson(AI_PORTFOLIO_CV_TEMPLATE, "plantilla-cv-nodexa.json")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700 text-xs font-semibold transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#16D39A]" />
+                    <span>Descargar Plantilla JSON en Blanco</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText(getAiMasterPrompt(AI_PORTFOLIO_CV_TEMPLATE), "prompt-plantilla")}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#16D39A] hover:bg-[#13be8a] text-black text-xs font-bold transition-all shadow-sm"
+                  >
+                    {copyFeedback === "prompt-plantilla" ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>¡Prompt Maestro Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copiar Prompt Maestro + Plantilla para IA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <pre className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 font-mono text-xs text-zinc-300 max-h-96 overflow-auto selection:bg-[#16D39A] selection:text-black">
+                    {getAiMasterPrompt(AI_PORTFOLIO_CV_TEMPLATE)}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }

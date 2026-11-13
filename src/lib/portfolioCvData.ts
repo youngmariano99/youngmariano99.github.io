@@ -609,3 +609,253 @@ export function downloadJsonResume(data: PortfolioCvData, filename = "CV-Mariano
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Dispara la descarga directa del objeto de configuración nativo del Portfolio & CV
+ * en formato JSON con indentación limpia.
+ */
+export function downloadRawJson(data: any, filename = "portfolio-cv-data.json"): void {
+  if (typeof window === "undefined") return;
+  const jsonContent = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonContent], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Valida y normaliza un JSON (string u objeto) para importarlo en el estado de PortfolioCvData.
+ * Acepta tanto el formato nativo completo como adaptaciones de JSON Resume.
+ */
+export function validateAndCleanPortfolioCvData(raw: unknown): {
+  success: boolean;
+  data?: PortfolioCvData;
+  error?: string;
+} {
+  try {
+    let parsed: any = raw;
+    if (typeof raw === "string") {
+      const trimmed = raw.trim();
+      if (!trimmed) {
+        return { success: false, error: "El texto ingresado está vacío." };
+      }
+      // Limpiar posibles bloques markdown si el usuario pegó ```json ... ```
+      const cleaned = trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      parsed = JSON.parse(cleaned);
+    }
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {
+        success: false,
+        error: "El formato debe ser un objeto JSON válido con llaves principales { ... }.",
+      };
+    }
+
+    // Adaptador de respaldo: Si viene en formato JSON Resume con "basics"
+    if (parsed.basics && !parsed.contacto) {
+      const b = parsed.basics;
+      const linkedinProfile = Array.isArray(b.profiles)
+        ? b.profiles.find((p: any) => p.network?.toLowerCase().includes("linkedin"))?.url || ""
+        : "";
+
+      parsed = {
+        contacto: {
+          nombre: b.name || DEFAULT_PORTFOLIO_CV_DATA.contacto.nombre,
+          rolWeb: b.label || DEFAULT_PORTFOLIO_CV_DATA.contacto.rolWeb,
+          email: b.email || DEFAULT_PORTFOLIO_CV_DATA.contacto.email,
+          telefono: b.phone || DEFAULT_PORTFOLIO_CV_DATA.contacto.telefono,
+          ubicacion: b.location ? `${b.location.city || ""}, ${b.location.region || ""}`.trim().replace(/^,|,$/g, "") : DEFAULT_PORTFOLIO_CV_DATA.contacto.ubicacion,
+          web: b.url || DEFAULT_PORTFOLIO_CV_DATA.contacto.web,
+          linkedin: linkedinProfile || DEFAULT_PORTFOLIO_CV_DATA.contacto.linkedin,
+          badgeDisponibilidad: DEFAULT_PORTFOLIO_CV_DATA.contacto.badgeDisponibilidad,
+        },
+        resumen: {
+          activeVariant: "variante-a",
+          varianteA: b.summary || DEFAULT_PORTFOLIO_CV_DATA.resumen.varianteA,
+          varianteB: DEFAULT_PORTFOLIO_CV_DATA.resumen.varianteB,
+          custom: b.summary || DEFAULT_PORTFOLIO_CV_DATA.resumen.custom,
+        },
+        experiencias: Array.isArray(parsed.work)
+          ? parsed.work.map((w: any, idx: number) => ({
+              id: `exp-imported-${idx + 1}`,
+              empresa: w.name || "Empresa",
+              rol: w.position || "Puesto",
+              ubicacion: w.location || "Remoto",
+              periodo: `${w.startDate || ""} – ${w.endDate || "Presente"}`.trim(),
+              visible: true,
+              bullets: Array.isArray(w.highlights)
+                ? w.highlights.map((h: string, bIdx: number) => {
+                    const parts = h.split(":");
+                    return {
+                      id: `exp-${idx + 1}-b${bIdx + 1}`,
+                      subtitulo: parts.length > 1 ? parts[0].trim() : "Logro",
+                      descripcion: parts.length > 1 ? parts.slice(1).join(":").trim() : h.trim(),
+                      visible: true,
+                    };
+                  })
+                : [],
+            }))
+          : DEFAULT_PORTFOLIO_CV_DATA.experiencias,
+        educacion: Array.isArray(parsed.education)
+          ? parsed.education.map((ed: any, idx: number) => ({
+              id: `edu-imported-${idx + 1}`,
+              institucion: ed.institution || "Institución",
+              titulo: ed.area || ed.studyType || "Título",
+              estado: ed.score || "Graduado",
+              periodo: `${ed.startDate || ""} ${ed.endDate || ""}`.trim() || "Periodo",
+              visible: true,
+            }))
+          : DEFAULT_PORTFOLIO_CV_DATA.educacion,
+        habilidades: Array.isArray(parsed.skills)
+          ? parsed.skills.map((sk: any, idx: number) => ({
+              id: `hab-imported-${idx + 1}`,
+              nombre: sk.name || `Categoría ${idx + 1}`,
+              habilidades: Array.isArray(sk.keywords) ? sk.keywords : [],
+              visible: true,
+            }))
+          : DEFAULT_PORTFOLIO_CV_DATA.habilidades,
+        casosEstudio: DEFAULT_PORTFOLIO_CV_DATA.casosEstudio,
+        matriz: DEFAULT_PORTFOLIO_CV_DATA.matriz,
+        metodologia: DEFAULT_PORTFOLIO_CV_DATA.metodologia,
+      };
+    }
+
+    const cleaned = mergeWithDefaults(parsed);
+    return { success: true, data: cleaned };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: `Error de sintaxis JSON: ${err.message || "Estructura inválida"}`,
+    };
+  }
+}
+
+/**
+ * Plantilla documentada con comentarios y estructura oficial para suministrar a modelos de IA.
+ */
+export const AI_PORTFOLIO_CV_TEMPLATE: PortfolioCvData = {
+  contacto: {
+    nombre: "Mariano Young",
+    rolWeb: "Técnico en Programación (UTN) & Estudiante Avanzado de Lic. en Administración",
+    email: "marianoyoung.dev@gmail.com",
+    telefono: "+54 9 2923 511691",
+    ubicacion: "Coronel Pringles, Buenos Aires, Argentina",
+    web: "nodexalanding.vercel.app/portfolio",
+    linkedin: "https://www.linkedin.com/in/mariano-young-016a0b23b",
+    badgeDisponibilidad: "DISPONIBLE PARA OPORTUNIDADES LABORALES | REMOTO & PRESENCIAL (Coronel Pringles y la zona)",
+  },
+  resumen: {
+    activeVariant: "variante-a", // Opciones permitidas: "variante-a" | "variante-b" | "custom"
+    varianteA: "Resumen enfocado en ERP, bases de datos relacionales SQL, lógica de backend y soporte L2.",
+    varianteB: "Resumen enfocado en administración tecnológica, circuitos comerciales y control de stock.",
+    custom: "Resumen personalizado con visión híbrida tecnología-negocios.",
+  },
+  experiencias: [
+    {
+      id: "exp-1",
+      empresa: "Nombre de la Empresa",
+      rol: "Cargo o Puesto Técnico / Funcional",
+      ubicacion: "Ciudad, Provincia / Remoto",
+      periodo: "Mes Año – Mes Año (o Presente)",
+      visible: true,
+      bullets: [
+        {
+          id: "exp-1-b1",
+          subtitulo: "Título corto del logro (se mostrará en negrita en el CV)",
+          descripcion: "Descripción técnica orientada a procesos, arquitectura, base de datos e impacto operativo medible.",
+          visible: true,
+        },
+      ],
+    },
+  ],
+  educacion: [
+    {
+      id: "edu-1",
+      institucion: "Nombre de la Universidad o Instituto",
+      titulo: "Título Oficial de Grado o Tecnicatura",
+      estado: "Graduado / Cursando último año / etc.",
+      periodo: "Año Inicio – Año Fin (o Año Egreso)",
+      visible: true,
+    },
+  ],
+  habilidades: [
+    {
+      id: "hab-1",
+      nombre: "Nombre de la Categoría Técnica (ej. Bases de Datos & Backend)",
+      habilidades: ["Tecnología 1", "Tecnología 2", "Concepto 3"],
+      visible: true,
+    },
+  ],
+  casosEstudio: [
+    {
+      id: "caso-1",
+      titulo: 'Título del Caso (ej. Sistema Nodexa Core)',
+      subtitulo: "Subtítulo descriptivo de la solución en producción.",
+      estado: "PRODUCCIÓN ACTIVA",
+      estadoColor: "emerald", // "emerald" | "blue" | "amber"
+      mockupUrl: "/Proyectos/nodexa-core-maydelicias.jpg",
+      mockupLabel: "Dashboard Operativo",
+      problema: "Qué problema de negocio u operativo existía antes del sistema.",
+      arquitectura: {
+        intro: "Resumen de la arquitectura técnica (ej. Modelo relacional en PostgreSQL).",
+        items: [
+          { label: "Punto Clave 1", text: "Explicación de cómo se resolvieron los datos o procesos." },
+        ],
+      },
+      impacto: "Resultados cuantificables en ahorro de tiempo, reducción de errores o control.",
+      stack: ["PostgreSQL", "Next.js", "Tailwind CSS", "TypeScript"],
+      activo: true,
+    },
+  ],
+  matriz: [
+    {
+      id: "matriz-1",
+      titulo: "Base de Datos & Lógica Backend",
+      icon: "database", // "database" | "boxes" | "bot"
+      items: ["Capacidad 1", "Capacidad 2"],
+    },
+  ],
+  metodologia: [
+    {
+      id: "met-1",
+      titulo: "Arquitectura Guiada por el Negocio",
+      icon: "layers", // "layers" | "cpu"
+      descripcion: "Cómo se estructuran los proyectos uniendo administración y programación.",
+    },
+  ],
+};
+
+/**
+ * Genera el prompt maestro estructurado para entregar a una IA (ChatGPT, Claude, Gemini, DeepSeek).
+ * Incluye instrucciones sobre el formato ATS, reglas semánticas y la estructura JSON a respetar.
+ */
+export function getAiMasterPrompt(currentData?: PortfolioCvData): string {
+  const dataToInclude = currentData || AI_PORTFOLIO_CV_TEMPLATE;
+
+  return `Actúa como un Senior Technical Resume Architect y Experto en UX para Reclutamiento IT y Consultoras ERP.
+
+Tu tarea es optimizar, completar o reescribir los datos de mi Portfolio web técnico y mi CV imprimible en formato ATS de 1 carilla A4.
+Mi sistema utiliza un configurador automático que se alimenta directamente de una estructura JSON. Para que yo pueda importar tu respuesta en mi panel de administración en un solo clic, DEBES devolver ÚNICAMENTE un bloque de código JSON válido.
+
+### REGLAS ESTRICTAS DE CONTENIDO Y REDACCIÓN:
+1. PERFIL PROFESIONAL: Híbrido entre programación técnica (UTN) y administración de empresas (Siglo 21). Prioriza el "detrás de escena" de las operaciones: bases de datos SQL relacionales, circuitos comerciales, control de stock, conciliaciones, sistemas de gestión (ERP) y resolución de incidentes técnicos.
+2. EXPERIENCIA LABORAL (BULLETS ATS):
+   - Cada viñeta debe tener un "subtitulo" conciso y directo (se imprime en negrita en el CV ATS).
+   - La "descripcion" debe explicar el qué y el cómo con métricas e impacto operativo real. Cero frases de relleno o clichés ("apasionado por...", "proactivo").
+   - El CV debe caber cómodamente en 1 página A4: mantén un máximo de 2 a 3 empresas y entre 3 y 4 bullets por empresa.
+3. HABILIDADES: Agrupa las tecnologías en categorías claras (Bases de datos, Procesos/ERP, Backend/Integraciones).
+4. CASOS DE ESTUDIO: Deben contener Ficha Técnica con Problema, Arquitectura (intro + items con label y text), Impacto cuantificable y Stack en etiquetas.
+
+### FORMATO DE RESPUESTA:
+- Devuelve EXACTAMENTE un bloque de código con sintaxis: \`\`\`json { ... } \`\`\`
+- NO agregues introducciones, conclusiones, ni texto fuera del bloque JSON.
+
+### ESTRUCTURA JSON A RESPETAR:
+${JSON.stringify(dataToInclude, null, 2)}
+`;
+}
