@@ -28,6 +28,7 @@ import {
   CircleAlert,
   FileUp,
   Info,
+  FileDown,
 } from "lucide-react";
 import {
   PortfolioCvData,
@@ -42,6 +43,7 @@ import {
 } from "../../lib/portfolioCvData";
 import { usePortfolioCvData } from "../../lib/usePortfolioCvData";
 import AtsResumePrintView from "../../components/portfolio/AtsResumePrintView";
+import { downloadAtsPdf } from "../../lib/atsPdfGenerator";
 
 export default function PortfolioCvTab() {
   const { data, updateData, resetData } = usePortfolioCvData();
@@ -312,6 +314,16 @@ export default function PortfolioCvTab() {
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Defecto</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => downloadAtsPdf(form)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-200 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors"
+            title="Descargar el archivo PDF ATS generado en vivo con los datos actuales del formulario"
+          >
+            <FileDown className="w-3.5 h-3.5 text-[#16D39A]" />
+            <span>Descargar PDF</span>
           </button>
 
           <button

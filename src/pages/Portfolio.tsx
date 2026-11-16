@@ -24,6 +24,7 @@ import { LaptopFrame } from "../components/portfolio/CaseDeviceMockups";
 import AtsResumePrintView from "../components/portfolio/AtsResumePrintView";
 import { usePortfolioCvData } from "../lib/usePortfolioCvData";
 import { getActiveSummary, downloadJsonResume } from "../lib/portfolioCvData";
+import { downloadAtsPdf } from "../lib/atsPdfGenerator";
 
 export default function Portfolio() {
   const { data } = usePortfolioCvData();
@@ -42,6 +43,10 @@ export default function Portfolio() {
 
   const handlePrintPdf = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = () => {
+    downloadAtsPdf(data);
   };
 
   const handleDownloadJson = () => {
@@ -104,16 +109,16 @@ export default function Portfolio() {
                 </a>
               </div>
 
-              {/* Botón Descargar CV (PDF Directo de 1 página A4) */}
-              <a
-                href="/cv-mariano-young.pdf"
-                download="CV-Mariano-Young-ATS.pdf"
+              {/* Botón Descargar CV (PDF Dinámico de 1 página A4) */}
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16D39A] text-black text-xs font-semibold hover:bg-[#13be8a] transition-all shadow-sm"
-                title="Descargar archivo PDF directo (1 página A4)"
+                title="Descargar archivo PDF dinámico actualizado (1 página A4)"
               >
                 <FileDown className="w-3.5 h-3.5" />
                 <span>Descargar CV (PDF)</span>
-              </a>
+              </button>
 
               {/* Botón Descargar CV en formato estándar JSON Resume */}
               <button
@@ -169,15 +174,15 @@ export default function Portfolio() {
 
             {/* Barra de Acciones Rápidas */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <a
-                href="/cv-mariano-young.pdf"
-                download="CV-Mariano-Young-ATS.pdf"
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#16D39A] text-black font-semibold text-sm hover:bg-[#13be8a] transition-all shadow-sm"
-                title="Descargar archivo PDF oficial (1 página A4)"
+                title="Descargar archivo PDF dinámico actualizado (1 página A4)"
               >
                 <FileDown className="w-4 h-4" />
-                <span>Descargar CV (PDF Directo)</span>
-              </a>
+                <span>Descargar CV (PDF Dinámico)</span>
+              </button>
 
               <button
                 type="button"
@@ -552,13 +557,13 @@ export default function Portfolio() {
                     Sitio Principal
                   </Link>
                   <span>&bull;</span>
-                  <a
-                    href="/cv-mariano-young.pdf"
-                    download="CV-Mariano-Young-ATS.pdf"
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
                     className="hover:text-[#16D39A] transition-colors"
                   >
                     Descargar CV (PDF)
-                  </a>
+                  </button>
                   <span>&bull;</span>
                   <button
                     type="button"
