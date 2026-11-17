@@ -19,6 +19,7 @@ import {
   Layers,
   Cpu,
   Sparkles,
+  Terminal,
 } from "lucide-react";
 import { LaptopFrame } from "../components/portfolio/CaseDeviceMockups";
 import AtsResumePrintView from "../components/portfolio/AtsResumePrintView";
@@ -72,76 +73,97 @@ export default function Portfolio() {
       <div className="print:hidden min-h-screen bg-[#090B0B] text-[#F3F5F4] font-sans antialiased selection:bg-[#16D39A] selection:text-black">
         {/* Navbar Superior Especial para Reclutadores (Sin enlaces comerciales) */}
         <header className="border-b border-zinc-800/80 bg-[#090B0B]/90 sticky top-0 z-40 backdrop-blur-md">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-            {/* Logo e Identidad */}
-            <div className="flex items-center gap-3">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+            {/* Logo e Identidad Técnica */}
+            <div className="flex items-center gap-3 shrink-0">
               <Link
                 to="/"
-                className="flex items-center gap-2 group"
+                className="flex items-center gap-2.5 group"
                 title="Ir al inicio de Nodexa"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded bg-white/[0.08] border border-white/10 group-hover:border-[#16D39A]/60 transition-colors">
-                  <span className="text-[11px] font-bold text-white tracking-wider">NY</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#16D39A]/10 border border-[#16D39A]/30 text-[#16D39A] group-hover:bg-[#16D39A]/20 group-hover:border-[#16D39A]/60 group-hover:shadow-[0_0_12px_rgba(22,211,154,0.2)] transition-all">
+                  <Terminal className="w-4 h-4 stroke-[2.2]" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold tracking-tight text-white flex items-center gap-1.5 leading-none">
+                <div className="flex items-center gap-2">
+                  <span className="text-[15px] font-bold tracking-tight text-white group-hover:text-white transition-colors">
                     NODEX<span className="text-[#16D39A]">Λ</span>
-                    <span className="text-zinc-500 font-mono text-[10px] hidden sm:inline">/ IT Profile</span>
+                  </span>
+                  <span className="text-zinc-600 font-mono text-xs select-none">/</span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide text-zinc-300 bg-zinc-900 border border-zinc-800 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#16D39A] shadow-[0_0_6px_#16D39A]" />
+                    <span>IT Profile</span>
                   </span>
                 </div>
               </Link>
             </div>
 
-            {/* Accesos Rápidos para Reclutadores */}
-            <nav aria-label="Navegación del Portfolio" className="flex items-center gap-3 sm:gap-6">
-              <div className="hidden md:flex items-center gap-5 text-xs font-mono text-zinc-400">
-                <a href="#capacidades-heading" className="hover:text-[#16D39A] transition-colors">
-                  Capacidades
-                </a>
-                <a href="#casos-heading" className="hover:text-[#16D39A] transition-colors">
-                  Casos de Estudio
-                </a>
-                <a href="#metodologia-heading" className="hover:text-[#16D39A] transition-colors">
-                  Metodología
-                </a>
-                <a href="#formacion-heading" className="hover:text-[#16D39A] transition-colors">
-                  Formación
-                </a>
-              </div>
+            {/* Accesos Rápidos de Sección (Segmented Toolbar) */}
+            <nav
+              aria-label="Secciones del portfolio"
+              className="hidden lg:flex items-center gap-1 bg-zinc-900/80 border border-zinc-800/80 p-1 rounded-lg"
+            >
+              <a
+                href="#capacidades-heading"
+                className="px-3 py-1 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/70 rounded-md transition-all whitespace-nowrap"
+              >
+                Capacidades
+              </a>
+              <a
+                href="#casos-heading"
+                className="px-3 py-1 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/70 rounded-md transition-all whitespace-nowrap"
+              >
+                Casos de Estudio
+              </a>
+              <a
+                href="#metodologia-heading"
+                className="px-3 py-1 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/70 rounded-md transition-all whitespace-nowrap"
+              >
+                Metodología
+              </a>
+              <a
+                href="#formacion-heading"
+                className="px-3 py-1 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/70 rounded-md transition-all whitespace-nowrap"
+              >
+                Formación
+              </a>
+            </nav>
 
-              {/* Botón Descargar CV (PDF Dinámico de 1 página A4) */}
+            {/* Botones de Acción (CV & Exportaciones) */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Botón Primario: Descargar CV (PDF ATS Dinámico) */}
               <button
                 type="button"
                 onClick={handleDownloadPdf}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16D39A] text-black text-xs font-semibold hover:bg-[#13be8a] transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#16D39A] text-black text-xs font-semibold hover:bg-[#13be8a] transition-all shadow-sm whitespace-nowrap shrink-0 active:scale-[0.98]"
                 title="Descargar archivo PDF dinámico actualizado (1 página A4)"
               >
-                <FileDown className="w-3.5 h-3.5" />
+                <FileDown className="w-3.5 h-3.5 stroke-[2.2]" />
                 <span>Descargar CV (PDF)</span>
               </button>
 
-              {/* Botón Descargar CV en formato estándar JSON Resume */}
-              <button
-                type="button"
-                onClick={handleDownloadJson}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-medium transition-all"
-                title="Descargar versión estándar JSON Resume para ATS y software de reclutamiento"
-              >
-                <FileCode className="w-3.5 h-3.5 text-[#16D39A]" />
-                <span className="hidden md:inline font-mono">CV .JSON</span>
-              </button>
+              {/* Botones Secundarios */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleDownloadJson}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition-all whitespace-nowrap shrink-0"
+                  title="Descargar versión estándar JSON Resume para ATS y software de reclutamiento"
+                >
+                  <FileCode className="w-3.5 h-3.5 text-[#16D39A]" />
+                  <span className="hidden sm:inline font-mono">JSON</span>
+                </button>
 
-              {/* Botón Imprimir / Guardar ATS (A4) */}
-              <button
-                type="button"
-                onClick={handlePrintPdf}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-medium transition-all"
-                title="Imprimir o guardar en PDF con formato ATS 1 página A4"
-              >
-                <Printer className="w-3.5 h-3.5 text-[#16D39A]" />
-                <span className="hidden sm:inline">Imprimir ATS</span>
-              </button>
-            </nav>
+                <button
+                  type="button"
+                  onClick={handlePrintPdf}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium transition-all whitespace-nowrap shrink-0"
+                  title="Imprimir o guardar en PDF con formato ATS 1 página A4"
+                >
+                  <Printer className="w-3.5 h-3.5 text-[#16D39A]" />
+                  <span className="hidden sm:inline">Imprimir</span>
+                </button>
+              </div>
+            </div>
           </div>
         </header>
 

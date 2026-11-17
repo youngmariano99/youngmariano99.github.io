@@ -113,7 +113,7 @@ export default function AtsResumePrintView({ data, isPreview = false }: Props) {
               return (
                 <div key={exp.id} className="space-y-1 ats-section">
                   {/* Encabezado del Puesto */}
-                  <div className="flex items-baseline justify-between">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                     <div>
                       <span className="text-[9.5pt] font-bold text-gray-950">{exp.empresa}</span>
                       <span className="mx-1.5 text-gray-400">|</span>
@@ -151,13 +151,17 @@ export default function AtsResumePrintView({ data, isPreview = false }: Props) {
 
           <div className="space-y-1">
             {activeEducation.map((edu) => (
-              <div key={edu.id} className="flex items-baseline justify-between text-[8.5pt]">
+              <div key={edu.id} className="flex flex-wrap items-baseline justify-between gap-x-2 text-[8.5pt]">
                 <div>
                   <span className="font-bold text-gray-950">{edu.institucion}</span>
                   <span className="mx-1.5 text-gray-400">|</span>
                   <span className="font-medium text-gray-800 italic">{edu.titulo}</span>
-                  <span className="mx-1.5 text-gray-400">•</span>
-                  <span className="text-gray-600 font-normal">({edu.estado})</span>
+                  {edu.estado && (
+                    <>
+                      <span className="mx-1.5 text-gray-400">•</span>
+                      <span className="text-gray-600 font-normal">({edu.estado})</span>
+                    </>
+                  )}
                 </div>
                 <div className="text-[8pt] font-semibold text-gray-800 text-right shrink-0">
                   {edu.periodo}

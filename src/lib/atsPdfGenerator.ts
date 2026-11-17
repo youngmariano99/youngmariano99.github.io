@@ -71,18 +71,16 @@ export function getTextWidth(text: string, fontSize: number, isBold = false): nu
  * Escapa y codifica texto para el stream PDF en WinAnsiEncoding (cp1252)
  */
 export function escapePdfString(text: string): string {
-  const replacements: Record<string, string> = {
-    "“": '"',
-    "”": '"',
-    "‘": "'",
-    "’": "'",
-    "…": "...",
-  };
-
-  let sanitized = text;
-  for (const [k, v] of Object.entries(replacements)) {
-    sanitized = sanitized.split(k).join(v);
-  }
+  // Limpieza previa de caracteres unicode problemáticos y normalización tipográfica
+  const sanitized = text
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // zero-width
+    .replace(/\u00A0/g, " ") // nbsp
+    .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"') // comillas dobles
+    .replace(/[\u2018\u2019\u201A]/g, "'") // comillas simples
+    .replace(/\u2026/g, "...") // puntos suspensivos
+    .replace(/[\u2014\u2015]/g, "—") // em-dash
+    .replace(/[\u2012\u2013\u2212]/g, "–") // en-dash / minus
+    .replace(/[\u2022\u25CF\u25E6]/g, "•"); // viñetas
 
   // Mapeo octal cp1252 para caracteres no ASCII
   const octalMap: Record<string, string> = {
@@ -102,9 +100,10 @@ export function escapePdfString(text: string): string {
       const code = ch.charCodeAt(0);
       if (code >= 32 && code <= 126) {
         out += ch;
-      } else {
-        // Octal genérico si está en rango cp1252
+      } else if (code <= 255) {
         out += `\\${code.toString(8).padStart(3, "0")}`;
+      } else {
+        out += " ";
       }
     }
   }
@@ -208,42 +207,59 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
   // =========================================================================
   // Nombre
   const nameUpper = (data.contacto.nombre || "MARIANO YOUNG").toUpperCase();
-  drawText(MARGIN_LEFT, y, nameUpper, "F2", 17.5, 0.02, 0.02, 0.02);
-  y -= 13;
+  drawText(MARGIN_LEFT, y, nameUpper, "F2", 17.0, 0.02, 0.02, 0.02);
+  y -= 13.5;
 
-  // Rol
+  // Rol Web (envolvemos con wrapWords para que si es largo nunca se corte en el margen derecho)
   const roleText = data.contacto.rolWeb || "Técnico en Programación & Gestión";
-  drawText(MARGIN_LEFT, y, roleText, "F1", 9.0, 0.2, 0.2, 0.2);
-  y -= 11.5;
+  const roleLines = wrapWords(roleText, USABLE_WIDTH, 8.8, false);
+  for (const rLine of roleLines) {
+    drawText(MARGIN_LEFT, y, rLine, "F1", 8.8, 0.2, 0.2, 0.2);
+    y -= 10.5;
+  }
+  y -= 1.5;
 
-  // Contacto simplificado
+  // Contacto (dividido lógicamente para garantizar que no exceda el ancho utilizable de la hoja)
   const cleanWeb = (data.contacto.web || "").replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
   const cleanLinkedin = (data.contacto.linkedin || "").replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
-  const contactParts = [
+
+  const directContactParts = [
     data.contacto.email,
     data.contacto.telefono,
     data.contacto.ubicacion,
+  ].filter(Boolean);
+
+  const linkContactParts = [
     cleanWeb,
     cleanLinkedin,
   ].filter(Boolean);
 
-  const contactLine = contactParts.join("   |   ");
-  drawText(MARGIN_LEFT, y, contactLine, "F1", 7.8, 0.35, 0.35, 0.35);
-  y -= 4;
+  const line1Str = directContactParts.join("   |   ");
+  const line2Str = linkContactParts.join("   |   ");
+
+  if (line1Str) {
+    drawText(MARGIN_LEFT, y, line1Str, "F1", 7.8, 0.35, 0.35, 0.35);
+    y -= 9.5;
+  }
+  if (line2Str) {
+    drawText(MARGIN_LEFT, y, line2Str, "F1", 7.8, 0.35, 0.35, 0.35);
+    y -= 9.5;
+  }
+  y -= 2.0;
   drawLine(y, 0.5, 0.8);
-  y -= 4;
+  y -= 5.0;
 
   // =========================================================================
   // 2. RESUMEN EJECUTIVO
   // =========================================================================
   drawSectionHeader("Resumen Ejecutivo");
   const summary = getActiveSummary(data.resumen);
-  const summaryLines = wrapWords(summary, USABLE_WIDTH, 8.5, false);
+  const summaryLines = wrapWords(summary, USABLE_WIDTH, 8.4, false);
   for (const line of summaryLines) {
-    drawText(MARGIN_LEFT, y, line, "F1", 8.5, 0.15, 0.15, 0.15);
-    y -= 10.8;
+    drawText(MARGIN_LEFT, y, line, "F1", 8.4, 0.15, 0.15, 0.15);
+    y -= 10.4;
   }
-  y -= 1;
+  y -= 2.0;
 
   // =========================================================================
   // 3. EXPERIENCIA PROFESIONAL
@@ -254,35 +270,37 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
   for (let expIdx = 0; expIdx < activeExps.length; expIdx++) {
     const exp = activeExps[expIdx];
     const rightSide = `${exp.ubicacion || ""} • ${exp.periodo || ""}`.trim().replace(/^•|•$/g, "").trim();
-    const rightSideWidth = getTextWidth(rightSide, 8.0, false);
+    const rightSideWidth = getTextWidth(rightSide, 7.8, false);
     const rightSideX = PAGE_WIDTH - MARGIN_RIGHT - rightSideWidth;
 
-    // Título de la empresa y rol
     const companyText = exp.empresa || "Empresa";
-    const roleTextLeft = exp.rol ? ` |  ${exp.rol}` : "";
-    const compW = getTextWidth(companyText, 9.5, true);
-    const roleW = getTextWidth(roleTextLeft, 8.8, false);
+    const roleText = exp.rol || "";
+    const compW = getTextWidth(companyText, 9.2, true);
+    const roleW = roleText ? getTextWidth(` |  ${roleText}`, 8.6, false) : 0;
+    const maxOneLineW = rightSideX - (MARGIN_LEFT + compW + 4) - 10;
 
-    drawText(MARGIN_LEFT, y, companyText, "F2", 9.5, 0.02, 0.02, 0.02);
-
-    // Evitar colisión entre rol y fecha derecha
-    const maxAvailableRoleW = rightSideX - (MARGIN_LEFT + compW + 4) - 8;
-    if (roleW <= maxAvailableRoleW) {
-      drawText(MARGIN_LEFT + compW + 4, y, roleTextLeft, "F3", 8.8, 0.2, 0.2, 0.2);
+    if (roleText && roleW <= maxOneLineW) {
+      // Entra todo en una sola línea holgadamente sin colisión
+      drawText(MARGIN_LEFT, y, companyText, "F2", 9.2, 0.02, 0.02, 0.02);
+      drawText(MARGIN_LEFT + compW + 4, y, ` |  ${roleText}`, "F3", 8.6, 0.2, 0.2, 0.2);
+      drawText(rightSideX, y, rightSide, "F1", 7.8, 0.35, 0.35, 0.35);
+      y -= 11.2;
     } else {
-      // Si el rol es muy largo, se acorta limpiamente
-      const words = roleTextLeft.split(" ");
-      let shortRole = "";
-      for (const w of words) {
-        if (getTextWidth(shortRole + " " + w + "...", 8.8, false) <= maxAvailableRoleW) {
-          shortRole += (shortRole ? " " : "") + w;
-        } else break;
-      }
-      drawText(MARGIN_LEFT + compW + 4, y, shortRole + "...", "F3", 8.8, 0.2, 0.2, 0.2);
-    }
+      // El rol o empresa son extensos: Formato ATS en 2 líneas limpias (NUNCA recortar con "...")
+      // Línea 1: Empresa a la izquierda y Ubicación • Período a la derecha
+      drawText(MARGIN_LEFT, y, companyText, "F2", 9.2, 0.02, 0.02, 0.02);
+      drawText(rightSideX, y, rightSide, "F1", 7.8, 0.35, 0.35, 0.35);
+      y -= 10.6;
 
-    drawText(rightSideX, y, rightSide, "F1", 8.0, 0.35, 0.35, 0.35);
-    y -= 11.5;
+      // Línea 2: Rol / Puesto completo en cursiva, envuelto limpiamente si es necesario
+      if (roleText) {
+        const roleLines = wrapWords(roleText, USABLE_WIDTH, 8.6, false);
+        for (const rLine of roleLines) {
+          drawText(MARGIN_LEFT, y, rLine, "F3", 8.6, 0.2, 0.2, 0.2);
+          y -= 10.2;
+        }
+      }
+    }
 
     // Viñetas
     const activeBullets = (exp.bullets || []).filter((b) => b.visible);
@@ -293,8 +311,8 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
       const sub = (bullet.subtitulo || "").trim();
       const desc = (bullet.descripcion || "").trim();
       const subPrefix = sub ? `${sub}: ` : "";
-      const subWidth = sub ? getTextWidth(subPrefix, 8.2, true) : 0;
-      const spaceW = getTextWidth(" ", 8.2, false);
+      const subWidth = sub ? getTextWidth(subPrefix, 8.0, true) : 0;
+      const spaceW = getTextWidth(" ", 8.0, false);
 
       // Calculamos qué palabras de la descripción caben en la línea 1 después del subtítulo
       const descWords = desc.split(/\s+/).filter(Boolean);
@@ -306,7 +324,7 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
 
       while (wordIdx < descWords.length) {
         const w = descWords[wordIdx];
-        const wWidth = getTextWidth(w, 8.2, false);
+        const wWidth = getTextWidth(w, 8.0, false);
         const needed = line1DescWords.length === 0 ? wWidth : spaceW + wWidth;
 
         if (currentW + needed <= remainingWidthLine1) {
@@ -319,32 +337,32 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
       }
 
       // Dibujar viñeta y Línea 1
-      drawText(MARGIN_LEFT, y, "•", "F1", 8.2, 0.3, 0.3, 0.3);
+      drawText(MARGIN_LEFT, y, "•", "F1", 8.0, 0.3, 0.3, 0.3);
 
       if (sub) {
-        drawText(MARGIN_LEFT + bulletIndent, y, subPrefix, "F2", 8.2, 0.05, 0.05, 0.05);
+        drawText(MARGIN_LEFT + bulletIndent, y, subPrefix, "F2", 8.0, 0.05, 0.05, 0.05);
       }
 
       if (line1DescWords.length > 0) {
         const line1DescText = line1DescWords.join(" ");
-        drawText(MARGIN_LEFT + bulletIndent + subWidth, y, line1DescText, "F1", 8.2, 0.15, 0.15, 0.15);
+        drawText(MARGIN_LEFT + bulletIndent + subWidth, y, line1DescText, "F1", 8.0, 0.15, 0.15, 0.15);
       }
-      y -= 10.2;
+      y -= 9.8;
 
       // Líneas restantes de la viñeta (ocupan el ancho completo)
       if (wordIdx < descWords.length) {
         const remainingText = descWords.slice(wordIdx).join(" ");
-        const remainingLines = wrapWords(remainingText, textWidth, 8.2, false);
+        const remainingLines = wrapWords(remainingText, textWidth, 8.0, false);
         for (const remLine of remainingLines) {
-          drawText(MARGIN_LEFT + bulletIndent, y, remLine, "F1", 8.2, 0.15, 0.15, 0.15);
-          y -= 10.2;
+          drawText(MARGIN_LEFT + bulletIndent, y, remLine, "F1", 8.0, 0.15, 0.15, 0.15);
+          y -= 9.8;
         }
       }
 
-      y -= 1.5;
+      y -= 1.2;
     }
 
-    y -= 3;
+    y -= 3.0;
   }
 
   // =========================================================================
@@ -355,32 +373,46 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
 
   for (const edu of activeEdu) {
     const periodoText = edu.periodo || "";
-    const rightW = getTextWidth(periodoText, 8.0, false);
+    const rightW = getTextWidth(periodoText, 7.8, false);
     const rightX = PAGE_WIDTH - MARGIN_RIGHT - rightW;
 
     const inst = edu.institucion || "";
-    const tit = edu.titulo ? `|  ${edu.titulo}` : "";
-    const est = edu.estado ? `•  (${edu.estado})` : "";
+    const tit = edu.titulo || "";
+    const est = edu.estado ? `(${edu.estado})` : "";
 
-    const instW = getTextWidth(inst, 8.5, true);
-    const titW = getTextWidth(tit, 8.5, false);
-    const estW = getTextWidth(est, 8.0, false);
+    const instW = getTextWidth(inst, 8.6, true);
+    const titStr = tit ? ` |  ${tit}` : "";
+    const estStr = est ? ` •  ${est}` : "";
+    const titEstW = getTextWidth(`${titStr}${estStr}`, 8.2, false);
+    const maxOneLineEduW = rightX - (MARGIN_LEFT + instW + 4) - 10;
 
-    drawText(MARGIN_LEFT, y, inst, "F2", 8.5, 0.05, 0.05, 0.05);
-
-    // Ajuste dinámico de espaciado sin cortes
-    const availableForTitleAndState = rightX - (MARGIN_LEFT + instW + 4) - 8;
-    if (titW + 6 + estW <= availableForTitleAndState) {
-      drawText(MARGIN_LEFT + instW + 4, y, tit, "F3", 8.5, 0.15, 0.15, 0.15);
-      drawText(MARGIN_LEFT + instW + titW + 8, y, est, "F1", 8.0, 0.4, 0.4, 0.4);
+    if (titEstW <= maxOneLineEduW) {
+      // Cabe todo en una sola línea holgadamente sin colisión
+      drawText(MARGIN_LEFT, y, inst, "F2", 8.6, 0.05, 0.05, 0.05);
+      drawText(MARGIN_LEFT + instW + 4, y, titStr, "F3", 8.2, 0.15, 0.15, 0.15);
+      if (estStr) {
+        const titW = getTextWidth(titStr, 8.2, false);
+        drawText(MARGIN_LEFT + instW + 4 + titW, y, estStr, "F1", 7.8, 0.4, 0.4, 0.4);
+      }
+      drawText(rightX, y, periodoText, "F1", 7.8, 0.3, 0.3, 0.3);
+      y -= 11.0;
     } else {
-      drawText(MARGIN_LEFT + instW + 4, y, tit, "F3", 8.5, 0.15, 0.15, 0.15);
-    }
+      // El título (o equivalencia regional) es extenso: Formato ATS en 2 líneas limpias (NUNCA superponer sobre fecha)
+      // Línea 1: Institución a la izquierda y Período a la derecha
+      drawText(MARGIN_LEFT, y, inst, "F2", 8.6, 0.05, 0.05, 0.05);
+      drawText(rightX, y, periodoText, "F1", 7.8, 0.3, 0.3, 0.3);
+      y -= 10.6;
 
-    drawText(rightX, y, periodoText, "F1", 8.0, 0.3, 0.3, 0.3);
-    y -= 11.2;
+      // Línea 2: Título completo y estado en cursiva, envuelto si fuera necesario
+      const fullEduDegree = [tit, est].filter(Boolean).join("  •  ");
+      const eduLines = wrapWords(fullEduDegree, USABLE_WIDTH, 8.2, false);
+      for (const eLine of eduLines) {
+        drawText(MARGIN_LEFT, y, eLine, "F3", 8.2, 0.15, 0.15, 0.15);
+        y -= 9.8;
+      }
+    }
   }
-  y -= 1;
+  y -= 3.0;
 
   // =========================================================================
   // 5. HABILIDADES TÉCNICAS Y OPERATIVAS
@@ -390,7 +422,7 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
 
   for (const skillCat of activeSkills) {
     const prefix = `• ${skillCat.nombre || "Categoría"}: `;
-    const prefW = getTextWidth(prefix, 8.2, true);
+    const prefW = getTextWidth(prefix, 8.0, true);
     const itemsText = (skillCat.habilidades || []).join(", ");
     const itemsWords = itemsText.split(/\s+/).filter(Boolean);
 
@@ -399,11 +431,11 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
     const line1Words: string[] = [];
     let curW = 0;
     let wIdx = 0;
-    const spW = getTextWidth(" ", 8.2, false);
+    const spW = getTextWidth(" ", 8.0, false);
 
     while (wIdx < itemsWords.length) {
       const w = itemsWords[wIdx];
-      const wWidth = getTextWidth(w, 8.2, false);
+      const wWidth = getTextWidth(w, 8.0, false);
       const needed = line1Words.length === 0 ? wWidth : spW + wWidth;
       if (curW + needed <= line1MaxW) {
         line1Words.push(w);
@@ -415,20 +447,20 @@ export function generateAtsPdf(data: PortfolioCvData): Uint8Array {
     }
 
     // Dibujar línea 1
-    drawText(MARGIN_LEFT, y, prefix, "F2", 8.2, 0.05, 0.05, 0.05);
+    drawText(MARGIN_LEFT, y, prefix, "F2", 8.0, 0.05, 0.05, 0.05);
     if (line1Words.length > 0) {
-      drawText(MARGIN_LEFT + prefW, y, line1Words.join(" "), "F1", 8.2, 0.15, 0.15, 0.15);
+      drawText(MARGIN_LEFT + prefW, y, line1Words.join(" "), "F1", 8.0, 0.15, 0.15, 0.15);
     }
-    y -= 10.2;
+    y -= 9.8;
 
     // Líneas subsiguientes con indentación limpia
     if (wIdx < itemsWords.length) {
       const restText = itemsWords.slice(wIdx).join(" ");
-      const indent = 14.0;
-      const restLines = wrapWords(restText, USABLE_WIDTH - indent, 8.2, false);
+      const indent = 12.0;
+      const restLines = wrapWords(restText, USABLE_WIDTH - indent, 8.0, false);
       for (const line of restLines) {
-        drawText(MARGIN_LEFT + indent, y, line, "F1", 8.2, 0.15, 0.15, 0.15);
-        y -= 10.2;
+        drawText(MARGIN_LEFT + indent, y, line, "F1", 8.0, 0.15, 0.15, 0.15);
+        y -= 9.8;
       }
     }
 

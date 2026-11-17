@@ -144,29 +144,38 @@ def generate_pdf() -> bytes:
         y -= 8.5
 
     # 1. ENCABEZADO
-    draw_text(MARGIN_LEFT, y, "MARIANO YOUNG", "F2", 17.5, 0.02, 0.02, 0.02)
-    y -= 13
-    draw_text(MARGIN_LEFT, y, "Técnico en Programación (UTN) & Estudiante Avanzado de Lic. en Administración", "F1", 9.0, 0.2, 0.2, 0.2)
-    y -= 11.5
+    draw_text(MARGIN_LEFT, y, "MARIANO YOUNG", "F2", 17.0, 0.02, 0.02, 0.02)
+    y -= 13.5
 
-    contact_line = "marianoyoung.dev@gmail.com   |   +54 9 2923 511691   |   Coronel Pringles, Buenos Aires   |   nodexalanding.vercel.app/portfolio   |   linkedin.com/in/mariano-young-016a0b23b"
-    draw_text(MARGIN_LEFT, y, contact_line, "F1", 7.8, 0.35, 0.35, 0.35)
-    y -= 4
+    role_text = "Analista de Datos Comerciales, Control de Gestión Técnico & Soporte de Aplicaciones (SQL / Python / ERP) | Técnico en Programación (UTN) & Lic. en Administración (Último año)"
+    role_lines = wrap_words(role_text, USABLE_WIDTH, 8.8, False)
+    for r_line in role_lines:
+        draw_text(MARGIN_LEFT, y, r_line, "F1", 8.8, 0.2, 0.2, 0.2)
+        y -= 10.5
+    y -= 1.5
+
+    contact_line1 = "marianoyoung.dev@gmail.com   |   +54 9 2923 511691   |   Coronel Pringles, Buenos Aires, Argentina"
+    contact_line2 = "nodexalanding.vercel.app/portfolio   |   linkedin.com/in/mariano-young-016a0b23b"
+    draw_text(MARGIN_LEFT, y, contact_line1, "F1", 7.8, 0.35, 0.35, 0.35)
+    y -= 9.5
+    draw_text(MARGIN_LEFT, y, contact_line2, "F1", 7.8, 0.35, 0.35, 0.35)
+    y -= 2.0
     draw_line(y, 0.5, 0.8)
-    y -= 4
+    y -= 5.0
 
     # 2. RESUMEN EJECUTIVO
     section_header("Resumen Ejecutivo")
     resumen = (
-        "Técnico Universitario en Programación (UTN) y estudiante avanzado de Licenciatura en Administración de Empresas (Siglo 21). "
-        "Especializado en el análisis de procesos comerciales, parametrización de sistemas y modelado relacional en SQL. Cuento con "
-        "experiencia práctica en la implementación de soluciones de gestión modulares en producción, bases de datos y soporte técnico a usuarios, "
-        "integrando lógica de negocio con resolución de incidentes (APIs, logs)."
+        "Técnico Universitario en Programación (UTN - Analista Programador) y estudiante del último año de la Licenciatura en Administración de "
+        "Empresas (Siglo 21 - Control de Gestión / Ing. Comercial). Especializado en el análisis de datos comerciales, control de gestión técnico, "
+        "soporte de aplicaciones L2 e implementación de sistemas ERP. Cuento con experiencia práctica en modelado y auditoría de bases de "
+        "datos relacionales (PostgreSQL/SQL), cuadraturas contables y de stock, limpieza e importación masiva de datos (Excel Power Query, "
+        "Python/Pandas y tablas de Staging) y diagnóstico de integraciones vía APIs REST (Postman, n8n)."
     )
-    for line in wrap_words(resumen, USABLE_WIDTH, 8.5, False):
-        draw_text(MARGIN_LEFT, y, line, "F1", 8.5, 0.15, 0.15, 0.15)
-        y -= 10.8
-    y -= 1
+    for line in wrap_words(resumen, USABLE_WIDTH, 8.4, False):
+        draw_text(MARGIN_LEFT, y, line, "F1", 8.4, 0.15, 0.15, 0.15)
+        y -= 10.4
+    y -= 2.0
 
     # 3. EXPERIENCIA PROFESIONAL
     section_header("Experiencia Profesional")
@@ -174,30 +183,30 @@ def generate_pdf() -> bytes:
     exps = [
         {
             "empresa": "Nodexa Software",
-            "rol": "Desarrollador de Software e Implementador de Sistemas",
-            "right": "Coronel Pringles, Bs. As. • Jul 2026 – Presente",
+            "rol": "Implementador de Sistemas de Gestión & Procesos Comerciales",
+            "right": "Coronel Pringles, Buenos Aires (Remoto / Local) • Ene 2026 – Presente",
             "bullets": [
-                ("Diseño e Implementación de Sistema de Gestión (Nodexa Core)",
-                 "Desarrollé un sistema modular para comercios y gastronomía sobre PostgreSQL, estructurando el registro transaccional de entradas y salidas de caja (bajo lógica de partida doble) para asegurar la trazabilidad del 100% de las operaciones y evitar descuadres."),
-                ("Control de Inventario y Costos por Receta",
-                 "Implementé el módulo de control de stock automatizado mediante desglose de recetas e insumos, descontando transaccionalmente las materias primas al despachar comandas desde tableros Kanban."),
-                ("Automatización e Integración con IA",
-                 "Construí flujos de extracción de datos de productos mediante fotografías utilizando modelos de visión artificial e integración con APIs REST para agilizar la carga y actualización de listas de precios."),
-                ("Gestión Municipal (Patitas en Alerta)",
-                 "Modelé la arquitectura relacional (SQL) para una plataforma de zoonosis, canalizando reportes geolocalizados hacia tableros analíticos y mapas de calor para optimizar la asignación de turnos y recursos públicos.")
+                ("Arquitectura Transaccional y Motor Contable de Partida Doble (Nodexa Core)",
+                 "Diseñé e implementé un sistema ERP modular sobre PostgreSQL para el sector comercial y gastronómico, estructurando un libro mayor inmutable (append-only ledger) bajo reglas de partida doble (Debe/Haber) y ajustes por contra-asiento para garantizar el 100% de trazabilidad en auditorías y cierres de caja sin descuadres."),
+                ("Control de Gestión, Costeo por Receta (Escandallo/BOM) y Cuadraturas de Stock",
+                 "Desarrollé el módulo de explosión de insumos y subrecetas mediante consultas SQL avanzadas (CTEs y JOINs controlados), automatizando el descuento transaccional de inventario y ejecutando cuadraturas entre el stock teórico, el inventario físico y el costo de reposición para proteger los márgenes operativos frente a la inflación."),
+                ("Migración de Datos (Staging Tables), Limpieza en Python/Excel y Automatización con IA",
+                 "Construí tuberías de actualización masiva de listas de precios y comprobantes utilizando tablas temporales de retención (Staging en VARCHAR), scripts en Python (Pandas / Pydantic) y flujos en n8n con APIs de visión artificial, aplicando validaciones matemáticas deterministas previas a la inserción en base de datos."),
+                ("Modelado Relacional y Analítica Operativa (Patitas en Alerta)",
+                 "Estructuré la base de datos SQL y la lógica de negocio para una plataforma de gestión sanitaria y turnos municipales, transformando reportes geolocalizados en tableros de indicadores (KPIs) y mapas de calor para optimizar la asignación de recursos operativos.")
             ]
         },
         {
             "empresa": "Appy Studios",
-            "rol": "Analista Técnico-Funcional & Soporte L2 (Freelance)",
-            "right": "Coronel Pringles, Bs. As. • Jul 2025 – Jul 2026",
+            "rol": "Analista Técnico-Funcional, Migración de Datos & Soporte de Aplicaciones L2",
+            "right": "Coronel Pringles, Buenos Aires • Jun 2025 – Dic 2025",
             "bullets": [
-                ("Implementación de Sistemas POS",
-                 "Parametricé y desplegué sistemas de Punto de Venta (POS) y control de stock para comercios locales (leñeras, jugueterías, pinturerías), asegurando la sincronización de inventarios y la conciliación diaria de cajas."),
-                ("Análisis y Documentación",
-                 "Elaboré especificaciones funcionales y diagramas de flujo para estandarizar procesos de compras y cobranzas, centralizando la operativa física y digital de los clientes."),
-                ("Soporte Operativo",
-                 "Brindé soporte de nivel 2 resolviendo incidencias, diagnosticando errores en bases de datos relacionales y aplicando correcciones sobre plataformas de e-commerce y catálogos web.")
+                ("Implementación de Sistemas POS y Migración de Catálogos Comerciales",
+                 "Parametricé y desplegué sistemas de Punto de Venta (POS) y gestión de inventario para comercios minoristas (leñeras, pinturerías, jugueterías), ejecutando la limpieza, normalización e importación masiva de padrones de artículos, variantes y listas de precios mediante Excel avanzado y SQL."),
+                ("Soporte de Aplicaciones Nivel 2 (L2) y Diagnóstico en Base de Datos",
+                 "Resolví incidencias operativas en producción auditando registros mediante consultas SQL (detección de transacciones incompletas con LEFT JOIN y saneamiento seguro bajo transacciones BEGIN/ROLLBACK), análisis de logs de servidor y validación de endpoints REST con Postman."),
+                ("Relevamiento Funcional y Estandarización de Circuitos (P2P / OTC)",
+                 "Relevé requerimientos con dueños de comercios y redacté especificaciones funcionales, diagramas de flujo (BPMN) y criterios de aceptación para alinear los circuitos de compras, remitos, facturación y conciliación de tesorería entre tiendas físicas y catálogos web.")
             ]
         }
     ]
@@ -206,27 +215,34 @@ def generate_pdf() -> bytes:
     text_width = USABLE_WIDTH - bullet_indent
 
     for exp in exps:
-        right_w = get_text_width(exp["right"], 8.0, False)
+        right_w = get_text_width(exp["right"], 7.8, False)
         right_x = PAGE_WIDTH - MARGIN_RIGHT - right_w
 
         comp_text = exp["empresa"]
-        role_text = f" |  {exp['rol']}"
-        comp_w = get_text_width(comp_text, 9.5, True)
-        role_w = get_text_width(role_text, 8.8, False)
+        role_text = exp["rol"]
+        comp_w = get_text_width(comp_text, 9.2, True)
+        role_w = get_text_width(f" |  {role_text}", 8.6, False)
+        max_role_w = right_x - (MARGIN_LEFT + comp_w + 4) - 10
 
-        draw_text(MARGIN_LEFT, y, comp_text, "F2", 9.5, 0.02, 0.02, 0.02)
-        max_role_w = right_x - (MARGIN_LEFT + comp_w + 4) - 8
         if role_w <= max_role_w:
-            draw_text(MARGIN_LEFT + comp_w + 4, y, role_text, "F3", 8.8, 0.2, 0.2, 0.2)
+            draw_text(MARGIN_LEFT, y, comp_text, "F2", 9.2, 0.02, 0.02, 0.02)
+            draw_text(MARGIN_LEFT + comp_w + 4, y, f" |  {role_text}", "F3", 8.6, 0.2, 0.2, 0.2)
+            draw_text(right_x, y, exp["right"], "F1", 7.8, 0.35, 0.35, 0.35)
+            y -= 11.2
         else:
-            draw_text(MARGIN_LEFT + comp_w + 4, y, role_text[:45] + "...", "F3", 8.8, 0.2, 0.2, 0.2)
-        draw_text(right_x, y, exp["right"], "F1", 8.0, 0.35, 0.35, 0.35)
-        y -= 11.5
+            # 2 Líneas: NUNCA truncar con "..."
+            draw_text(MARGIN_LEFT, y, comp_text, "F2", 9.2, 0.02, 0.02, 0.02)
+            draw_text(right_x, y, exp["right"], "F1", 7.8, 0.35, 0.35, 0.35)
+            y -= 10.6
+
+            for r_line in wrap_words(role_text, USABLE_WIDTH, 8.6, False):
+                draw_text(MARGIN_LEFT, y, r_line, "F3", 8.6, 0.2, 0.2, 0.2)
+                y -= 10.2
 
         for sub, desc in exp["bullets"]:
             sub_prefix = f"{sub}: "
-            sub_w = get_text_width(sub_prefix, 8.2, True)
-            sp_w = get_text_width(" ", 8.2, False)
+            sub_w = get_text_width(sub_prefix, 8.0, True)
+            sp_w = get_text_width(" ", 8.0, False)
 
             desc_words = [w for w in desc.split() if w]
             remaining_w_line1 = text_width - sub_w
@@ -237,7 +253,7 @@ def generate_pdf() -> bytes:
 
             while w_idx < len(desc_words):
                 w = desc_words[w_idx]
-                w_w = get_text_width(w, 8.2, False)
+                w_w = get_text_width(w, 8.0, False)
                 needed = w_w if not line1_words else sp_w + w_w
                 if cur_w + needed <= remaining_w_line1:
                     line1_words.append(w)
@@ -247,63 +263,67 @@ def generate_pdf() -> bytes:
                     break
 
             # Dibujar viñeta y línea 1
-            draw_text(MARGIN_LEFT, y, "•", "F1", 8.2, 0.3, 0.3, 0.3)
-            draw_text(MARGIN_LEFT + bullet_indent, y, sub_prefix, "F2", 8.2, 0.05, 0.05, 0.05)
+            draw_text(MARGIN_LEFT, y, "•", "F1", 8.0, 0.3, 0.3, 0.3)
+            draw_text(MARGIN_LEFT + bullet_indent, y, sub_prefix, "F2", 8.0, 0.05, 0.05, 0.05)
             if line1_words:
-                draw_text(MARGIN_LEFT + bullet_indent + sub_w, y, " ".join(line1_words), "F1", 8.2, 0.15, 0.15, 0.15)
-            y -= 10.2
+                draw_text(MARGIN_LEFT + bullet_indent + sub_w, y, " ".join(line1_words), "F1", 8.0, 0.15, 0.15, 0.15)
+            y -= 9.8
 
             # Líneas restantes de la viñeta
             if w_idx < len(desc_words):
                 rest_text = " ".join(desc_words[w_idx:])
-                for r_line in wrap_words(rest_text, text_width, 8.2, False):
-                    draw_text(MARGIN_LEFT + bullet_indent, y, r_line, "F1", 8.2, 0.15, 0.15, 0.15)
-                    y -= 10.2
-            y -= 1.5
+                for r_line in wrap_words(rest_text, text_width, 8.0, False):
+                    draw_text(MARGIN_LEFT + bullet_indent, y, r_line, "F1", 8.0, 0.15, 0.15, 0.15)
+                    y -= 9.8
+            y -= 1.2
         y -= 3.0
 
     # 4. EDUCACIÓN
     section_header("Educación")
     edus = [
-        ("Universidad Siglo 21", "Licenciatura en Administración de Empresas", "(Cursando último año - 4to año)", "Mar 2023 – Presente"),
-        ("Universidad Tecnológica Nacional (UTN)", "Técnico Universitario en Programación", "(Graduado)", "2026"),
+        ("Universidad Siglo 21", "Licenciatura en Administración de Empresas (Equiv. Regional: Ingeniería Comercial / Control de Gestión / Grado ADE)", "", "Mar 2023 – Presente"),
+        ("Universidad Tecnológica Nacional (UTN)", "Técnico Universitario en Programación (Equiv. Regional: Analista Programador / Tecnólogo en Sistemas / DAM)", "", "2026"),
         ("Escuela de Educación Secundaria Técnica N°1", "Técnico Electromecánico", "(Graduado)", "2012 – 2018"),
     ]
 
     for inst, tit, est, per in edus:
-        right_w = get_text_width(per, 8.0, False)
+        right_w = get_text_width(per, 7.8, False)
         right_x = PAGE_WIDTH - MARGIN_RIGHT - right_w
 
-        inst_w = get_text_width(inst, 8.5, True)
-        tit_str = f"|  {tit}"
-        est_str = f"•  {est}"
-        tit_w = get_text_width(tit_str, 8.5, False)
-        est_w = get_text_width(est_str, 8.0, False)
+        inst_w = get_text_width(inst, 8.6, True)
+        deg_str = " |  " + " • ".join([tit, est]).strip(" • ") if est else f" |  {tit}"
+        deg_w = get_text_width(deg_str, 8.2, False)
+        avail_w = right_x - (MARGIN_LEFT + inst_w + 4) - 10
 
-        draw_text(MARGIN_LEFT, y, inst, "F2", 8.5, 0.05, 0.05, 0.05)
-        avail_w = right_x - (MARGIN_LEFT + inst_w + 4) - 8
-        if tit_w + 6 + est_w <= avail_w:
-            draw_text(MARGIN_LEFT + inst_w + 4, y, tit_str, "F3", 8.5, 0.15, 0.15, 0.15)
-            draw_text(MARGIN_LEFT + inst_w + tit_w + 8, y, est_str, "F1", 8.0, 0.4, 0.4, 0.4)
+        if deg_w <= avail_w:
+            draw_text(MARGIN_LEFT, y, inst, "F2", 8.6, 0.05, 0.05, 0.05)
+            draw_text(MARGIN_LEFT + inst_w + 4, y, deg_str, "F3", 8.2, 0.15, 0.15, 0.15)
+            draw_text(right_x, y, per, "F1", 7.8, 0.3, 0.3, 0.3)
+            y -= 11.0
         else:
-            draw_text(MARGIN_LEFT + inst_w + 4, y, tit_str, "F3", 8.5, 0.15, 0.15, 0.15)
+            # 2 Líneas: Institución y fecha arriba, Título abajo (NUNCA superponer sobre fecha)
+            draw_text(MARGIN_LEFT, y, inst, "F2", 8.6, 0.05, 0.05, 0.05)
+            draw_text(right_x, y, per, "F1", 7.8, 0.3, 0.3, 0.3)
+            y -= 10.6
 
-        draw_text(right_x, y, per, "F1", 8.0, 0.3, 0.3, 0.3)
-        y -= 11.2
-    y -= 1.0
+            full_tit = " • ".join([tit, est]).strip(" • ") if est else tit
+            for d_line in wrap_words(full_tit, USABLE_WIDTH, 8.2, False):
+                draw_text(MARGIN_LEFT, y, d_line, "F3", 8.2, 0.15, 0.15, 0.15)
+                y -= 9.8
+    y -= 3.0
 
     # 5. HABILIDADES TÉCNICAS Y OPERATIVAS
     section_header("Habilidades Técnicas y Operativas")
     skills = [
-        ("Bases de Datos & Datos", "PostgreSQL, SQL (Consultas SELECT, JOINs, Agregaciones, Vistas, Modelado Relacional DER), Hojas de Cálculo (Excel / Google Sheets)"),
-        ("Sistemas & Procesos de Negocio", "Relevamiento Funcional, Sistemas POS y Gestión Comercial (ERP), Control de Stock y Recetas, Conciliación de Caja, Diagramación de Flujos, Lógica Contable (Partida Doble)"),
-        ("Desarrollo & Integraciones", "Lógica Backend, Consumo de APIs REST (JSON), Integración de APIs de IA, JavaScript / TypeScript, Python (Básico / Scripting), Git"),
+        ("Bases de Datos, BI & Análisis de Datos", "SQL Avanzado (PostgreSQL / MS SQL Server: JOINs, GROUP BY, HAVING, CTEs, Window Functions, Vistas), Excel Avanzado para Gestión (Power Query, BUSCARX / XLOOKUP, SUMAR.SI.CONJUNTO, Tablas Dinámicas), Python para Datos (Pandas, NumPy, Limpieza de CSV/Excel, Cruces y Automatización de Reportes), Business Intelligence & Visualización (Power BI, Modelado Estrella, Streamlit), Migración y Gobernanza de Datos (Tablas de Staging en VARCHAR, External IDs, Cuadraturas)"),
+        ("Control de Gestión, ERP & Circuitos de Negocio", "Circuitos Comerciales Integrales (Procure-to-Pay / Compras-Stock-Pagos y Order-to-Cash / Ventas-Cobranzas), Contabilidad Transaccional (Partida Doble Debe/Haber, Conciliación de Cajas, Bancos, Mercado Pago y eCheqs), Costos y Rentabilidad (Escandallo / Recetas BOM, Costo de Reposición, Margen de Contribución, Mermas y Variaciones), Normativa y Sistemas ERP (Facturación Electrónica ARCA CAE/CAI, IVA, Retenciones/Percepciones, Odoo, Tango Gestión), Análisis Funcional (Relevamiento de Procesos BPMN, Historias de Usuario, Criterios de Aceptación, Soporte L2)"),
+        ("Automatización, Integraciones & Herramientas IT", "Orquestación de Procesos y RPA (n8n, Webhooks, Automatización de Flujos Operativos), Diagnóstico e Integración de APIs REST (Postman, Payloads JSON, Manejo de Errores HTTP y Logs), Desarrollo Backend & Internal Tools (Python, FastAPI, Validación Determinista con Pydantic, TypeScript), IA Aplicada a Operaciones (Extracción Estructurada de Documentos/Facturas con Validación Matemática), Prácticas de Ingeniería y Seguridad (Git / GitHub Pull Requests, Transacciones ACID BEGIN/ROLLBACK, Variables .env, Docker básico)"),
     ]
 
     for cat_name, items_str in skills:
         prefix = f"• {cat_name}: "
-        pref_w = get_text_width(prefix, 8.2, True)
-        sp_w = get_text_width(" ", 8.2, False)
+        pref_w = get_text_width(prefix, 8.0, True)
+        sp_w = get_text_width(" ", 8.0, False)
         words = items_str.split()
 
         line1_max = USABLE_WIDTH - pref_w
@@ -313,7 +333,7 @@ def generate_pdf() -> bytes:
 
         while w_idx < len(words):
             w = words[w_idx]
-            w_w = get_text_width(w, 8.2, False)
+            w_w = get_text_width(w, 8.0, False)
             needed = w_w if not line1_words else sp_w + w_w
             if cur_w + needed <= line1_max:
                 line1_words.append(w)
@@ -322,16 +342,16 @@ def generate_pdf() -> bytes:
             else:
                 break
 
-        draw_text(MARGIN_LEFT, y, prefix, "F2", 8.2, 0.05, 0.05, 0.05)
+        draw_text(MARGIN_LEFT, y, prefix, "F2", 8.0, 0.05, 0.05, 0.05)
         if line1_words:
-            draw_text(MARGIN_LEFT + pref_w, y, " ".join(line1_words), "F1", 8.2, 0.15, 0.15, 0.15)
-        y -= 10.2
+            draw_text(MARGIN_LEFT + pref_w, y, " ".join(line1_words), "F1", 8.0, 0.15, 0.15, 0.15)
+        y -= 9.8
 
         if w_idx < len(words):
-            rest_lines = wrap_words(" ".join(words[w_idx:]), USABLE_WIDTH - 14.0, 8.2, False)
+            rest_lines = wrap_words(" ".join(words[w_idx:]), USABLE_WIDTH - 12.0, 8.0, False)
             for r_l in rest_lines:
-                draw_text(MARGIN_LEFT + 14.0, y, r_l, "F1", 8.2, 0.15, 0.15, 0.15)
-                y -= 10.2
+                draw_text(MARGIN_LEFT + 12.0, y, r_l, "F1", 8.0, 0.15, 0.15, 0.15)
+                y -= 9.8
         y -= 1.5
 
     # Ensamblado PDF 1.4
